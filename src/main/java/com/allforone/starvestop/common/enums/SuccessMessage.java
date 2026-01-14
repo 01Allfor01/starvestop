@@ -7,7 +7,7 @@ public enum SuccessMessage {
     //인증인가
     SIGN_UP_SUCCESS("회원가입 성공"),
     SIGN_IN_SUCCESS("로그인 성공"),
-
+    USER_UPDATE_SUCCESS("유저 정보 수정 성공"),
     //사용자
 
     //사용자 구독

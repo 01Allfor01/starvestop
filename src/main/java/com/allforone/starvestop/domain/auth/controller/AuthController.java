@@ -25,6 +25,7 @@ public class AuthController {
 
     private final AuthService authService;
 
+    // 회원 가입
     @PostMapping("/signup")
     public ResponseEntity<CommonResponse<SignUpResponse>> signUp(@Valid @RequestBody SignUpRequest request) {
         SignUpResponse response = authService.signUp(request);
@@ -33,6 +34,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
+    // 로그인
     @PostMapping("/signin")
     public ResponseEntity<CommonResponse<SignInResponse>> signIn(@Valid @RequestBody SignInRequest request) {
         SignInResponse response = authService.signIn(request);
