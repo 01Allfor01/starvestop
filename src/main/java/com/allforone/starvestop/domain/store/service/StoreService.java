@@ -1,12 +1,17 @@
 package com.allforone.starvestop.domain.store.service;
 
+import com.allforone.starvestop.common.dto.AuthUser;
+import com.allforone.starvestop.common.exception.CustomException;
+import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.store.dto.CreateStoreRequest;
-import com.allforone.starvestop.domain.store.dto.CreateStoreResponse;
+import com.allforone.starvestop.domain.store.dto.StoreResponse;
+import com.allforone.starvestop.domain.store.dto.UpdateStoreRequest;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
@@ -19,7 +24,7 @@ public class StoreService {
     private final UserRepository userRepository;
 
     @Transactional
-    public CreateStoreResponse createStore(Long userId, CreateStoreRequest request) {
+    public StoreResponse createStore(Long userId, CreateStoreRequest request) {
         User user = userRepository.getReferenceById(userId);
 
         Point location = new Point(
@@ -39,6 +44,16 @@ public class StoreService {
         );
 
         Store savedStore = storeRepository.save(store);
-        return CreateStoreResponse.from(savedStore);
+        return StoreResponse.from(savedStore);
+    }
+
+    public void updateStore(Long userId, Long storeId, UpdateStoreRequest request) {
+        Store store = storeRepository.findById(storeId).orElseThrow(
+                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
+
+        if (!store.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.)
+        }
     }
 }

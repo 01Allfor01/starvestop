@@ -11,7 +11,7 @@ import java.time.LocalTime;
 
 @Getter
 @RequiredArgsConstructor
-public class CreateStoreResponse {
+public class StoreResponse {
     private final Long storeId;
     private final String storeName;
     private final String address;
@@ -22,8 +22,8 @@ public class CreateStoreResponse {
     private final LocalTime closeTime;
     private final LocalDateTime createdAt;
 
-    public static CreateStoreResponse from(Store store) {
-        return new CreateStoreResponse(
+    public static StoreResponse from(Store store) {
+        return new StoreResponse(
                 store.getId(),
                 store.getStoreName(),
                 store.getAddress(),
