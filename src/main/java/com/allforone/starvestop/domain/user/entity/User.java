@@ -1,5 +1,6 @@
 package com.allforone.starvestop.domain.user.entity;
 
+import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,19 +11,21 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class User extends BaseEntity {
 
     @Id
+    @Column(name = "user_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private UserRole role;
 
     @Column(nullable = false)
@@ -30,4 +33,16 @@ public class User {
 
     @Column(nullable = false)
     private String username;
+
+    private User(String email, String password, UserRole role, String nickname, String username) {
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.nickname = nickname;
+        this.username = username;
+    }
+
+    public static User create(String email, String password, UserRole role, String nickname, String username) {
+        return new User(email, password, role, nickname, username);
+    }
 }

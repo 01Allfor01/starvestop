@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -37,7 +38,7 @@ public class Payment extends BaseEntity {
     private UserSubscription userSubscription;
 
     @Column(nullable = false)
-    private String key;
+    private String paymentKey;
 
     @Column(nullable = false)
     private String orderId;

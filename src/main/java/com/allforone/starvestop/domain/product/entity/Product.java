@@ -40,4 +40,17 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
+    private Product(Store store, String productName, String description, BigDecimal price, BigDecimal salePrice, ProductStatus status) {
+        this.store = store;
+        this.productName = productName;
+        this.description = description;
+        this.price = price;
+        this.salePrice = salePrice;
+        this.status = status;
+    }
+
+    public static Product create(Store store, String productName, String description, BigDecimal price, BigDecimal salePrice, ProductStatus status) {
+        return new Product(store, productName, description, price, salePrice, status);
+    }
+
 }
