@@ -29,7 +29,7 @@ public class SubscriptionService {
         );
 
         if (!Objects.equals(ownerId, store.getUser().getId())) {
-            throw new CustomException(ErrorCode.USER_NOT_MATCH);
+            throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
         Subscription subscription = Subscription.create(store, request.getSubscriptionName(), request.getPrice());
