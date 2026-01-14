@@ -47,11 +47,9 @@ public class AuthService {
         String userEmail = request.getEmail();
         String password = request.getPassword();
 
-        if (!userRepository.existsByEmail(userEmail)) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        User foundUser = userRepository.findByEmail(userEmail);
+        User foundUser = userRepository.findByEmail(userEmail).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+        );
 
         if (!passwordEncoder.matches(password, foundUser.getPassword())) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
