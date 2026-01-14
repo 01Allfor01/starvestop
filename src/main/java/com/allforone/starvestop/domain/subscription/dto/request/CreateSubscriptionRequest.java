@@ -1,0 +1,19 @@
+package com.allforone.starvestop.domain.subscription.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Getter
+@NoArgsConstructor
+public class CreateSubscriptionRequest {
+
+    @NotBlank(message = "구독 이름을 적어주세요")
+    private String subscriptionName;
+
+    @NotNull(message = "가격을 적어주세요")
+    private BigDecimal price;
+}
