@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 public class Subscription extends BaseEntity {
 
     @Id
+    @Column(name = "subscription_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
