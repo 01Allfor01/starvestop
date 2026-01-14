@@ -3,6 +3,7 @@ package com.allforone.starvestop.domain.store.dto;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,16 +15,16 @@ import java.time.LocalTime;
 @NoArgsConstructor
 public class CreateStoreRequest {
 
-    @NotNull(message = "매장 이름을 적어주세요")
+    @NotBlank(message = "매장 이름을 적어주세요")
     private String storeName;
 
-    @NotNull(message = "주소를 적어주세요")
+    @NotBlank(message = "주소를 적어주세요")
     private String address;
 
     @NotNull(message = "매장 설명을 적어주세요")
     private String description;
 
-    @NotNull(message = "매장 카테고리를 선택해주세요")
+    @NotBlank(message = "매장 카테고리를 선택해주세요")
     private StoreCategory category;
 
     @NotNull(message = "매장 위치를 입력해주세요")
