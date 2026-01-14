@@ -34,7 +34,7 @@ public class AuthService {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        User user = new User(userEmail, passwordEncoder.encode(password), UserRole.USER, userName, nickname);
+        User user = User.create(userEmail, passwordEncoder.encode(password), UserRole.USER, userName, nickname);
 
         User savedUser = userRepository.save(user);
 

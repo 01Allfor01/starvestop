@@ -23,6 +23,7 @@ public class User {
     private String password;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private UserRole role;
 
     @Column(nullable = false)
@@ -31,11 +32,15 @@ public class User {
     @Column(nullable = false)
     private String username;
 
-    public User(String email, String password, UserRole role, String nickname, String username) {
+    private User(String email, String password, UserRole role, String nickname, String username) {
         this.email = email;
         this.password = password;
         this.role = role;
         this.nickname = nickname;
         this.username = username;
+    }
+
+    public static User create(String email, String password, UserRole role, String nickname, String username) {
+        return new User(email, password, role, nickname, username);
     }
 }
