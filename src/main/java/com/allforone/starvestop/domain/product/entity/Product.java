@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.product.entity;
 
 import com.allforone.starvestop.common.entity.BaseEntity;
+import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.store.entity.Store;
 import jakarta.persistence.*;
@@ -39,5 +40,14 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
+
+    public Product(Store store, CreateProductRequest request) {
+        this.store = store;
+        this.productName = request.getProductName();
+        this.description = request.getDescription();
+        this.price = request.getPrice();
+        this.salePrice = request.getSalePrice();
+        this.status = ProductStatus.from(request.getStatus());
+    }
 
 }
