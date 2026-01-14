@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 public class UserSubscription {
 
     @Id
+    @Column(name = "user_subscription_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -27,12 +29,12 @@ public class UserSubscription {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "expried_at", nullable = false)
-    private LocalDateTime expiredAt;
+    @Column(nullable = false)
+    private Instant expiresAt;
 
     @Column(nullable = false)
     private int day;
 
-    @Column(name = "meal_time", nullable = false)
+    @Column(nullable = false)
     private int mealTime;
 }

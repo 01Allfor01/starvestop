@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -50,9 +51,9 @@ public class Payment extends BaseEntity {
     private BigDecimal amount;
 
     @Column
-    private LocalDateTime paymentAt;
+    private Instant paymentAt;
 
     @Column
-    private LocalDateTime canceledAt;
+    private Instant canceledAt;
 
 }
