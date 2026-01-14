@@ -37,12 +37,24 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/products/**").hasAnyRole("OWNER","ADMIN")
+                        .requestMatchers(HttpMethod.PUT,"/products/**").hasAnyRole("OWNER","ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,"/products/**").hasAnyRole("OWNER","ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/stores/**").hasAnyRole("OWNER","ADMIN")
+                        .requestMatchers(HttpMethod.PUT,"/stores/**").hasAnyRole("OWNER","ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,"/stores/**").hasAnyRole("OWNER","ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/subscriptions/**").hasAnyRole("OWNER","ADMIN")
+                        .requestMatchers(HttpMethod.PUT,"/subscriptions/**").hasAnyRole("OWNER","ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,"/subscriptions/**").hasAnyRole("OWNER","ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                        })
+                        .authenticationEntryPoint((req, res, e) ->
+                                res.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+                        )
+                        .accessDeniedHandler((req, res, e) ->
+                                res.sendError(HttpServletResponse.SC_FORBIDDEN)
+                        )
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
