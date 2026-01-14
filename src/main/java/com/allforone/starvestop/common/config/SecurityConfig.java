@@ -13,14 +13,10 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 @Configuration
-@RequiredArgsConstructor
 @EnableWebSecurity
+@RequiredArgsConstructor
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfig {
 
@@ -37,15 +33,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/products/**").hasAnyRole("OWNER","ADMIN")
-                        .requestMatchers(HttpMethod.PUT,"/products/**").hasAnyRole("OWNER","ADMIN")
-                        .requestMatchers(HttpMethod.DELETE,"/products/**").hasAnyRole("OWNER","ADMIN")
-                        .requestMatchers(HttpMethod.POST,"/stores/**").hasAnyRole("OWNER","ADMIN")
-                        .requestMatchers(HttpMethod.PUT,"/stores/**").hasAnyRole("OWNER","ADMIN")
-                        .requestMatchers(HttpMethod.DELETE,"/stores/**").hasAnyRole("OWNER","ADMIN")
-                        .requestMatchers(HttpMethod.POST,"/subscriptions/**").hasAnyRole("OWNER","ADMIN")
-                        .requestMatchers(HttpMethod.PUT,"/subscriptions/**").hasAnyRole("OWNER","ADMIN")
-                        .requestMatchers(HttpMethod.DELETE,"/subscriptions/**").hasAnyRole("OWNER","ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/products/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/products/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/stores/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/stores/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/stores/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
