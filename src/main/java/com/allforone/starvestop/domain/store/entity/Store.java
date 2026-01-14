@@ -83,7 +83,6 @@ public class Store extends BaseEntity {
             Point location,
             LocalTime openTime,
             LocalTime closeTime
-
     ) {
 
         return new Store(
