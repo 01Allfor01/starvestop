@@ -1,14 +1,14 @@
 package com.allforone.starvestop.domain.subscription.dto.response;
 
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class CreateSubscriptionResponse {
 
     private final Long subscriptionId;

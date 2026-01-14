@@ -32,14 +32,10 @@ public class SubscriptionService {
             throw new CustomException(ErrorCode.USER_NOT_MATCH);
         }
 
-        Subscription subscription = new Subscription(
-                store,
-                request.getSubscriptionName(),
-                request.getPrice()
-        );
+        Subscription subscription = Subscription.create(store, request.getSubscriptionName(), request.getPrice());
 
-        subscriptionRepository.save(subscription);
+        Subscription savedSubscription = subscriptionRepository.save(subscription);
 
-        return CreateSubscriptionResponse.from(subscription);
+        return CreateSubscriptionResponse.from(savedSubscription);
     }
 }

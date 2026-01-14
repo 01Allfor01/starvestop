@@ -5,6 +5,7 @@ import com.allforone.starvestop.domain.subscription.dto.request.CreateSubscripti
 import com.allforone.starvestop.domain.subscription.dto.response.CreateSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.service.SubscriptionService;
 import com.allforone.starvestop.domain.user.entity.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class SubscriptionController {
 
     @PostMapping
     public ResponseEntity<CommonResponse<CreateSubscriptionResponse>> createSubscription(
-            @RequestBody CreateSubscriptionRequest request,
+            @Valid @RequestBody CreateSubscriptionRequest request,
             User authUser
     ) {
         CreateSubscriptionResponse response = subscriptionService.createSubscription(authUser.getId(), request);

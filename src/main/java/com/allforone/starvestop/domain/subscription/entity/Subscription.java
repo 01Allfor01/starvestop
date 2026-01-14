@@ -34,4 +34,8 @@ public class Subscription extends BaseEntity {
         this.subscriptionName = subscriptionName;
         this.price = price;
     }
+
+    public static Subscription create(Store store, String subscriptionName, BigDecimal price) {
+        return new Subscription(store, subscriptionName, price);
+    }
 }
