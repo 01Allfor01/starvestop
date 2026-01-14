@@ -3,6 +3,7 @@ package com.allforone.starvestop.domain.user.service;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.PasswordEncoder;
+import com.allforone.starvestop.domain.user.dto.request.DeleteUserRequest;
 import com.allforone.starvestop.domain.user.dto.request.UpdateUserRequest;
 import com.allforone.starvestop.domain.user.dto.response.UpdateUserResponse;
 import com.allforone.starvestop.domain.user.entity.User;
@@ -19,6 +20,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // 회원 정보 수정
     @Transactional
     public UpdateUserResponse updateUser(Long userId, UpdateUserRequest request) {
         String password = request.getPassword();
@@ -28,6 +30,14 @@ public class UserService {
         User foundUser = userRepository.findById(userId).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND)
         );
+
+        if (role.equals(UserRole.ADMIN)) {
+            throw new CustomException(ErrorCode.USER_ROLE_CHANGE_NOT_ALLOWED);
+        }
+
+        if (foundUser.isDeleted()) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
 
         foundUser.update(nickname, passwordEncoder.encode(password), role);
 
@@ -39,5 +49,25 @@ public class UserService {
                 foundUser.getRole().name(),
                 foundUser.getUsername()
         );
+    }
+
+    // 회원 탈퇴
+    @Transactional
+    public void deleteUser(Long userId, DeleteUserRequest request) {
+        User foundUser = userRepository.findById(userId).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        if (foundUser.isDeleted()) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), foundUser.getPassword())) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        foundUser.delete();
+
+        userRepository.flush();
     }
 }
