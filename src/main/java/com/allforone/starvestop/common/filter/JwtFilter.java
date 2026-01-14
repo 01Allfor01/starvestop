@@ -18,7 +18,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 @Component
 @Slf4j
@@ -26,26 +25,6 @@ import java.util.Set;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-
-    private static final Set<String> EXCLUDED_URIS = Set.of(
-            "/auth/signup",
-            "/auth/signin",
-            "/coupons",
-            "/accommodations",
-            "/oauth2",
-            "/login/oauth2",
-            "/infra",
-            "/success.html",
-            "/fail.html"
-    );
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        return EXCLUDED_URIS.contains(uri)
-                || uri.startsWith("/reservations/one/")
-                || uri.startsWith("/payments/");
-    }
 
     @Override
     protected void doFilterInternal(

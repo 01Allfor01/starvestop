@@ -8,13 +8,13 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class SignUpRequest {
-    @Email
-    @NotBlank
+    @Email(message = "이메일 형식이 아닙니다.")
+    @NotBlank(message = "이메일을 입력해주세요.")
     private String email;
-    @NotBlank
+    @NotBlank(message = "패스워드를 입력해주세요.")
     private String password;
-    @NotBlank
+    @NotBlank(message = "닉네임을 입력해주세요.")
     private String nickname;
-    @NotBlank
+    @NotBlank(message = "유저이름을 입력해주세요.")
     private String username;
 }

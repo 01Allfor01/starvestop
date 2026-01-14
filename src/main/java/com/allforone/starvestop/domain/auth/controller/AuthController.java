@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import static com.allforone.starvestop.common.enums.SuccessMessage.SIGN_IN_SUCCESS;
 import static com.allforone.starvestop.common.enums.SuccessMessage.SIGN_UP_SUCCESS;
 
-
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
