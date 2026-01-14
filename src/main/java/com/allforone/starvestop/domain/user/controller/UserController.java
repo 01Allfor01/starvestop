@@ -35,7 +35,7 @@ public class UserController {
     }
 
     // 회원 탈퇴
-    @DeleteMapping
+    @PatchMapping("/delete")
     public ResponseEntity<CommonResponse<Void>> deleteUser(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestBody DeleteUserRequest request
