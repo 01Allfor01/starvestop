@@ -14,7 +14,7 @@ public enum ErrorCode {
     //사용자 구독
 
     //상품
-    PRODUCT_STATUS_NOT_FOUND(HttpStatus.BAD_REQUEST, "존재하지 않는 상품 상태입니다"),
+
 
     //매장
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 매장입니다");

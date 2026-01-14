@@ -5,6 +5,7 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
 import com.allforone.starvestop.domain.product.entity.Product;
+import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
@@ -22,11 +23,16 @@ public class ProductService {
 
     //상품 추가
     @Transactional
-    public CreateProductResponse create(@Valid CreateProductRequest request) {
+    public CreateProductResponse createProduct(@Valid CreateProductRequest request) {
         Store store = storeRepository.findById(request.getStoreId()).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND));
 
-        Product product = new Product(store, request);
+        Product product = Product.create(store,
+                request.getProductName(),
+                request.getDescription(),
+                request.getPrice(),
+                request.getSalePrice(),
+                ProductStatus.valueOf(request.getStatus()));
 
         Product savedProduct = productRepository.save(product);
 

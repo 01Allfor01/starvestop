@@ -23,9 +23,8 @@ public class ProductController {
 
     //특정 매장 상품 추가
     @PostMapping()
-    public ResponseEntity<CommonResponse<CreateProductResponse>> create(@Valid @RequestBody CreateProductRequest request) {
-
-        CreateProductResponse createProductResponse = productService.create(request);
+    public ResponseEntity<CommonResponse<CreateProductResponse>> createProduct(@Valid @RequestBody CreateProductRequest request) {
+        CreateProductResponse createProductResponse = productService.createProduct(request);
 
         CommonResponse<CreateProductResponse> response =
                 CommonResponse.success(SuccessMessage.PRODUCT_CREATE_SUCCESS, createProductResponse);
