@@ -30,7 +30,7 @@ public class UserSubscription {
     private User user;
 
     @Column(nullable = false)
-    private Instant expiresAt;
+    private LocalDateTime expiresAt;
 
     @Column(nullable = false)
     private int day;

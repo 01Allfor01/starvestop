@@ -51,9 +51,9 @@ public class Payment extends BaseEntity {
     private BigDecimal amount;
 
     @Column
-    private Instant paymentAt;
+    private LocalDateTime paymentAt;
 
     @Column
-    private Instant canceledAt;
+    private LocalDateTime canceledAt;
 
 }
