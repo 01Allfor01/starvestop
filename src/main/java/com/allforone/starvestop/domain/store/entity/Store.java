@@ -1,7 +1,6 @@
 package com.allforone.starvestop.domain.store.entity;
 
 import com.allforone.starvestop.common.entity.BaseEntity;
-import com.allforone.starvestop.domain.store.dto.CreateStoreRequest;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import com.allforone.starvestop.domain.user.entity.User;
@@ -54,20 +53,48 @@ public class Store extends BaseEntity {
     @Enumerated(value = EnumType.STRING)
     private StoreStatus status;
 
-    public Store(User user, String storeName, String address, String description, StoreCategory category) {
+    private Store(
+            User user,
+            String storeName,
+            String address,
+            String description,
+            StoreCategory category,
+            Point location,
+            LocalTime openTime,
+            LocalTime closeTime
+    ) {
         this.user = user;
         this.storeName = storeName;
         this.address = address;
         this.description = description;
         this.category = category;
+        this.location = location;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+        this.status = StoreStatus.OPENED;
     }
-    public static Store from(User user, CreateStoreRequest request) {
+
+    public static Store create(
+            User user,
+            String storeName,
+            String address,
+            String description,
+            StoreCategory category,
+            Point location,
+            LocalTime openTime,
+            LocalTime closeTime
+
+    ) {
+
         return new Store(
                 user,
-                request.getStoreName(),
-                request.getAddress(),
-                request.getDescription(),
-                request.getCategory()
+                storeName,
+                address,
+                description,
+                category,
+                location,
+                openTime,
+                closeTime
         );
     }
 }

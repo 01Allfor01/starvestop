@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @RequiredArgsConstructor
@@ -17,6 +18,8 @@ public class CreateStoreResponse {
     private final String description;
     private final StoreCategory category;
     private final StoreStatus status;
+    private final LocalTime openTime;
+    private final LocalTime closeTime;
     private final LocalDateTime createdAt;
 
     public static CreateStoreResponse from(Store store) {
@@ -27,6 +30,8 @@ public class CreateStoreResponse {
                 store.getDescription(),
                 store.getCategory(),
                 store.getStatus(),
+                store.getOpenTime(),
+                store.getCloseTime(),
                 store.getCreatedAt()
         );
     }

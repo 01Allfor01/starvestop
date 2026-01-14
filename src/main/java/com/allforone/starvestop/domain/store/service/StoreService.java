@@ -8,6 +8,7 @@ import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,7 +21,24 @@ public class StoreService {
     @Transactional
     public CreateStoreResponse createStore(Long userId, CreateStoreRequest request) {
         User user = userRepository.getReferenceById(userId);
-        Store store = storeRepository.save(Store.from(user, request));
-        return CreateStoreResponse.from(store);
+
+        Point location = new Point(
+                request.getLongitude(),
+                request.getLatitude()
+        );
+
+        Store store = Store.create(
+                user,
+                request.getStoreName(),
+                request.getAddress(),
+                request.getDescription(),
+                request.getCategory(),
+                location,
+                request.getOpenTime(),
+                request.getCloseTime()
+        );
+
+        Store savedStore = storeRepository.save(store);
+        return CreateStoreResponse.from(savedStore);
     }
 }
