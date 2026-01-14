@@ -2,13 +2,13 @@ package com.allforone.starvestop.domain.subscription.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Getter
-@AllArgsConstructor
+@NoArgsConstructor
 public class CreateSubscriptionRequest {
 
     @NotNull(message = "매장 Id를 적어주세요 ")
