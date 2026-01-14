@@ -37,7 +37,7 @@ public class Payment extends BaseEntity {
     private UserSubscription userSubscription;
 
     @Column(nullable = false)
-    private String key;
+    private String paymentKey;
 
     @Column(nullable = false)
     private String orderId;
