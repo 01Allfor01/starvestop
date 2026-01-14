@@ -22,9 +22,9 @@ public class SubscriptionService {
     private final StoreRepository storeRepository;
 
     @Transactional
-    public CreateSubscriptionResponse createSubscription(Long ownerId, CreateSubscriptionRequest request) {
+    public CreateSubscriptionResponse createSubscription(Long storeId, Long ownerId, CreateSubscriptionRequest request) {
 
-        Store store = storeRepository.findById(request.getStoreId()).orElseThrow(
+        Store store = storeRepository.findById(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
 

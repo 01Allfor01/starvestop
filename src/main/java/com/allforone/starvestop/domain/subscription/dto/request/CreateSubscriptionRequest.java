@@ -11,12 +11,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class CreateSubscriptionRequest {
 
-    @NotNull(message = "매장 Id를 적어주세요 ")
-    private Long storeId;
-
     @NotBlank(message = "구독 이름을 적어주세요")
     private String subscriptionName;
 
-    @NotBlank(message = "가격을 적어주세요")
+    @NotNull(message = "가격을 적어주세요")
     private BigDecimal price;
 }
