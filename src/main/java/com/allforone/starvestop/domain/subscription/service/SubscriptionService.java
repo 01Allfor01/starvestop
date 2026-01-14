@@ -32,7 +32,7 @@ public class SubscriptionService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        Subscription subscription = Subscription.create(store, request.getSubscriptionName(), request.getPrice());
+        Subscription subscription = Subscription.create(store, request.getSubscriptionName(), request.getDescription(), request.getPrice());
 
         Subscription savedSubscription = subscriptionRepository.save(subscription);
 

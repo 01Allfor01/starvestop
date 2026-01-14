@@ -28,15 +28,19 @@ public class Subscription extends BaseEntity {
     private String subscriptionName;
 
     @Column(nullable = false)
+    private String description;
+
+    @Column(nullable = false)
     private BigDecimal price;
 
-    public Subscription(Store store, String subscriptionName, BigDecimal price) {
+    public Subscription(Store store, String subscriptionName, String description, BigDecimal price) {
         this.store = store;
         this.subscriptionName = subscriptionName;
+        this.description = description;
         this.price = price;
     }
 
-    public static Subscription create(Store store, String subscriptionName, BigDecimal price) {
-        return new Subscription(store, subscriptionName, price);
+    public static Subscription create(Store store, String subscriptionName, String description, BigDecimal price) {
+        return new Subscription(store, subscriptionName, description, price);
     }
 }

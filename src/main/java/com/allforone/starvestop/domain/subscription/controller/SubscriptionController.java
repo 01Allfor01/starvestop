@@ -32,4 +32,6 @@ public class SubscriptionController {
         CreateSubscriptionResponse response = subscriptionService.createSubscription(authUser.getUserId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(SUBSCRIPTION_CREATE_SUCCESS, response));
     }
+
+
 }

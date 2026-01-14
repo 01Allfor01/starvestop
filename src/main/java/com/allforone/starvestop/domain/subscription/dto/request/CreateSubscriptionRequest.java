@@ -17,6 +17,9 @@ public class CreateSubscriptionRequest {
     @NotBlank(message = "구독 이름을 적어주세요")
     private String subscriptionName;
 
+    @NotBlank(message = "구독 설명을 적어주세요")
+    private String description;
+
     @NotBlank(message = "가격을 적어주세요")
     private BigDecimal price;
 }
