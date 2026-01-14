@@ -43,6 +43,7 @@ public class AuthService {
         return new SignUpResponse(token);
     }
 
+    @Transactional(readOnly = true)
     public SignInResponse signIn(SignInRequest request) {
         String userEmail = request.getEmail();
         String password = request.getPassword();
