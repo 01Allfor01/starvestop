@@ -1,5 +1,6 @@
 package com.allforone.starvestop.domain.user.entity;
 
+import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class User extends BaseEntity {
 
     @Id
     @Column(name = "user_id")
