@@ -7,6 +7,7 @@ import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.dto.request.UpdateProductRequest;
 import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
 import com.allforone.starvestop.domain.product.dto.response.UpdateProductResponse;
+import com.allforone.starvestop.domain.product.dto.response.GetProductResponse;
 import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
 import com.allforone.starvestop.domain.store.entity.Store;
@@ -15,6 +16,8 @@ import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +44,20 @@ public class ProductService {
         Product savedProduct = productRepository.save(product);
 
         return CreateProductResponse.from(savedProduct);
+    }
+
+    //매장 상품 목록 조회
+    @Transactional(readOnly = true)
+    public List<GetProductResponse> getProductStoreList(Long storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(
+                () -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        List<Product> productList = productRepository.findAllByStore(store);
+
+        return productList
+                .stream()
+                .map(GetProductResponse::from)
+                .toList();
     }
 
     //특정 매장 상품 수정

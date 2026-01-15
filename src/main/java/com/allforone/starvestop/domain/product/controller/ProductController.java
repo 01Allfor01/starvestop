@@ -5,6 +5,7 @@ import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.dto.request.UpdateProductRequest;
 import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
+import com.allforone.starvestop.domain.product.dto.response.GetProductResponse;
 import com.allforone.starvestop.domain.product.dto.response.UpdateProductResponse;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import jakarta.validation.Valid;
@@ -14,18 +15,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_CREATE_SUCCESS;
 import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_UPDATE_SUCCESS;
+import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_LIST_BY_STORE_SUCCESS;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/products")
 public class ProductController {
 
     private final ProductService productService;
 
     //특정 매장 상품 추가
-    @PostMapping()
+    @PostMapping("/products")
     public ResponseEntity<CommonResponse<CreateProductResponse>> createProduct(@AuthenticationPrincipal AuthUser authUser,
                                                                                @Valid @RequestBody CreateProductRequest request) {
         CreateProductResponse createProductResponse = productService.createProduct(authUser, request);
@@ -36,8 +39,19 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    //특정 매장 상품 목록 조회
+    @GetMapping("/stores/{storeId}/products")
+    public ResponseEntity<CommonResponse<List<GetProductResponse>>> getProductStoreList(@PathVariable Long storeId) {
+        List<GetProductResponse> getProductResponseList = productService.getProductStoreList(storeId);
+
+        CommonResponse<List<GetProductResponse>> response =
+                CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseList);
+
+        return ResponseEntity.ok(response);
+    }
+
     //특정 매장 상품 수정
-    @PatchMapping("/{productId}")
+    @PatchMapping("/products/{productId}")
     public ResponseEntity<CommonResponse<UpdateProductResponse>> updateProduct(@AuthenticationPrincipal AuthUser authUser,
                                                                                @PathVariable Long productId,
                                                                                @RequestBody UpdateProductRequest request) {
@@ -48,5 +62,4 @@ public class ProductController {
 
         return ResponseEntity.ok(response);
     }
-
 }
