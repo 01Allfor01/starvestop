@@ -73,8 +73,7 @@ public class ProductService {
     //상품 상세 조회
     @Transactional(readOnly = true)
     public GetProductDetailResponse getProduct(Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(
-                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        Product product = getSubscriptionOrThrow(productId);
 
         return GetProductDetailResponse.from(product);
     }
@@ -82,8 +81,7 @@ public class ProductService {
     //특정 매장 상품 수정
     @Transactional
     public UpdateProductResponse updateProduct(AuthUser authUser, Long productId, UpdateProductRequest request) {
-        Product product = productRepository.findById(productId).orElseThrow(
-                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        Product product = getSubscriptionOrThrow(productId);
 
         checkPermission(authUser, product.getStore().getUser().getId());
 
@@ -102,8 +100,7 @@ public class ProductService {
     //상품 삭제
     @Transactional
     public void delete(AuthUser authUser, Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(
-                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        Product product = getSubscriptionOrThrow(productId);
 
         checkPermission(authUser, product.getStore().getUser().getId());
 
@@ -121,5 +118,11 @@ public class ProductService {
         }
 
         throw new CustomException(ErrorCode.FORBIDDEN);
+    }
+
+    //상품 조회
+    private Product getSubscriptionOrThrow(Long productId) {
+        return productRepository.findById(productId).orElseThrow(
+                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 }
