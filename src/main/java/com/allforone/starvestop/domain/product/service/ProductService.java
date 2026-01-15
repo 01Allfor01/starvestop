@@ -12,7 +12,6 @@ import com.allforone.starvestop.domain.product.repository.ProductRepository;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.enums.UserRole;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +25,11 @@ public class ProductService {
 
     //특정 매장 상품 추가
     @Transactional
-    public CreateProductResponse createProduct(@Valid CreateProductRequest request) {
+    public CreateProductResponse createProduct(AuthUser authUser, CreateProductRequest request) {
         Store store = storeRepository.findById(request.getStoreId()).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        checkPermission(authUser, store.getUser().getId());
 
         Product product = Product.create(store,
                 request.getProductName(),
@@ -48,7 +49,7 @@ public class ProductService {
         Product product = productRepository.findById(productId).orElseThrow(
                 () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        checkPermission(authUser, product);
+        checkPermission(authUser, product.getStore().getUser().getId());
 
         product.update(
                 request.getProductName(),
@@ -63,9 +64,7 @@ public class ProductService {
     }
 
     //권한 확인
-    public void checkPermission(AuthUser authUser, Product product) {
-
-        Long ownerId = product.getStore().getUser().getId();
+    public void checkPermission(AuthUser authUser, Long ownerId) {
 
         if (UserRole.ADMIN == authUser.getUserRole()) {
             return;
