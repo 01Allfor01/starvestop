@@ -43,6 +43,7 @@ public class AuthService {
         return new SignUpResponse(token);
     }
 
+    @Transactional(readOnly = true)
     public SignInResponse signIn(SignInRequest request) {
         String userEmail = request.getEmail();
         String password = request.getPassword();
@@ -50,6 +51,10 @@ public class AuthService {
         User foundUser = userRepository.findByEmail(userEmail).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND)
         );
+
+        if(foundUser.isDeleted()){
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
 
         if (!passwordEncoder.matches(password, foundUser.getPassword())) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
