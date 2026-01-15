@@ -46,6 +46,20 @@ public class ProductService {
         return CreateProductResponse.from(savedProduct);
     }
 
+    //매장 상품 목록 조회
+    @Transactional(readOnly = true)
+    public List<GetProductResponse> getProductStoreList(Long storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(
+                () -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+
+        List<Product> productList = productRepository.findAllByStore(store);
+
+        return productList
+                .stream()
+                .map(GetProductResponse::from)
+                .toList();
+    }
+
     //특정 매장 상품 수정
     @Transactional
     public UpdateProductResponse updateProduct(AuthUser authUser, Long productId, UpdateProductRequest request) {
@@ -64,20 +78,6 @@ public class ProductService {
         productRepository.flush();
 
         return UpdateProductResponse.from(product);
-    }
-
-    //매장 상품 목록 조회
-    @Transactional(readOnly = true)
-    public List<GetProductResponse> getProductStoreList(Long storeId) {
-        Store store = storeRepository.findById(storeId).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND));
-
-        List<Product> productList = productRepository.findAllByStore(store);
-
-        return productList
-                .stream()
-                .map(GetProductResponse::from)
-                .toList();
     }
 
     //권한 확인
