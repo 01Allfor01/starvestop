@@ -3,7 +3,6 @@ package com.allforone.starvestop.domain.user.service;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.PasswordEncoder;
-import com.allforone.starvestop.domain.user.dto.request.DeleteUserRequest;
 import com.allforone.starvestop.domain.user.dto.request.UpdateUserRequest;
 import com.allforone.starvestop.domain.user.dto.response.UpdateUserResponse;
 import com.allforone.starvestop.domain.user.entity.User;
@@ -53,17 +52,13 @@ public class UserService {
 
     // 회원 탈퇴
     @Transactional
-    public void deleteUser(Long userId, DeleteUserRequest request) {
+    public void deleteUser(Long userId) {
         User foundUser = userRepository.findById(userId).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND)
         );
 
         if (foundUser.isDeleted()) {
             throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        if (!passwordEncoder.matches(request.getPassword(), foundUser.getPassword())) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
         foundUser.delete();

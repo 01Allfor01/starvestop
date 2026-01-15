@@ -15,6 +15,6 @@ public class UpdateUserRequest {
     private String password;
     @NotBlank(message = "닉네임을 입력해주세요")
     private String nickname;
-    @NotBlank(message = "역할을 정해주세요")
+    @NotBlank(message = "역할을 입력해주세요")
     private String role;
 }

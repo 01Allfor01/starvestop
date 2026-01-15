@@ -26,7 +26,8 @@ public enum ErrorCode {
     //구독
 
     //결제
-
+    INVALID_PAYMENT_STATE(HttpStatus.CONFLICT,"잘못된 결제 상태입니다"),
+    DUPLICATE_ORDER_ID(HttpStatus.CONFLICT,"이미 존재하는 주문 번호입니다")
     ;
 
     private final HttpStatus status;

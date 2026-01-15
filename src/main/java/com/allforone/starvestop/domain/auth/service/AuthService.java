@@ -52,6 +52,10 @@ public class AuthService {
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND)
         );
 
+        if(foundUser.isDeleted()){
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
         if (!passwordEncoder.matches(password, foundUser.getPassword())) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
         }

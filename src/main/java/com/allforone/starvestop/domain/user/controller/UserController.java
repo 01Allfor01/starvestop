@@ -3,7 +3,6 @@ package com.allforone.starvestop.domain.user.controller;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.common.enums.SuccessMessage;
-import com.allforone.starvestop.domain.user.dto.request.DeleteUserRequest;
 import com.allforone.starvestop.domain.user.dto.request.UpdateUserRequest;
 import com.allforone.starvestop.domain.user.dto.response.UpdateUserResponse;
 import com.allforone.starvestop.domain.user.service.UserService;
@@ -35,13 +34,12 @@ public class UserController {
     }
 
     // 회원 탈퇴
-    @PatchMapping("/delete")
+    @DeleteMapping("/delete")
     public ResponseEntity<CommonResponse<Void>> deleteUser(
-            @AuthenticationPrincipal AuthUser authUser,
-            @RequestBody DeleteUserRequest request
+            @AuthenticationPrincipal AuthUser authUser
     ) {
         Long userId = authUser.getUserId();
-        userService.deleteUser(userId, request);
+        userService.deleteUser(userId);
 
         return ResponseEntity.ok().body(CommonResponse.successNoData(SuccessMessage.USER_DELETE_SUCCESS));
     }
