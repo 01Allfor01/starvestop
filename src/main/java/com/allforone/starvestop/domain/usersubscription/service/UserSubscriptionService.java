@@ -9,11 +9,15 @@ import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import com.allforone.starvestop.domain.usersubscription.dto.request.CreateUserSubscriptionRequest;
 import com.allforone.starvestop.domain.usersubscription.dto.response.CreateUserSubscriptionResponse;
+import com.allforone.starvestop.domain.usersubscription.dto.response.GetUserSubscriptionResponse;
 import com.allforone.starvestop.domain.usersubscription.entity.UserSubscription;
 import com.allforone.starvestop.domain.usersubscription.repository.UserSubscriptionRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,5 +41,22 @@ public class UserSubscriptionService {
         UserSubscription savedUserSubscription = userSubscriptionRepository.save(userSubscription);
 
         return CreateUserSubscriptionResponse.from(savedUserSubscription);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetUserSubscriptionResponse> getUserSubscriptions() {
+
+        List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAll();
+        return userSubscriptionList.stream().map(GetUserSubscriptionResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public GetUserSubscriptionResponse getUserSubscription(Long userSubscriptionId) {
+
+        UserSubscription userSubscription = userSubscriptionRepository.findById(userSubscriptionId).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        return GetUserSubscriptionResponse.from(userSubscription);
     }
 }
