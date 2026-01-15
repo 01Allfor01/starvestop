@@ -26,7 +26,10 @@ public enum ErrorCode {
 
     //구독
     SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구독입니다"),
+
     //결제
+    PAYMENT_TARGET_REQUIRED(HttpStatus.BAD_REQUEST,"결제 대상이 필요합니다"),
+    PAYMENT_TARGET_AMBIGUOUS(HttpStatus.BAD_REQUEST,"상품과 구독 중 하나만 선택해주세요"),
     INVALID_PAYMENT_STATE(HttpStatus.CONFLICT,"잘못된 결제 상태입니다"),
     DUPLICATE_ORDER_ID(HttpStatus.CONFLICT,"이미 존재하는 주문 번호입니다")
     ;

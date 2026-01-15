@@ -32,11 +32,11 @@ public class Payment extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_subscription_id")
     private UserSubscription userSubscription;
 
@@ -66,6 +66,12 @@ public class Payment extends BaseEntity {
             String orderId,
             BigDecimal amount
     ) {
+        if (product == null && userSubscription == null) {
+            throw new CustomException(ErrorCode.PAYMENT_TARGET_REQUIRED);
+        }
+        if (product != null && userSubscription != null) {
+            throw new CustomException(ErrorCode.PAYMENT_TARGET_AMBIGUOUS);
+        }
         this.user = user;
         this.product = product;
         this.userSubscription = userSubscription;
