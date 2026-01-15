@@ -75,7 +75,7 @@ public class PaymentService {
     public List<GetPaymentResponse> getMyPaymentList(Long userId) {
         List<Payment> paymentList = paymentRepository.getPaymentsByUser_Id(userId);
 
-        return paymentList.stream().map(GetPaymentResponse::create).toList();
+        return paymentList.stream().map(GetPaymentResponse::from).toList();
     }
 
     private String generateOrderId() {
