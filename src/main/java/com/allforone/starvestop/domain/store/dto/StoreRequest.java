@@ -12,7 +12,7 @@ import java.time.LocalTime;
 
 @Getter
 @NoArgsConstructor
-public class CreateStoreRequest {
+public class StoreRequest {
 
     @NotBlank(message = "매장 이름을 적어주세요")
     private String storeName;
@@ -23,7 +23,7 @@ public class CreateStoreRequest {
     @NotNull(message = "매장 설명을 적어주세요")
     private String description;
 
-    @NotBlank(message = "매장 카테고리를 선택해주세요")
+    @NotNull(message = "매장 카테고리를 선택해주세요")
     private StoreCategory category;
 
     @NotNull(message = "매장 위치를 입력해주세요")

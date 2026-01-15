@@ -9,7 +9,7 @@ public enum SuccessMessage {
     SIGN_IN_SUCCESS("로그인 성공"),
 
     STORE_CREATE_SUCCESS("매장 등록 성공"),
-
+    STORE_UPDATE_SUCCESS("매장 정보 수정 성공"),
     PRODUCT_CREATE_SUCCESS("상품 추가 성공"),
     ;
 
