@@ -34,13 +34,15 @@ public class UserController {
     }
 
     // 회원 탈퇴
-    @DeleteMapping("/delete")
+    @DeleteMapping
     public ResponseEntity<CommonResponse<Void>> deleteUser(
             @AuthenticationPrincipal AuthUser authUser
     ) {
         Long userId = authUser.getUserId();
         userService.deleteUser(userId);
 
-        return ResponseEntity.ok().body(CommonResponse.successNoData(SuccessMessage.USER_DELETE_SUCCESS));
+        CommonResponse<Void> result = CommonResponse.successNoData(SuccessMessage.USER_DELETE_SUCCESS);
+
+        return ResponseEntity.ok().body(result);
     }
 }
