@@ -4,15 +4,15 @@ import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.common.enums.SuccessMessage;
 import com.allforone.starvestop.domain.payment.dto.request.CreatePaymentRequest;
+import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,5 +31,14 @@ public class PaymentController {
         paymentService.createPayment(userId, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.successNoData(SuccessMessage.PAYMENT_CREATE_SUCCESS));
+    }
+
+    @GetMapping
+    public ResponseEntity<CommonResponse<List<GetPaymentResponse>>> getMyPaymentList(@AuthenticationPrincipal AuthUser authUser) {
+        List<GetPaymentResponse> response = paymentService.getMyPaymentList(authUser.getUserId());
+
+        CommonResponse<List<GetPaymentResponse>> result = CommonResponse.success(SuccessMessage.MY_PAYMENT_LIST_GET_SUCCESS, response);
+
+        return ResponseEntity.ok(result);
     }
 }
