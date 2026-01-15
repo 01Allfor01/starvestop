@@ -5,10 +5,7 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.dto.request.UpdateProductRequest;
-import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
-import com.allforone.starvestop.domain.product.dto.response.UpdateProductResponse;
-import com.allforone.starvestop.domain.product.dto.response.GetProductResponse;
-import com.allforone.starvestop.domain.product.dto.response.GetProductSaleResponse;
+import com.allforone.starvestop.domain.product.dto.response.*;
 import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
@@ -74,6 +71,15 @@ public class ProductService {
                 .toList();
     }
 
+    //상품 상세 조회
+    @Transactional(readOnly = true)
+    public GetProductDetailResponse getProduct(Long productId) {
+        Product product = productRepository.findById(productId).orElseThrow(
+                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        return GetProductDetailResponse.from(product);
+    }
+
     //특정 매장 상품 수정
     @Transactional
     public UpdateProductResponse updateProduct(AuthUser authUser, Long productId, UpdateProductRequest request) {
@@ -106,14 +112,5 @@ public class ProductService {
         }
 
         throw new CustomException(ErrorCode.FORBIDDEN);
-    }
-
-    //상품 상세 조회
-    @Transactional(readOnly = true)
-    public GetProductResponse getProduct(Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(
-                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-
-        return GetProductResponse.from(product);
     }
 }
