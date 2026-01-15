@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_CREATE_SUCCESS;
-import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_UPDATE_SUCCESS;
-import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_LIST_BY_STORE_SUCCESS;
-import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_LIST_BY_SALE_SUCCESS;
+import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -74,5 +71,16 @@ public class ProductController {
                 CommonResponse.success(PRODUCT_UPDATE_SUCCESS, updateProductResponse);
 
         return ResponseEntity.ok(response);
+    }
+
+    //상품 삭제
+    @DeleteMapping("/products/{productId}")
+    public ResponseEntity<CommonResponse<Void>> deleteProduct(@AuthenticationPrincipal AuthUser authUser,
+                                                              @PathVariable Long productId) {
+        productService.delete(authUser, productId);
+
+        CommonResponse<Void> response = CommonResponse.successNoData(PRODUCT_DELETE_SUCCESS);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

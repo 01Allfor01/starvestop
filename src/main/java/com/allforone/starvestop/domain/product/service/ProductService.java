@@ -65,7 +65,6 @@ public class ProductService {
     //마감 세일 상품 목록 조회
     @Transactional(readOnly = true)
     public List<GetProductSaleResponse> getProductSaleList() {
-
         List<Product> productList = productRepository.findAllByStatus(ProductStatus.SALE);
 
         return productList
@@ -94,9 +93,19 @@ public class ProductService {
         return UpdateProductResponse.from(product);
     }
 
+    //상품 삭제
+    @Transactional
+    public void delete(AuthUser authUser, Long productId) {
+        Product product = productRepository.findById(productId).orElseThrow(
+                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        checkPermission(authUser, product.getStore().getUser().getId());
+
+        product.delete();
+    }
+
     //권한 확인
     public void checkPermission(AuthUser authUser, Long ownerId) {
-
         if (UserRole.ADMIN == authUser.getUserRole()) {
             return;
         }
