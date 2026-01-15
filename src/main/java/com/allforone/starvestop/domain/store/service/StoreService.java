@@ -48,13 +48,9 @@ public class StoreService {
 
     @Transactional
     public StoreResponse updateStore(Long userId, Long storeId, StoreRequest request) {
-        Store store = storeRepository.findById(storeId).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
-        );
+        Store store = getStore(storeId);
 
-        if (!store.getUser().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
+        idMismatchCheck(userId, store);
 
         StoreCategory category = StoreCategory.valueOf(request.getCategory());
         StoreStatus status = getStatus(request);
@@ -77,15 +73,24 @@ public class StoreService {
 
     @Transactional
     public void deleteStore(Long userId, Long storeId) {
+        Store store = getStore(storeId);
+
+        idMismatchCheck(userId, store);
+
+        store.delete();
+    }
+
+    private Store getStore(Long storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
+        return store;
+    }
 
+    private static void idMismatchCheck(Long userId, Store store) {
         if (!store.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
-
-        store.delete();
     }
 
     private StoreStatus getStatus(StoreRequest request) {
