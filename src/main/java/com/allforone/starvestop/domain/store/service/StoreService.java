@@ -31,13 +31,8 @@ public class StoreService {
         User user = userRepository.getReferenceById(userId);
 
         StoreCategory category = StoreCategory.valueOf(request.getCategory());
-        StoreStatus status = request.getStatus() == null
-                ? StoreStatus.CLOSED : StoreStatus.valueOf(request.getStatus());
-
-        Point location = new Point(
-                request.getLongitude(),
-                request.getLatitude()
-        );
+        StoreStatus status = getStatus(request);
+        Point location = getLocation(request);
 
         Store store = Store.create(
                 user,
@@ -57,22 +52,13 @@ public class StoreService {
 
     @Transactional
     public StoreResponse updateStore(Long userId, Long storeId, StoreRequest request) {
-        Store store = storeRepository.findById(storeId).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
-        );
+        Store store = getStore(storeId);
 
-        if (!store.getUser().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
+        idMismatchCheck(userId, store);
 
         StoreCategory category = StoreCategory.valueOf(request.getCategory());
-        StoreStatus status = request.getStatus() == null
-                ? StoreStatus.CLOSED : StoreStatus.valueOf(request.getStatus());
-
-        Point location = new Point(
-                request.getLongitude(),
-                request.getLatitude()
-        );
+        StoreStatus status = getStatus(request);
+        Point location = getLocation(request);
 
         store.update(
                 request.getStoreName(),
@@ -91,23 +77,44 @@ public class StoreService {
 
     @Transactional
     public void deleteStore(Long userId, Long storeId) {
-        Store store = storeRepository.findById(storeId).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
-        );
+        Store store = getStore(storeId);
 
-        if (!store.getUser().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
+        idMismatchCheck(userId, store);
 
         store.delete();
     }
 
     @Transactional(readOnly = true)
     public StoreResponse getStoreDetail(Long storeId) {
+        Store store = getStore(storeId);
+        return StoreResponse.from(store);
+    }
+
+    private Store getStore(Long storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
-        return StoreResponse.from(store);
+        return store;
+    }
+
+    private static void idMismatchCheck(Long userId, Store store) {
+        if (!store.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+    }
+
+    private StoreStatus getStatus(StoreRequest request) {
+        StoreStatus status = request.getStatus() == null
+                ? StoreStatus.CLOSED : StoreStatus.valueOf(request.getStatus());
+        return status;
+    }
+
+    private Point getLocation(StoreRequest request) {
+        Point location = new Point(
+                request.getLongitude(),
+                request.getLatitude()
+        );
+        return location;
     }
 
     public List<StoreListResponse> getStoreList() {
