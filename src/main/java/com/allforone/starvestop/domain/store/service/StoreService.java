@@ -10,10 +10,10 @@ import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -96,5 +96,13 @@ public class StoreService {
         }
 
         store.delete();
+    }
+
+    @Transactional(readOnly = true)
+    public StoreResponse getStoreDetail(Long storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(
+                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
+        return StoreResponse.from(store);
     }
 }
