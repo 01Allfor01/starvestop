@@ -63,7 +63,8 @@ public class Store extends BaseEntity {
             StoreCategory category,
             Point location,
             LocalTime openTime,
-            LocalTime closeTime
+            LocalTime closeTime,
+            StoreStatus status
     ) {
         this.user = user;
         this.storeName = storeName;
@@ -73,7 +74,7 @@ public class Store extends BaseEntity {
         this.location = location;
         this.openTime = openTime;
         this.closeTime = closeTime;
-        this.status = StoreStatus.OPENED;
+        this.status = status;
     }
 
     public static Store create(
@@ -84,7 +85,8 @@ public class Store extends BaseEntity {
             StoreCategory category,
             Point location,
             LocalTime openTime,
-            LocalTime closeTime
+            LocalTime closeTime,
+            StoreStatus status
     ) {
 
         return new Store(
@@ -95,7 +97,8 @@ public class Store extends BaseEntity {
                 category,
                 location,
                 openTime,
-                closeTime
+                closeTime,
+                status
         );
     }
 
@@ -106,7 +109,8 @@ public class Store extends BaseEntity {
             StoreCategory category,
             Point location,
             LocalTime openTime,
-            LocalTime closeTime
+            LocalTime closeTime,
+            StoreStatus status
     ) {
         this.storeName = storeName;
         this.address = address;
@@ -115,5 +119,6 @@ public class Store extends BaseEntity {
         this.location = location;
         this.openTime = openTime;
         this.closeTime = closeTime;
+        this.status = status;
     }
 }

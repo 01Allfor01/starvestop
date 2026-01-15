@@ -5,6 +5,8 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.store.dto.StoreRequest;
 import com.allforone.starvestop.domain.store.dto.StoreResponse;
 import com.allforone.starvestop.domain.store.entity.Store;
+import com.allforone.starvestop.domain.store.enums.StoreCategory;
+import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
@@ -24,6 +26,10 @@ public class StoreService {
     public StoreResponse createStore(Long userId, StoreRequest request) {
         User user = userRepository.getReferenceById(userId);
 
+        StoreCategory category = StoreCategory.valueOf(request.getCategory());
+        StoreStatus status = request.getStatus() == null
+                ? StoreStatus.CLOSED : StoreStatus.valueOf(request.getStatus());
+
         Point location = new Point(
                 request.getLongitude(),
                 request.getLatitude()
@@ -34,10 +40,11 @@ public class StoreService {
                 request.getStoreName(),
                 request.getAddress(),
                 request.getDescription(),
-                request.getCategory(),
+                category,
                 location,
                 request.getOpenTime(),
-                request.getCloseTime()
+                request.getCloseTime(),
+                status
         );
 
         Store savedStore = storeRepository.save(store);
@@ -53,6 +60,10 @@ public class StoreService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
+        StoreCategory category = StoreCategory.valueOf(request.getCategory());
+        StoreStatus status = request.getStatus() == null
+                ? StoreStatus.CLOSED : StoreStatus.valueOf(request.getStatus());
+
         Point location = new Point(
                 request.getLongitude(),
                 request.getLatitude()
@@ -62,10 +73,11 @@ public class StoreService {
                 request.getStoreName(),
                 request.getAddress(),
                 request.getDescription(),
-                request.getCategory(),
+                category,
                 location,
                 request.getOpenTime(),
-                request.getCloseTime()
+                request.getCloseTime(),
+                status
         );
         storeRepository.flush();
 
