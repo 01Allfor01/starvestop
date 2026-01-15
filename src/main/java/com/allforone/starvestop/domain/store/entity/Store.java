@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.geo.Point;
 
 import java.time.LocalTime;
@@ -15,6 +16,7 @@ import java.time.LocalTime;
 @Getter
 @Entity
 @Table(name = "stores")
+@SQLRestriction("is_deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Store extends BaseEntity {
 
@@ -61,7 +63,8 @@ public class Store extends BaseEntity {
             StoreCategory category,
             Point location,
             LocalTime openTime,
-            LocalTime closeTime
+            LocalTime closeTime,
+            StoreStatus status
     ) {
         this.user = user;
         this.storeName = storeName;
@@ -71,7 +74,7 @@ public class Store extends BaseEntity {
         this.location = location;
         this.openTime = openTime;
         this.closeTime = closeTime;
-        this.status = StoreStatus.OPENED;
+        this.status = status;
     }
 
     public static Store create(
@@ -82,7 +85,8 @@ public class Store extends BaseEntity {
             StoreCategory category,
             Point location,
             LocalTime openTime,
-            LocalTime closeTime
+            LocalTime closeTime,
+            StoreStatus status
     ) {
 
         return new Store(
@@ -93,7 +97,28 @@ public class Store extends BaseEntity {
                 category,
                 location,
                 openTime,
-                closeTime
+                closeTime,
+                status
         );
+    }
+
+    public void update(
+            String storeName,
+            String address,
+            String description,
+            StoreCategory category,
+            Point location,
+            LocalTime openTime,
+            LocalTime closeTime,
+            StoreStatus status
+    ) {
+        this.storeName = storeName;
+        this.address = address;
+        this.description = description;
+        this.category = category;
+        this.location = location;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+        this.status = status;
     }
 }

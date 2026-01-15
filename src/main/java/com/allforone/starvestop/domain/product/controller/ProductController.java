@@ -1,22 +1,26 @@
 package com.allforone.starvestop.domain.product.controller;
 
+import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
-import com.allforone.starvestop.common.enums.SuccessMessage;
 import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
+import com.allforone.starvestop.domain.product.dto.request.UpdateProductRequest;
 import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
+import com.allforone.starvestop.domain.product.dto.response.GetProductResponse;
+import com.allforone.starvestop.domain.product.dto.response.UpdateProductResponse;
 import com.allforone.starvestop.domain.product.dto.response.GetProductSaleResponse;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_CREATE_SUCCESS;
+import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_UPDATE_SUCCESS;
+import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_LIST_BY_STORE_SUCCESS;
 import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_LIST_BY_SALE_SUCCESS;
 
 @RestController
@@ -27,13 +31,25 @@ public class ProductController {
 
     //특정 매장 상품 추가
     @PostMapping("/products")
-    public ResponseEntity<CommonResponse<CreateProductResponse>> createProduct(@Valid @RequestBody CreateProductRequest request) {
-        CreateProductResponse createProductResponse = productService.createProduct(request);
+    public ResponseEntity<CommonResponse<CreateProductResponse>> createProduct(@AuthenticationPrincipal AuthUser authUser,
+                                                                               @Valid @RequestBody CreateProductRequest request) {
+        CreateProductResponse createProductResponse = productService.createProduct(authUser, request);
 
         CommonResponse<CreateProductResponse> response =
-                CommonResponse.success(SuccessMessage.PRODUCT_CREATE_SUCCESS, createProductResponse);
+                CommonResponse.success(PRODUCT_CREATE_SUCCESS, createProductResponse);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    //특정 매장 상품 목록 조회
+    @GetMapping("/stores/{storeId}/products")
+    public ResponseEntity<CommonResponse<List<GetProductResponse>>> getProductStoreList(@PathVariable Long storeId) {
+        List<GetProductResponse> getProductResponseList = productService.getProductStoreList(storeId);
+
+        CommonResponse<List<GetProductResponse>> response =
+                CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseList);
+
+        return ResponseEntity.ok(response);
     }
 
     //마감 세일 상품 목록 조회
@@ -43,6 +59,19 @@ public class ProductController {
 
         CommonResponse<List<GetProductSaleResponse>> response =
                 CommonResponse.success(PRODUCT_LIST_BY_SALE_SUCCESS, getProductSaleResponseList);
+
+        return ResponseEntity.ok(response);
+    }
+
+    //특정 매장 상품 수정
+    @PatchMapping("/products/{productId}")
+    public ResponseEntity<CommonResponse<UpdateProductResponse>> updateProduct(@AuthenticationPrincipal AuthUser authUser,
+                                                                               @PathVariable Long productId,
+                                                                               @RequestBody UpdateProductRequest request) {
+        UpdateProductResponse updateProductResponse = productService.updateProduct(authUser, productId, request);
+
+        CommonResponse<UpdateProductResponse> response =
+                CommonResponse.success(PRODUCT_UPDATE_SUCCESS, updateProductResponse);
 
         return ResponseEntity.ok(response);
     }

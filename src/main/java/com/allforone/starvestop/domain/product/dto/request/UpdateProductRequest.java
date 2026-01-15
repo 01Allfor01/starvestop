@@ -8,9 +8,7 @@ import java.math.BigDecimal;
 
 @Getter
 @NoArgsConstructor
-public class CreateProductRequest {
-    @NotNull(message = "매장 아이디를 적어주세요")
-    private Long storeId;
+public class UpdateProductRequest {
     @NotBlank(message = "상품 이름을 적어주세요")
     private String productName;
     @NotBlank(message = "상품 설명을 적어주세요")

@@ -6,10 +6,12 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Entity
 @Table(name = "users")
+@SQLRestriction("is_deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
 
@@ -44,5 +46,11 @@ public class User extends BaseEntity {
 
     public static User create(String email, String password, UserRole role, String nickname, String username) {
         return new User(email, password, role, nickname, username);
+    }
+
+    public void update(String nickname, String password, UserRole userRole) {
+        this.nickname = nickname;
+        this.password = password;
+        this.role = userRole;
     }
 }

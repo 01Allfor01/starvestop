@@ -6,12 +6,14 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 
 @Getter
 @Entity
 @Table(name = "subscriptions")
+@SQLRestriction("is_deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Subscription extends BaseEntity {
 
@@ -28,15 +30,25 @@ public class Subscription extends BaseEntity {
     private String subscriptionName;
 
     @Column(nullable = false)
+    private String description;
+
+    @Column(nullable = false)
     private BigDecimal price;
 
-    public Subscription(Store store, String subscriptionName, BigDecimal price) {
+    public Subscription(Store store, String subscriptionName, String description, BigDecimal price) {
         this.store = store;
         this.subscriptionName = subscriptionName;
+        this.description = description;
         this.price = price;
     }
 
-    public static Subscription create(Store store, String subscriptionName, BigDecimal price) {
-        return new Subscription(store, subscriptionName, price);
+    public static Subscription create(Store store, String subscriptionName, String description, BigDecimal price) {
+        return new Subscription(store, subscriptionName, description, price);
+    }
+
+    public void update(String subscriptionName, String description, BigDecimal price) {
+        this.subscriptionName = subscriptionName;
+        this.description = description;
+        this.price = price;
     }
 }
