@@ -51,6 +51,7 @@ public class StoreService {
         return StoreResponse.from(savedStore);
     }
 
+    @Transactional
     public StoreResponse updateStore(Long userId, Long storeId, StoreRequest request) {
         Store store = storeRepository.findById(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
@@ -82,5 +83,18 @@ public class StoreService {
         storeRepository.flush();
 
         return StoreResponse.from(store);
+    }
+
+    @Transactional
+    public void deleteStore(Long userId, Long storeId) {
+        Store store = storeRepository.findById(storeId).orElseThrow(
+                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
+
+        if (!store.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        store.delete();
     }
 }
