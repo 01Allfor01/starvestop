@@ -16,12 +16,15 @@ public enum SuccessMessage {
     //상품
     PRODUCT_CREATE_SUCCESS("상품 추가 성공"),
     PRODUCT_UPDATE_SUCCESS("상품 수정 성공"),
+    PRODUCT_LIST_BY_STORE_SUCCESS("매장 상품 목록 조회 성공"),
 
     //매장
     STORE_CREATE_SUCCESS("매장 등록 성공"),
+    STORE_UPDATE_SUCCESS("매장 정보 수정 성공"),
 
     //구독
     SUBSCRIPTION_CREATE_SUCCESS("구독 생성 성공"),
+    SUBSCRIPTION_GET_SUCCESS("구독 조회 성공"),
     SUBSCRIPTION_UPDATE_SUCCESS("구독 수정 성공"),
     SUBSCRIPTION_DELETE_SUCCESS("구독 삭제 성공"),
 

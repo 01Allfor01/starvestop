@@ -8,6 +8,7 @@ import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.subscription.dto.request.CreateSubscriptionRequest;
 import com.allforone.starvestop.domain.subscription.dto.request.UpdateSubscriptionRequest;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateSubscriptionResponse;
+import com.allforone.starvestop.domain.subscription.dto.response.GetSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.UpdateSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
@@ -16,6 +17,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -43,10 +46,24 @@ public class SubscriptionService {
         return CreateSubscriptionResponse.from(savedSubscription);
     }
 
+    @Transactional(readOnly = true)
+    public List<GetSubscriptionResponse> getSubscriptions() {
+
+        List<Subscription> subscriptionList = subscriptionRepository.findAll();
+        return subscriptionList.stream().map(GetSubscriptionResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public GetSubscriptionResponse getSubscription(Long subscriptionId) {
+
+        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
+        return GetSubscriptionResponse.from(subscription);
+    }
+
     @Transactional
     public UpdateSubscriptionResponse updateSubscription(AuthUser authUser, Long subscriptionId, @Valid UpdateSubscriptionRequest request) {
 
-        Subscription subscription = getSubscription(subscriptionId);
+        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
         checkPermission(authUser, subscription);
 
         subscription.update(
@@ -63,13 +80,14 @@ public class SubscriptionService {
     @Transactional
     public void deleteSubscription(AuthUser authUser, Long subscriptionId) {
 
-        Subscription subscription = getSubscription(subscriptionId);
+        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
         checkPermission(authUser, subscription);
 
         subscription.delete();
     }
 
     private static void checkPermission(AuthUser authUser, Subscription subscription) {
+
         Long ownerId = subscription.getStore().getUser().getId();
         if (UserRole.ADMIN == authUser.getUserRole()) {
             return;
@@ -83,7 +101,8 @@ public class SubscriptionService {
     }
 
 
-    private Subscription getSubscription(Long subscriptionId) {
+    private Subscription getSubscriptionOrThrow(Long subscriptionId) {
+
         return subscriptionRepository.findById(subscriptionId).orElseThrow(
                 () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
         );

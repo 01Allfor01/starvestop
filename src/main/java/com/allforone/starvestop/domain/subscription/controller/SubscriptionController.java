@@ -5,6 +5,7 @@ import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.subscription.dto.request.CreateSubscriptionRequest;
 import com.allforone.starvestop.domain.subscription.dto.request.UpdateSubscriptionRequest;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateSubscriptionResponse;
+import com.allforone.starvestop.domain.subscription.dto.response.GetSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.UpdateSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.service.SubscriptionService;
 import jakarta.validation.Valid;
@@ -13,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
@@ -30,6 +33,18 @@ public class SubscriptionController {
     ) {
         CreateSubscriptionResponse response = subscriptionService.createSubscription(authUser, storeId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(SUBSCRIPTION_CREATE_SUCCESS, response));
+    }
+
+    @GetMapping("/subscriptions")
+    public ResponseEntity<CommonResponse<List<GetSubscriptionResponse>>> getSubscriptions() {
+        List<GetSubscriptionResponse> responseList = subscriptionService.getSubscriptions();
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, responseList));
+    }
+
+    @GetMapping("/subscriptions/{subscriptionId}")
+    public ResponseEntity<CommonResponse<GetSubscriptionResponse>> getSubscription(@PathVariable Long subscriptionId) {
+        GetSubscriptionResponse response = subscriptionService.getSubscription(subscriptionId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, response));
     }
 
     @PatchMapping("/subscriptions/{subscriptionId}")
