@@ -4,9 +4,7 @@ import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.dto.request.UpdateProductRequest;
-import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
-import com.allforone.starvestop.domain.product.dto.response.GetProductResponse;
-import com.allforone.starvestop.domain.product.dto.response.UpdateProductResponse;
+import com.allforone.starvestop.domain.product.dto.response.*;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_CREATE_SUCCESS;
-import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_UPDATE_SUCCESS;
-import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_LIST_BY_STORE_SUCCESS;
+import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,7 +43,29 @@ public class ProductController {
         CommonResponse<List<GetProductResponse>> response =
                 CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseList);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    //마감 세일 상품 목록 조회
+    @GetMapping("/products/sale")
+    public ResponseEntity<CommonResponse<List<GetProductSaleResponse>>> getProductSaleList() {
+        List<GetProductSaleResponse> getProductSaleResponseList = productService.getProductSaleList();
+
+        CommonResponse<List<GetProductSaleResponse>> response =
+                CommonResponse.success(PRODUCT_LIST_BY_SALE_SUCCESS, getProductSaleResponseList);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    //상품 상세 조회
+    @GetMapping("/products/{productId}")
+    public ResponseEntity<CommonResponse<GetProductDetailResponse>> getProduct(@PathVariable Long productId) {
+        GetProductDetailResponse getProductResponse = productService.getProduct(productId);
+
+        CommonResponse<GetProductDetailResponse> response =
+                CommonResponse.success(PRODUCT_GET_SUCCESS, getProductResponse);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     //특정 매장 상품 수정
@@ -60,6 +78,6 @@ public class ProductController {
         CommonResponse<UpdateProductResponse> response =
                 CommonResponse.success(PRODUCT_UPDATE_SUCCESS, updateProductResponse);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
