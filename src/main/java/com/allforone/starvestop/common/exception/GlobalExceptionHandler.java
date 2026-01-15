@@ -31,4 +31,14 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<CommonResponse<Void>> IllegalArgumentException(IllegalArgumentException e) {
+        log.error("예외 발생. ", e);
+
+        String message = e.getMessage();
+        CommonResponse<Void> response = CommonResponse.exception(message);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 }
