@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.store.service;
 
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.domain.store.dto.StoreListResponse;
 import com.allforone.starvestop.domain.store.dto.StoreRequest;
 import com.allforone.starvestop.domain.store.dto.StoreResponse;
 import com.allforone.starvestop.domain.store.entity.Store;
@@ -14,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -84,6 +88,21 @@ public class StoreService {
     public StoreResponse getStoreDetail(Long storeId) {
         Store store = getStore(storeId);
         return StoreResponse.from(store);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StoreListResponse> getStoreList() {
+        List<Store> storeList = storeRepository.findAll();
+
+        if (storeList.isEmpty()) {
+            throw new CustomException(ErrorCode.STORE_NOT_FOUND);
+        }
+
+        List<StoreListResponse> response = new ArrayList<>();
+        for (Store store : storeList) {
+            response.add(StoreListResponse.from(store));
+        }
+        return response;
     }
 
     private Store getStore(Long storeId) {

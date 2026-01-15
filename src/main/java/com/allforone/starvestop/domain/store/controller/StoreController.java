@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.store.controller;
 
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
+import com.allforone.starvestop.domain.store.dto.StoreListResponse;
 import com.allforone.starvestop.domain.store.dto.StoreRequest;
 import com.allforone.starvestop.domain.store.dto.StoreResponse;
 import com.allforone.starvestop.domain.store.service.StoreService;
@@ -11,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
@@ -53,5 +56,11 @@ public class StoreController {
     public ResponseEntity<CommonResponse<StoreResponse>> getStoreDetail(@PathVariable Long storeId) {
         StoreResponse response = storeService.getStoreDetail(storeId);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_DETAIL_GET_SUCCESS, response));
+    }
+
+    @GetMapping
+    public ResponseEntity<CommonResponse<List<StoreListResponse>>> getStoreList() {
+        List<StoreListResponse> response = storeService.getStoreList();
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_LIST_GET_SUCCESS, response));
     }
 }
