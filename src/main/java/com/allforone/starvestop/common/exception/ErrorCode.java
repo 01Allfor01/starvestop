@@ -19,12 +19,13 @@ public enum ErrorCode {
     //사용자 구독
 
     //상품
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다"),
 
     //매장
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 매장입니다"),
 
     //구독
-
+    SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구독입니다"),
     //결제
     INVALID_PAYMENT_STATE(HttpStatus.CONFLICT,"잘못된 결제 상태입니다"),
     DUPLICATE_ORDER_ID(HttpStatus.CONFLICT,"이미 존재하는 주문 번호입니다")

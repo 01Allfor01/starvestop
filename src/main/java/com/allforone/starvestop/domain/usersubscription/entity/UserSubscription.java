@@ -6,13 +6,14 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
 @Entity
 @Table(name = "user_subscriptions")
+@SQLRestriction("is_deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserSubscription {
 
