@@ -35,7 +35,7 @@ public class UserSubscriptionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(USER_SUBSCRIPTION_CREATE_SUCCESS, response));
     }
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<CommonResponse<List<GetUserSubscriptionResponse>>> getUserSubscriptions(
             @AuthenticationPrincipal AuthUser authUser
     ) {
