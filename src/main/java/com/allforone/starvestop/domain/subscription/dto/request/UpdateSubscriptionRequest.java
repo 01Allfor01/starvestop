@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.subscription.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +17,6 @@ public class UpdateSubscriptionRequest {
     @NotBlank(message = "수정 할 구독 설명을 적어주세요")
     private String description;
 
-    @NotBlank(message = "수정 할 가격을 적어주세요")
+    @NotNull(message = "수정 할 가격을 적어주세요")
     private BigDecimal price;
 }

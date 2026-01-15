@@ -22,7 +22,7 @@ public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
 
-    @PostMapping("/store/{storeId}/subscriptions")
+    @PostMapping("/stores/{storeId}/subscriptions")
     public ResponseEntity<CommonResponse<CreateSubscriptionResponse>> createSubscription(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long storeId,

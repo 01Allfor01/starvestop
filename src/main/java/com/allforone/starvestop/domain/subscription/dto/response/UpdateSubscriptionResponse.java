@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
@@ -16,7 +15,6 @@ public class UpdateSubscriptionResponse {
     private final String subscriptionName;
     private final String subscriptionDescription;
     private final BigDecimal price;
-    private final LocalDateTime createdAt;
 
     public static UpdateSubscriptionResponse from(Subscription subscription) {
         return new UpdateSubscriptionResponse(
@@ -24,8 +22,7 @@ public class UpdateSubscriptionResponse {
                 subscription.getStore().getId(),
                 subscription.getSubscriptionName(),
                 subscription.getDescription(),
-                subscription.getPrice(),
-                subscription.getCreatedAt()
+                subscription.getPrice()
         );
     }
 }
