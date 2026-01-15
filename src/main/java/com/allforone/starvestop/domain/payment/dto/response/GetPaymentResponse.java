@@ -25,7 +25,7 @@ public class GetPaymentResponse {
     private final PaymentStatus status;
     private final BigDecimal amount;
 
-    public static GetPaymentResponse create(Payment payment) {
+    public static GetPaymentResponse from(Payment payment) {
         Product product = payment.getProduct();
 
         Subscription subscription = null;
