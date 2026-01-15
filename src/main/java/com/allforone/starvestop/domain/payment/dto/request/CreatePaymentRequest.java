@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 public class CreatePaymentRequest {
     private Product product;
     private UserSubscription userSubscription;
-    private long count;
 }

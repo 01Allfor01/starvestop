@@ -39,7 +39,8 @@ public class PaymentService {
         );
 
         try {
-            return paymentRepository.save(payment);
+            paymentRepository.save(payment);
+            return
         } catch (DataIntegrityViolationException e) {
             throw new CustomException(ErrorCode.DUPLICATE_ORDER_ID);
         }
