@@ -19,6 +19,7 @@ public enum SuccessMessage {
 
     //매장
     STORE_CREATE_SUCCESS("매장 등록 성공"),
+    STORE_UPDATE_SUCCESS("매장 정보 수정 성공"),
 
     //구독
     SUBSCRIPTION_CREATE_SUCCESS("구독 생성 성공"),
