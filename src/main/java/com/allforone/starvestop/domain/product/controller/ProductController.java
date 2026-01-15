@@ -7,6 +7,7 @@ import com.allforone.starvestop.domain.product.dto.request.UpdateProductRequest;
 import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
 import com.allforone.starvestop.domain.product.dto.response.GetProductResponse;
 import com.allforone.starvestop.domain.product.dto.response.UpdateProductResponse;
+import com.allforone.starvestop.domain.product.dto.response.GetProductSaleResponse;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.List;
 import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_CREATE_SUCCESS;
 import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_UPDATE_SUCCESS;
 import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_LIST_BY_STORE_SUCCESS;
+import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_LIST_BY_SALE_SUCCESS;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,6 +48,17 @@ public class ProductController {
 
         CommonResponse<List<GetProductResponse>> response =
                 CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseList);
+
+        return ResponseEntity.ok(response);
+    }
+
+    //마감 세일 상품 목록 조회
+    @GetMapping("/products/sale")
+    public ResponseEntity<CommonResponse<List<GetProductSaleResponse>>> getProductSaleList() {
+        List<GetProductSaleResponse> getProductSaleResponseList = productService.getProductSaleList();
+
+        CommonResponse<List<GetProductSaleResponse>> response =
+                CommonResponse.success(PRODUCT_LIST_BY_SALE_SUCCESS, getProductSaleResponseList);
 
         return ResponseEntity.ok(response);
     }

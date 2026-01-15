@@ -8,7 +8,9 @@ import com.allforone.starvestop.domain.product.dto.request.UpdateProductRequest;
 import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
 import com.allforone.starvestop.domain.product.dto.response.UpdateProductResponse;
 import com.allforone.starvestop.domain.product.dto.response.GetProductResponse;
+import com.allforone.starvestop.domain.product.dto.response.GetProductSaleResponse;
 import com.allforone.starvestop.domain.product.entity.Product;
+import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
@@ -57,6 +59,18 @@ public class ProductService {
         return productList
                 .stream()
                 .map(GetProductResponse::from)
+                .toList();
+    }
+
+    //마감 세일 상품 목록 조회
+    @Transactional(readOnly = true)
+    public List<GetProductSaleResponse> getProductSaleList() {
+
+        List<Product> productList = productRepository.findAllByStatus(ProductStatus.SALE);
+
+        return productList
+                .stream()
+                .map(GetProductSaleResponse::from)
                 .toList();
     }
 
