@@ -14,13 +14,11 @@ import com.allforone.starvestop.domain.usersubscription.entity.UserSubscription;
 import com.allforone.starvestop.domain.usersubscription.repository.UserSubscriptionRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserSubscriptionService {
@@ -57,16 +55,19 @@ public class UserSubscriptionService {
         );
 
         List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAllByUser(user);
-        log.info("userSubscriptionList={}", userSubscriptionList);
         return userSubscriptionList.stream().map(GetUserSubscriptionResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
-    public GetUserSubscriptionResponse getUserSubscription(Long userSubscriptionId) {
+    public GetUserSubscriptionResponse getUserSubscription(AuthUser authUser, Long userSubscriptionId) {
 
         UserSubscription userSubscription = userSubscriptionRepository.findById(userSubscriptionId).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_SUBSCRIPTION_NOT_FOUND)
         );
+
+        if (!userSubscription.getUser().getId().equals(authUser.getUserId())) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
 
         return GetUserSubscriptionResponse.from(userSubscription);
     }

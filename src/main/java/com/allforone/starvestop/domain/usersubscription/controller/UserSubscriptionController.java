@@ -44,8 +44,11 @@ public class UserSubscriptionController {
     }
 
     @GetMapping("/{userSubscriptionId}")
-    public ResponseEntity<CommonResponse<GetUserSubscriptionResponse>> getUserSubscription(@PathVariable Long userSubscriptionId) {
-        GetUserSubscriptionResponse response = userSubscriptionService.getUserSubscription(userSubscriptionId);
+    public ResponseEntity<CommonResponse<GetUserSubscriptionResponse>> getUserSubscription(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long userSubscriptionId
+    ) {
+        GetUserSubscriptionResponse response = userSubscriptionService.getUserSubscription(authUser, userSubscriptionId);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_SUBSCRIPTION_GET_SUCCESS, response));
     }
 }
