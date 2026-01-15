@@ -4,7 +4,6 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.store.dto.StoreRequest;
 import com.allforone.starvestop.domain.store.dto.StoreResponse;
-import com.allforone.starvestop.domain.store.dto.UpdateStoreRequest;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.entity.User;
@@ -53,6 +52,21 @@ public class StoreService {
         if (!store.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
+
+        Point location = new Point(
+                request.getLongitude(),
+                request.getLatitude()
+        );
+
+        store.update(
+                request.getStoreName(),
+                request.getAddress(),
+                request.getDescription(),
+                request.getCategory(),
+                location,
+                request.getOpenTime(),
+                request.getCloseTime()
+        );
         storeRepository.flush();
 
         return StoreResponse.from(store);

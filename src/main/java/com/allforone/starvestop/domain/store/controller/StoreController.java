@@ -31,7 +31,7 @@ public class StoreController {
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(STORE_CREATE_SUCCESS, response));
     }
 
-    @PutMapping("/{storeId}")
+    @PatchMapping("/{storeId}")
     public ResponseEntity<CommonResponse<StoreResponse>> updateStore(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long storeId,

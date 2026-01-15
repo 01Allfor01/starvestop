@@ -96,4 +96,22 @@ public class Store extends BaseEntity {
                 closeTime
         );
     }
+
+    public void update(
+            String storeName,
+            String address,
+            String description,
+            StoreCategory category,
+            Point location,
+            LocalTime openTime,
+            LocalTime closeTime
+    ) {
+        this.storeName = storeName;
+        this.address = address;
+        this.description = description;
+        this.category = category;
+        this.location = location;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+    }
 }
