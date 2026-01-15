@@ -30,7 +30,10 @@ public class UserSubscriptionService {
     private final UserSubscriptionRepository userSubscriptionRepository;
 
     @Transactional
-    public CreateUserSubscriptionResponse createUserSubscription(AuthUser authUser, Long subscriptionId, @Valid CreateUserSubscriptionRequest request) {
+    public CreateUserSubscriptionResponse createUserSubscription(
+            AuthUser authUser, Long subscriptionId,
+            @Valid CreateUserSubscriptionRequest request
+    ) {
 
         User user = userRepository.findById(authUser.getUserId()).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND)

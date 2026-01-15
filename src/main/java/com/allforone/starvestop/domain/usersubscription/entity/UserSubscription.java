@@ -52,7 +52,7 @@ public class UserSubscription extends BaseEntity {
         this.isExpired = isExpired;
     }
 
-    public static UserSubscription create(User user, Subscription subscription, int day, int mealTime, boolean isExpired) {
-        return new UserSubscription(user, subscription, day, mealTime, isExpired);
+    public static UserSubscription create(User user, Subscription subscription, int day, int mealTime) {
+        return new UserSubscription(user, subscription, day, mealTime, false);
     }
 }
