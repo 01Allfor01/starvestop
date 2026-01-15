@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Getter
 @AllArgsConstructor
-public class CreateProductResponse {
+public class UpdateProductResponse {
     private final Long productId;
     private final Long storeId;
     private final String productName;
@@ -18,8 +18,8 @@ public class CreateProductResponse {
     private final BigDecimal salePrice;
     private final ProductStatus status;
 
-    public static CreateProductResponse from(Product product) {
-        return new CreateProductResponse(
+    public static UpdateProductResponse from(Product product) {
+        return new UpdateProductResponse(
                 product.getId(),
                 product.getStore().getId(),
                 product.getProductName(),
@@ -29,5 +29,4 @@ public class CreateProductResponse {
                 product.getStatus()
         );
     }
-
 }
