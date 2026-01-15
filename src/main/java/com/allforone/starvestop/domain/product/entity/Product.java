@@ -54,11 +54,11 @@ public class Product extends BaseEntity {
     }
 
     public void update(String productName, String description, BigDecimal price, BigDecimal salePrice, String status) {
-        this.productName = (productName == null) ? this.productName : productName;
-        this.description = (description == null) ? this.description : description;
-        this.price = (price == null) ? this.price : price;
-        this.salePrice = (salePrice == null) ? this.salePrice : salePrice;
-        this.status = (status == null) ? this.status : ProductStatus.valueOf(status);
+        this.productName = (this.productName.equals(productName)) ? this.productName : productName;
+        this.description = (this.description.equals(description)) ? this.description : description;
+        this.price = (this.price.equals(price)) ? this.price : price;
+        this.salePrice = (this.salePrice.equals(salePrice)) ? this.salePrice : salePrice;
+        this.status = (this.status.equals(ProductStatus.valueOf(status))) ? this.status : ProductStatus.valueOf(status);
     }
 
 }
