@@ -39,15 +39,19 @@ public class UserSubscription {
     @Column(nullable = false)
     private int mealTime;
 
-    public UserSubscription(User user, Subscription subscription, int day, int mealTime) {
+    @Column(nullable = false)
+    private boolean isExpired;
+
+    public UserSubscription(User user, Subscription subscription, int day, int mealTime, boolean isExpired) {
         this.user = user;
         this.subscription = subscription;
         this.expiresAt = LocalDateTime.now().plusMonths(1);
         this.day = day;
         this.mealTime = mealTime;
+        this.isExpired = isExpired;
     }
 
-    public static UserSubscription create(User user, Subscription subscription, int day, int mealTime) {
-        return new UserSubscription(user, subscription, day, mealTime);
+    public static UserSubscription create(User user, Subscription subscription, int day, int mealTime, boolean isExpired) {
+        return new UserSubscription(user, subscription, day, mealTime, isExpired);
     }
 }
