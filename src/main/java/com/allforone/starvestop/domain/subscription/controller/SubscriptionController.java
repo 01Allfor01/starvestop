@@ -32,7 +32,7 @@ public class SubscriptionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(SUBSCRIPTION_CREATE_SUCCESS, response));
     }
 
-    @PutMapping("/subscriptions/{subscriptionId}")
+    @PatchMapping("/subscriptions/{subscriptionId}")
     public ResponseEntity<CommonResponse<UpdateSubscriptionResponse>> updateSubscription(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long subscriptionId,
