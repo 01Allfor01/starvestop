@@ -14,11 +14,13 @@ import com.allforone.starvestop.domain.usersubscription.entity.UserSubscription;
 import com.allforone.starvestop.domain.usersubscription.repository.UserSubscriptionRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserSubscriptionService {
@@ -27,6 +29,7 @@ public class UserSubscriptionService {
     private final UserRepository userRepository;
     private final UserSubscriptionRepository userSubscriptionRepository;
 
+    @Transactional
     public CreateUserSubscriptionResponse createUserSubscription(AuthUser authUser, Long subscriptionId, @Valid CreateUserSubscriptionRequest request) {
 
         User user = userRepository.findById(authUser.getUserId()).orElseThrow(
@@ -46,7 +49,12 @@ public class UserSubscriptionService {
     @Transactional(readOnly = true)
     public List<GetUserSubscriptionResponse> getUserSubscriptions(AuthUser authUser) {
 
-        List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAllByUserId(authUser.getUserId());
+        User user = userRepository.findById(authUser.getUserId()).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAllByUser(user);
+        log.info("userSubscriptionList={}", userSubscriptionList);
         return userSubscriptionList.stream().map(GetUserSubscriptionResponse::from).toList();
     }
 
