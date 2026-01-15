@@ -8,5 +8,4 @@ public enum UserRole {
     OWNER,
     ADMIN,
 
-    ;
 }

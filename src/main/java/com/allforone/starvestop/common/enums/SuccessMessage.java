@@ -7,7 +7,8 @@ public enum SuccessMessage {
     //인증인가
     SIGN_UP_SUCCESS("회원가입 성공"),
     SIGN_IN_SUCCESS("로그인 성공"),
-
+    USER_UPDATE_SUCCESS("회원 정보 수정 성공"),
+    USER_DELETE_SUCCESS("회원 탈퇴 성공"),
     //사용자
 
     //사용자 구독
@@ -22,6 +23,9 @@ public enum SuccessMessage {
 
     //구독
     SUBSCRIPTION_CREATE_SUCCESS("구독 생성 성공"),
+    SUBSCRIPTION_UPDATE_SUCCESS("구독 수정 성공"),
+    SUBSCRIPTION_DELETE_SUCCESS("구독 삭제 성공"),
+
 
     //결제
 

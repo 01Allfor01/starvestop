@@ -37,7 +37,7 @@ public class ProductController {
     }
 
     //특정 매장 상품 수정
-    @PutMapping("/{productId}")
+    @PatchMapping("/{productId}")
     public ResponseEntity<CommonResponse<UpdateProductResponse>> updateProduct(@AuthenticationPrincipal AuthUser authUser,
                                                                                @PathVariable Long productId,
                                                                                @RequestBody UpdateProductRequest request) {

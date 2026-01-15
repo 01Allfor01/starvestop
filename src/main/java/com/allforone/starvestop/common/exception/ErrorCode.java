@@ -10,7 +10,7 @@ public enum ErrorCode {
 
     //권한
     FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다"),
-
+    USER_ROLE_CHANGE_NOT_ALLOWED(HttpStatus.FORBIDDEN,"유저 권한 수정이 불가합니다"),
     //사용자
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을수 없습니다"),
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT,"이미 존재하는 이메일입니다"),
@@ -25,9 +25,10 @@ public enum ErrorCode {
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 매장입니다"),
 
     //구독
-
+    SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구독입니다"),
     //결제
-
+    INVALID_PAYMENT_STATE(HttpStatus.CONFLICT,"잘못된 결제 상태입니다"),
+    DUPLICATE_ORDER_ID(HttpStatus.CONFLICT,"이미 존재하는 주문 번호입니다")
     ;
 
     private final HttpStatus status;

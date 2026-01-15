@@ -9,14 +9,15 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
 @Entity
 @Table(name = "payments")
+@SQLRestriction("is_deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Payment extends BaseEntity {
 

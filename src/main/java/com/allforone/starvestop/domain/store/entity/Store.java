@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.geo.Point;
 
 import java.time.LocalTime;
@@ -15,6 +16,7 @@ import java.time.LocalTime;
 @Getter
 @Entity
 @Table(name = "stores")
+@SQLRestriction("is_deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Store extends BaseEntity {
 
