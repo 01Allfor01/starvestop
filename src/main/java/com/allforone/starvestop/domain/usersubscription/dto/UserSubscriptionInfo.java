@@ -25,7 +25,7 @@ public class UserSubscriptionInfo {
         return new UserSubscriptionInfo(
                 subscription.getSubscriptionName(),
                 subscription.getPrice(),
-                userSubscription.getExpiresAt() != null ? userSubscription.getExpiresAt() : null,
+                userSubscription.getExpiresAt(),
                 userSubscription.isExpired(),
                 MealTime.from(userSubscription.getMealTime()),
                 Day.from(userSubscription.getDay())

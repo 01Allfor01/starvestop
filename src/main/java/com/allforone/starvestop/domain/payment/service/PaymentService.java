@@ -76,14 +76,15 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public List<GetPaymentResponse> getMyPaymentList(Long userId) {
-        List<Payment> paymentList = paymentRepository.getPaymentsByUser_Id(userId);
+        List<Payment> paymentList = paymentRepository.getPaymentsByUserId(userId);
 
         return paymentList.stream().map(GetPaymentResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
     public GetPaymentDetailsResponse getPayment(Long userId, Long paymentId) {
-        Payment payment = paymentRepository.getPaymentById(paymentId);
+        Payment payment = paymentRepository.findById(paymentId).orElseThrow(
+                () -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
         if (!payment.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
