@@ -90,6 +90,21 @@ public class StoreService {
         return StoreResponse.from(store);
     }
 
+    @Transactional(readOnly = true)
+    public List<StoreListResponse> getStoreList() {
+        List<Store> storeList = storeRepository.findAll();
+
+        if (storeList.isEmpty()) {
+            throw new CustomException(ErrorCode.STORE_NOT_FOUND);
+        }
+
+        List<StoreListResponse> response = new ArrayList<>();
+        for (Store store : storeList) {
+            response.add(StoreListResponse.from(store));
+        }
+        return response;
+    }
+
     private Store getStore(Long storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
@@ -115,19 +130,5 @@ public class StoreService {
                 request.getLatitude()
         );
         return location;
-    }
-
-    public List<StoreListResponse> getStoreList() {
-        List<Store> storeList = storeRepository.findAll();
-
-        if (storeList.isEmpty()) {
-            throw new CustomException(ErrorCode.STORE_NOT_FOUND);
-        }
-
-        List<StoreListResponse> response = new ArrayList<>();
-        for (Store store : storeList) {
-            response.add(StoreListResponse.from(store));
-        }
-        return response;
     }
 }
