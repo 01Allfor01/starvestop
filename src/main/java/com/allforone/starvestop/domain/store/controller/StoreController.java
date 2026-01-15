@@ -48,4 +48,10 @@ public class StoreController {
         storeService.deleteStore(authUser.getUserId(), storeId);
         return ResponseEntity.ok(CommonResponse.successNoData(STORE_DELETE_SUCCESS));
     }
+
+    @GetMapping("/{storeId}")
+    public ResponseEntity<CommonResponse<StoreResponse>> getStoreDetail(@PathVariable Long storeId) {
+        StoreResponse response = storeService.getStoreDetail(storeId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_DETAIL_GET_SUCCESS, response));
+    }
 }
