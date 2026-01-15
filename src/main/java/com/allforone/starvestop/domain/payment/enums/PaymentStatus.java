@@ -5,7 +5,12 @@ import lombok.Getter;
 @Getter
 public enum PaymentStatus {
 
-    SUCCESS,
-    REFUND,
-    ;
+    CREATED,
+    REQUESTED,
+    PENDING,
+
+    SUCCEEDED,
+    FAILED,
+    CANCELED,
+
 }

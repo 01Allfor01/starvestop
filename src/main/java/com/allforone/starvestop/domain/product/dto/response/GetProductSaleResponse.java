@@ -8,14 +8,16 @@ import java.math.BigDecimal;
 
 @Getter
 @AllArgsConstructor
-public class GetProductResponse {
+public class GetProductSaleResponse {
     private final String productName;
     private final BigDecimal price;
+    private final BigDecimal salePrice;
 
-    public static GetProductResponse from(Product product) {
-        return new GetProductResponse(
+    public static GetProductSaleResponse from(Product product) {
+        return new GetProductSaleResponse(
                 product.getProductName(),
-                product.getPrice()
+                product.getPrice(),
+                product.getSalePrice()
         );
     }
 }
