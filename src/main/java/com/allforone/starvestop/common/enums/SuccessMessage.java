@@ -20,6 +20,9 @@ public enum SuccessMessage {
 
     //구독
     SUBSCRIPTION_CREATE_SUCCESS("구독 생성 성공"),
+    SUBSCRIPTION_UPDATE_SUCCESS("구독 수정 성공"),
+    SUBSCRIPTION_DELETE_SUCCESS("구독 삭제 성공"),
+
 
     //결제
 

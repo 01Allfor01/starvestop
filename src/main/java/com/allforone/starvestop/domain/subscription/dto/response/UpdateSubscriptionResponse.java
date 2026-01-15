@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class CreateSubscriptionResponse {
+public class UpdateSubscriptionResponse {
 
     private final Long subscriptionId;
     private final Long storeId;
@@ -18,8 +18,8 @@ public class CreateSubscriptionResponse {
     private final BigDecimal price;
     private final LocalDateTime createdAt;
 
-    public static CreateSubscriptionResponse from(Subscription subscription) {
-        return new CreateSubscriptionResponse(
+    public static UpdateSubscriptionResponse from(Subscription subscription) {
+        return new UpdateSubscriptionResponse(
                 subscription.getId(),
                 subscription.getStore().getId(),
                 subscription.getSubscriptionName(),
