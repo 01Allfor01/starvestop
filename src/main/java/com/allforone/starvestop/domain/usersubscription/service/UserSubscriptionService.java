@@ -44,9 +44,9 @@ public class UserSubscriptionService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetUserSubscriptionResponse> getUserSubscriptions() {
+    public List<GetUserSubscriptionResponse> getUserSubscriptions(AuthUser authUser) {
 
-        List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAll();
+        List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAllByUserId(authUser.getUserId());
         return userSubscriptionList.stream().map(GetUserSubscriptionResponse::from).toList();
     }
 
@@ -54,7 +54,7 @@ public class UserSubscriptionService {
     public GetUserSubscriptionResponse getUserSubscription(Long userSubscriptionId) {
 
         UserSubscription userSubscription = userSubscriptionRepository.findById(userSubscriptionId).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+                () -> new CustomException(ErrorCode.USER_SUBSCRIPTION_NOT_FOUND)
         );
 
         return GetUserSubscriptionResponse.from(userSubscription);
