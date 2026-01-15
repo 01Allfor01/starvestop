@@ -27,13 +27,8 @@ public class StoreService {
         User user = userRepository.getReferenceById(userId);
 
         StoreCategory category = StoreCategory.valueOf(request.getCategory());
-        StoreStatus status = request.getStatus() == null
-                ? StoreStatus.CLOSED : StoreStatus.valueOf(request.getStatus());
-
-        Point location = new Point(
-                request.getLongitude(),
-                request.getLatitude()
-        );
+        StoreStatus status = getStatus(request);
+        Point location = getLocation(request);
 
         Store store = Store.create(
                 user,
@@ -62,13 +57,8 @@ public class StoreService {
         }
 
         StoreCategory category = StoreCategory.valueOf(request.getCategory());
-        StoreStatus status = request.getStatus() == null
-                ? StoreStatus.CLOSED : StoreStatus.valueOf(request.getStatus());
-
-        Point location = new Point(
-                request.getLongitude(),
-                request.getLatitude()
-        );
+        StoreStatus status = getStatus(request);
+        Point location = getLocation(request);
 
         store.update(
                 request.getStoreName(),
@@ -96,5 +86,19 @@ public class StoreService {
         }
 
         store.delete();
+    }
+
+    private StoreStatus getStatus(StoreRequest request) {
+        StoreStatus status = request.getStatus() == null
+                ? StoreStatus.CLOSED : StoreStatus.valueOf(request.getStatus());
+        return status;
+    }
+
+    private Point getLocation(StoreRequest request) {
+        Point location = new Point(
+                request.getLongitude(),
+                request.getLatitude()
+        );
+        return location;
     }
 }
