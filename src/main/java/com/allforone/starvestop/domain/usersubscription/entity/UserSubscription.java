@@ -40,6 +40,9 @@ public class UserSubscription extends BaseEntity {
     @Column(nullable = false)
     private int mealTime;
 
+    @Column(nullable = false)
+    private boolean isExpired = false;
+
     public UserSubscription(User user, Subscription subscription, int day, int mealTime) {
         this.user = user;
         this.subscription = subscription;

@@ -28,7 +28,10 @@ public class UserSubscriptionService {
     private final UserSubscriptionRepository userSubscriptionRepository;
 
     @Transactional
-    public CreateUserSubscriptionResponse createUserSubscription(AuthUser authUser, Long subscriptionId, @Valid CreateUserSubscriptionRequest request) {
+    public CreateUserSubscriptionResponse createUserSubscription(
+            AuthUser authUser, Long subscriptionId,
+            @Valid CreateUserSubscriptionRequest request
+    ) {
 
         User user = userRepository.findById(authUser.getUserId()).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND)
@@ -45,16 +48,22 @@ public class UserSubscriptionService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetUserSubscriptionResponse> getUserSubscriptions() {
+    public List<GetUserSubscriptionResponse> getUserSubscriptions(AuthUser authUser) {
 
-        List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAll();
+        User user = userRepository.findById(authUser.getUserId()).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAllByUser(user);
         return userSubscriptionList.stream().map(GetUserSubscriptionResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
     public GetUserSubscriptionResponse getUserSubscription(Long userSubscriptionId) {
 
-        UserSubscription userSubscription = getSubscriptionOrThrow(userSubscriptionId);
+        UserSubscription userSubscription = userSubscriptionRepository.findById(userSubscriptionId).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_SUBSCRIPTION_NOT_FOUND)
+        );
 
         return GetUserSubscriptionResponse.from(userSubscription);
     }

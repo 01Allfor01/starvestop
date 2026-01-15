@@ -35,8 +35,10 @@ public class UserSubscriptionController {
     }
 
     @GetMapping()
-    public ResponseEntity<CommonResponse<List<GetUserSubscriptionResponse>>> getUserSubscriptions() {
-        List<GetUserSubscriptionResponse> responseList = userSubscriptionService.getUserSubscriptions();
+    public ResponseEntity<CommonResponse<List<GetUserSubscriptionResponse>>> getUserSubscriptions(
+            @AuthenticationPrincipal AuthUser authUser
+    ) {
+        List<GetUserSubscriptionResponse> responseList = userSubscriptionService.getUserSubscriptions(authUser);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_SUBSCRIPTION_GET_SUCCESS, responseList));
     }
 
