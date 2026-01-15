@@ -19,6 +19,7 @@ public enum SuccessMessage {
     PRODUCT_LIST_BY_SALE_SUCCESS("마감 세일 상품 목록 조회 성공"),
     PRODUCT_GET_SUCCESS("상품 조회 성공"),
     PRODUCT_UPDATE_SUCCESS("상품 수정 성공"),
+    PRODUCT_DELETE_SUCCESS("상품 삭제 성공"),
 
     //매장
     STORE_CREATE_SUCCESS("매장 등록 성공"),
