@@ -38,4 +38,16 @@ public class UserSubscription {
 
     @Column(nullable = false)
     private int mealTime;
+
+    public UserSubscription(User user, Subscription subscription, int day, int mealTime) {
+        this.user = user;
+        this.subscription = subscription;
+        this.expiresAt = LocalDateTime.now().plusMonths(1);
+        this.day = day;
+        this.mealTime = mealTime;
+    }
+
+    public static UserSubscription create(User user, Subscription subscription, int day, int mealTime) {
+        return new UserSubscription(user, subscription, day, mealTime);
+    }
 }
