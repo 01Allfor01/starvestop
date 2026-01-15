@@ -31,7 +31,7 @@ public enum SuccessMessage {
 
 
     //결제
-
+    PAYMENT_CREATE_SUCCESS("결제 생성 성공"),
     ;
 
     private final String message;
