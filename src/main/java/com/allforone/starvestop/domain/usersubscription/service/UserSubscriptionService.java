@@ -14,6 +14,7 @@ import com.allforone.starvestop.domain.usersubscription.repository.UserSubscript
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ public class UserSubscriptionService {
     private final UserRepository userRepository;
     private final UserSubscriptionRepository userSubscriptionRepository;
 
+    @Transactional
     public CreateUserSubscriptionResponse createUserSubscription(
             AuthUser authUser, Long subscriptionId,
             @Valid CreateUserSubscriptionRequest request
