@@ -3,6 +3,7 @@ package com.allforone.starvestop.domain.payment.service;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.payment.dto.request.CreatePaymentRequest;
+import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
 import com.allforone.starvestop.domain.product.entity.Product;
@@ -16,6 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -67,6 +69,13 @@ public class PaymentService {
         } catch (DataIntegrityViolationException e) {
             throw new CustomException(ErrorCode.DUPLICATE_ORDER_ID);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetPaymentResponse> getMyPaymentList(Long userId) {
+        List<Payment> paymentList = paymentRepository.getPaymentsByUser_Id(userId);
+
+        return paymentList.stream().map(GetPaymentResponse::from).toList();
     }
 
     private String generateOrderId() {
