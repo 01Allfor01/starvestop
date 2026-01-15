@@ -28,7 +28,7 @@ public class ProductController {
     private final ProductService productService;
 
     //특정 매장 상품 추가
-    @PostMapping("products")
+    @PostMapping("/products")
     public ResponseEntity<CommonResponse<CreateProductResponse>> createProduct(@AuthenticationPrincipal AuthUser authUser,
                                                                                @Valid @RequestBody CreateProductRequest request) {
         CreateProductResponse createProductResponse = productService.createProduct(authUser, request);
@@ -51,7 +51,7 @@ public class ProductController {
     }
 
     //특정 매장 상품 수정
-    @PatchMapping("/{productId}")
+    @PatchMapping("/products/{productId}")
     public ResponseEntity<CommonResponse<UpdateProductResponse>> updateProduct(@AuthenticationPrincipal AuthUser authUser,
                                                                                @PathVariable Long productId,
                                                                                @RequestBody UpdateProductRequest request) {
@@ -62,5 +62,4 @@ public class ProductController {
 
         return ResponseEntity.ok(response);
     }
-
 }
