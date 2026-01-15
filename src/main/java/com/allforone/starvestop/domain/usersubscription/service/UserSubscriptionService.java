@@ -27,6 +27,7 @@ public class UserSubscriptionService {
     private final UserRepository userRepository;
     private final UserSubscriptionRepository userSubscriptionRepository;
 
+    @Transactional
     public CreateUserSubscriptionResponse createUserSubscription(AuthUser authUser, Long subscriptionId, @Valid CreateUserSubscriptionRequest request) {
 
         User user = userRepository.findById(authUser.getUserId()).orElseThrow(
