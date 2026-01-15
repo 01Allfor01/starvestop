@@ -12,8 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import static com.allforone.starvestop.common.enums.SuccessMessage.STORE_CREATE_SUCCESS;
-import static com.allforone.starvestop.common.enums.SuccessMessage.STORE_UPDATE_SUCCESS;
+import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,5 +38,14 @@ public class StoreController {
     ) {
         StoreResponse response = storeService.updateStore(authUser.getUserId(), storeId, request);
         return ResponseEntity.ok(CommonResponse.success(STORE_UPDATE_SUCCESS, response));
+    }
+
+    @DeleteMapping("/{storeId}")
+    public ResponseEntity<CommonResponse<Void>> deleteStore(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long storeId
+    ) {
+        storeService.deleteStore(authUser.getUserId(), storeId);
+        return ResponseEntity.ok(CommonResponse.successNoData(STORE_DELETE_SUCCESS));
     }
 }

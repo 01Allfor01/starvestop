@@ -80,4 +80,15 @@ public class ProductController {
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+    //상품 삭제
+    @DeleteMapping("/products/{productId}")
+    public ResponseEntity<CommonResponse<Void>> deleteProduct(@AuthenticationPrincipal AuthUser authUser,
+                                                              @PathVariable Long productId) {
+        productService.delete(authUser, productId);
+
+        CommonResponse<Void> response = CommonResponse.successNoData(PRODUCT_DELETE_SUCCESS);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }
