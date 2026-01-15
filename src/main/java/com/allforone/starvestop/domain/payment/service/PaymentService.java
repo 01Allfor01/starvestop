@@ -3,11 +3,14 @@ package com.allforone.starvestop.domain.payment.service;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.payment.dto.request.CreatePaymentRequest;
+import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
+import com.allforone.starvestop.domain.product.dto.ProductInfo;
 import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
+import com.allforone.starvestop.domain.subscription.dto.UserSubscriptionInfo;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import com.allforone.starvestop.domain.usersubscription.entity.UserSubscription;
@@ -76,6 +79,23 @@ public class PaymentService {
         List<Payment> paymentList = paymentRepository.getPaymentsByUser_Id(userId);
 
         return paymentList.stream().map(GetPaymentResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public GetPaymentDetailsResponse getPayment(Long userId, Long paymentId) {
+        Payment payment = paymentRepository.getPaymentById(paymentId);
+
+        if (!payment.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        UserSubscriptionInfo userSubscriptionInfo = payment.getUserSubscription() != null ? UserSubscriptionInfo.from(
+                payment.getUserSubscription(),
+                payment.getUserSubscription().getSubscription()) : null;
+
+        ProductInfo productInfo = payment.getProduct() != null ? ProductInfo.from(payment.getProduct()) : null;
+
+        return GetPaymentDetailsResponse.from(payment.getOrderId(), payment.getStatus(), productInfo, userSubscriptionInfo, payment.getCreatedAt());
     }
 
     private String generateOrderId() {

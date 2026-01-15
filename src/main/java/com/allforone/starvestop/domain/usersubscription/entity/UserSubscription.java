@@ -40,7 +40,7 @@ public class UserSubscription {
     private int mealTime;
 
     @Column(nullable = false)
-    private boolean isExpired = false;
+    private boolean isExpired;
 
     public UserSubscription(User user, Subscription subscription, int day, int mealTime) {
         this.user = user;
@@ -48,6 +48,7 @@ public class UserSubscription {
         this.expiresAt = LocalDateTime.now().plusMonths(1);
         this.day = day;
         this.mealTime = mealTime;
+        this.isExpired = false;
     }
 
     public static UserSubscription create(User user, Subscription subscription, int day, int mealTime) {

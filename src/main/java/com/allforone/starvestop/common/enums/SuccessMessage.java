@@ -39,8 +39,8 @@ public enum SuccessMessage {
 
     //결제
     PAYMENT_CREATE_SUCCESS("결제 생성 성공"),
-    MY_PAYMENT_LIST_GET_SUCCESS("내 결제 내역 조회 성공")
-    ;
+    MY_PAYMENT_LIST_GET_SUCCESS("내 결제 내역 조회 성공"),
+    PAYMENT_DETAIL_GET_SUCCESS("결제 상세 조회 성공");
 
     private final String message;
 

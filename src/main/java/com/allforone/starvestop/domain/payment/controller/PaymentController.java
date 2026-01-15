@@ -4,6 +4,7 @@ import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.common.enums.SuccessMessage;
 import com.allforone.starvestop.domain.payment.dto.request.CreatePaymentRequest;
+import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -40,5 +41,16 @@ public class PaymentController {
         CommonResponse<List<GetPaymentResponse>> result = CommonResponse.success(SuccessMessage.MY_PAYMENT_LIST_GET_SUCCESS, response);
 
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{paymentId}")
+    public ResponseEntity<CommonResponse<GetPaymentDetailsResponse>> getPaymentDetail(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long paymentId
+    ) {
+        Long userId = authUser.getUserId();
+        GetPaymentDetailsResponse response = paymentService.getPayment(userId, paymentId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SuccessMessage.PAYMENT_DETAIL_GET_SUCCESS, response));
     }
 }
