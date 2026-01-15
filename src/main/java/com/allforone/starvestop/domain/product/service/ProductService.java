@@ -10,6 +10,7 @@ import com.allforone.starvestop.domain.product.dto.response.UpdateProductRespons
 import com.allforone.starvestop.domain.product.dto.response.GetProductResponse;
 import com.allforone.starvestop.domain.product.dto.response.GetProductSaleResponse;
 import com.allforone.starvestop.domain.product.entity.Product;
+import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
