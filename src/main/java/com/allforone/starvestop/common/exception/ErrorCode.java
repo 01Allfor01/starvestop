@@ -18,6 +18,7 @@ public enum ErrorCode {
     PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED,"입력하신 비밀번호가 일치하지 않습니다"),
 
     //사용자 구독
+    USER_SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자 구독을 찾을수 없습니다"),
 
     //상품
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다"),

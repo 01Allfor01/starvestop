@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.allforone.starvestop.common.enums.SuccessMessage.USER_SUBSCRIPTION_CREATE_SUCCESS;
-import static com.allforone.starvestop.common.enums.SuccessMessage.USER_SUBSCRIPTION_GET_SUCCESS;
+import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,5 +44,14 @@ public class UserSubscriptionController {
     public ResponseEntity<CommonResponse<GetUserSubscriptionResponse>> getUserSubscription(@PathVariable Long userSubscriptionId) {
         GetUserSubscriptionResponse response = userSubscriptionService.getUserSubscription(userSubscriptionId);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_SUBSCRIPTION_GET_SUCCESS, response));
+    }
+
+    @DeleteMapping("/{userSubscriptionId}")
+    public ResponseEntity<CommonResponse<Void>> deleteUserSubscription(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long userSubscriptionId
+    ) {
+        userSubscriptionService.deleteUserSubscription(authUser, userSubscriptionId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(USER_SUBSCRIPTION_DELETE_SUCCESS));
     }
 }

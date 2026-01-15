@@ -53,10 +53,29 @@ public class UserSubscriptionService {
     @Transactional(readOnly = true)
     public GetUserSubscriptionResponse getUserSubscription(Long userSubscriptionId) {
 
-        UserSubscription userSubscription = userSubscriptionRepository.findById(userSubscriptionId).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
-        );
+        UserSubscription userSubscription = getSubscriptionOrThrow(userSubscriptionId);
 
         return GetUserSubscriptionResponse.from(userSubscription);
+    }
+
+    @Transactional
+    public void deleteUserSubscription(AuthUser authUser, Long userSubscriptionId) {
+
+        UserSubscription userSubscription = getSubscriptionOrThrow(userSubscriptionId);
+
+        if (!userSubscription.getUser().getId().equals(authUser.getUserId())) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        userSubscription.delete();
+    }
+
+    private UserSubscription getSubscriptionOrThrow(Long userSubscriptionId) {
+
+        UserSubscription userSubscription = userSubscriptionRepository.findById(userSubscriptionId).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_SUBSCRIPTION_NOT_FOUND)
+        );
+
+        return userSubscription;
     }
 }
