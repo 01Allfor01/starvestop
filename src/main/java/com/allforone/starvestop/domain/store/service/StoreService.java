@@ -80,6 +80,12 @@ public class StoreService {
         store.delete();
     }
 
+    @Transactional(readOnly = true)
+    public StoreResponse getStoreDetail(Long storeId) {
+        Store store = getStore(storeId);
+        return StoreResponse.from(store);
+    }
+
     private Store getStore(Long storeId) {
         Store store = storeRepository.findById(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
@@ -105,13 +111,5 @@ public class StoreService {
                 request.getLatitude()
         );
         return location;
-    }
-
-    @Transactional(readOnly = true)
-    public StoreResponse getStoreDetail(Long storeId) {
-        Store store = storeRepository.findById(storeId).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
-        );
-        return StoreResponse.from(store);
     }
 }
