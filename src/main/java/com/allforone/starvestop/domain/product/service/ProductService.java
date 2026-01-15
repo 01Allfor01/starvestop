@@ -4,6 +4,7 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
+import com.allforone.starvestop.domain.product.dto.response.GetProductSaleResponse;
 import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
@@ -13,6 +14,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,5 +40,17 @@ public class ProductService {
         Product savedProduct = productRepository.save(product);
 
         return CreateProductResponse.from(savedProduct);
+    }
+
+    //마감 세일 상품 목록 조회
+    @Transactional(readOnly = true)
+    public List<GetProductSaleResponse> getProductSaleList() {
+
+        List<Product> productList = productRepository.findAllByStatus(ProductStatus.SALE);
+
+        return productList
+                .stream()
+                .map(GetProductSaleResponse::from)
+                .toList();
     }
 }
