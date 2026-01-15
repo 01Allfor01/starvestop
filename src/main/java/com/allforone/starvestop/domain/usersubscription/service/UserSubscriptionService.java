@@ -38,7 +38,7 @@ public class UserSubscriptionService {
                 () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
         );
 
-        UserSubscription userSubscription = UserSubscription.create(user, subscription, request.getDay(), request.getMealTime(), false);
+        UserSubscription userSubscription = UserSubscription.create(user, subscription, request.getDay(), request.getMealTime());
         UserSubscription savedUserSubscription = userSubscriptionRepository.save(userSubscription);
 
         return CreateUserSubscriptionResponse.from(savedUserSubscription);
