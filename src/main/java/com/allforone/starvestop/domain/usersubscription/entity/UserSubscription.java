@@ -1,5 +1,6 @@
 package com.allforone.starvestop.domain.usersubscription.entity;
 
+import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -15,7 +16,7 @@ import java.time.LocalDateTime;
 @Table(name = "user_subscriptions")
 @SQLRestriction("is_deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserSubscription {
+public class UserSubscription extends BaseEntity {
 
     @Id
     @Column(name = "user_subscription_id")

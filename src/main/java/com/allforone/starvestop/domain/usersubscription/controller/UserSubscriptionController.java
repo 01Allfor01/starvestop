@@ -4,6 +4,7 @@ import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.usersubscription.dto.request.CreateUserSubscriptionRequest;
 import com.allforone.starvestop.domain.usersubscription.dto.response.CreateUserSubscriptionResponse;
+import com.allforone.starvestop.domain.usersubscription.dto.response.GetUserSubscriptionResponse;
 import com.allforone.starvestop.domain.usersubscription.service.UserSubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import static com.allforone.starvestop.common.enums.SuccessMessage.USER_SUBSCRIPTION_CREATE_SUCCESS;
+import java.util.List;
+
+import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,5 +32,31 @@ public class UserSubscriptionController {
     ) {
         CreateUserSubscriptionResponse response = userSubscriptionService.createUserSubscription(authUser, subscriptionId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(USER_SUBSCRIPTION_CREATE_SUCCESS, response));
+    }
+
+    @GetMapping
+    public ResponseEntity<CommonResponse<List<GetUserSubscriptionResponse>>> getUserSubscriptions(
+            @AuthenticationPrincipal AuthUser authUser
+    ) {
+        List<GetUserSubscriptionResponse> responseList = userSubscriptionService.getUserSubscriptions(authUser);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_SUBSCRIPTION_GET_SUCCESS, responseList));
+    }
+
+    @GetMapping("/{userSubscriptionId}")
+    public ResponseEntity<CommonResponse<GetUserSubscriptionResponse>> getUserSubscription(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long userSubscriptionId
+    ) {
+        GetUserSubscriptionResponse response = userSubscriptionService.getUserSubscription(authUser, userSubscriptionId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_SUBSCRIPTION_GET_SUCCESS, response));
+    }
+
+    @DeleteMapping("/{userSubscriptionId}")
+    public ResponseEntity<CommonResponse<Void>> deleteUserSubscription(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long userSubscriptionId
+    ) {
+        userSubscriptionService.deleteUserSubscription(authUser, userSubscriptionId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(USER_SUBSCRIPTION_DELETE_SUCCESS));
     }
 }
