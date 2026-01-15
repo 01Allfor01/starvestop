@@ -73,10 +73,8 @@ public class UserSubscriptionService {
 
     private UserSubscription getSubscriptionOrThrow(Long userSubscriptionId) {
 
-        UserSubscription userSubscription = userSubscriptionRepository.findById(userSubscriptionId).orElseThrow(
+        return userSubscriptionRepository.findById(userSubscriptionId).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_SUBSCRIPTION_NOT_FOUND)
         );
-
-        return userSubscription;
     }
 }
