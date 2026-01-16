@@ -54,9 +54,12 @@ public class PaymentService {
         UserSubscription userSubscription = null;
 
         if (productId != null) {
-            product = productRepository.getReferenceById(productId);
+            product = productRepository.findById(productId).orElseThrow(
+                    () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
         } else {
-            userSubscription = userSubscriptionRepository.getReferenceById(userSubscriptionId);
+            userSubscription = userSubscriptionRepository.findById(userSubscriptionId).orElseThrow(
+                    () -> new CustomException(ErrorCode.USER_SUBSCRIPTION_NOT_FOUND)
+            );
         }
 
         Payment payment = Payment.create(
@@ -98,6 +101,7 @@ public class PaymentService {
 
         return GetPaymentDetailsResponse.from(payment.getOrderId(), payment.getStatus(), productInfo, userSubscriptionInfo, payment.getCreatedAt());
     }
+
 
     private String generateOrderId() {
         return "PAY_" + UUID.randomUUID().toString().replace("-", "");
