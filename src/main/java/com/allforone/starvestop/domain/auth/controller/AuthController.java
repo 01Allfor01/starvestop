@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.allforone.starvestop.common.enums.SuccessMessage.SIGN_IN_SUCCESS;
-import static com.allforone.starvestop.common.enums.SuccessMessage.SIGN_UP_SUCCESS;
+import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -32,6 +31,16 @@ public class AuthController {
 
         CommonResponse<SignUpResponse> result = CommonResponse.success(SIGN_UP_SUCCESS, response);
         
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    // 회원 가입 - 판매자
+    @PostMapping("/signup/owner")
+    public ResponseEntity<CommonResponse<SignUpResponse>> signUpOwner(@Valid @RequestBody SignUpRequest request) {
+        SignUpResponse response = authService.signUpOwner(request);
+
+        CommonResponse<SignUpResponse> result = CommonResponse.success(SIGN_UP_OWNER_SUCCESS, response);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 

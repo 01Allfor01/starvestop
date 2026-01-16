@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum SuccessMessage {
     //인증인가
     SIGN_UP_SUCCESS("회원가입 성공"),
+    SIGN_UP_OWNER_SUCCESS("판매자 회원가입 성공"),
     SIGN_IN_SUCCESS("로그인 성공"),
     USER_UPDATE_SUCCESS("회원 정보 수정 성공"),
     USER_DELETE_SUCCESS("회원 탈퇴 성공"),
