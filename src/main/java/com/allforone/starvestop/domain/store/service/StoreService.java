@@ -10,6 +10,7 @@ import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.entity.User;
+import com.allforone.starvestop.domain.user.enums.UserRole;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.geo.Point;
@@ -27,8 +28,14 @@ public class StoreService {
     private final UserRepository userRepository;
 
     @Transactional
-    public StoreResponse createStore(Long userId, StoreRequest request) {
-        User user = userRepository.getReferenceById(userId);
+    public StoreResponse createStore(StoreRequest request) {
+        User user = userRepository.findById(request.getUserId()).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        if (!UserRole.OWNER.equals(user.getRole())) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
 
         StoreCategory category = StoreCategory.valueOf(request.getCategory());
         StoreStatus status = getStatus(request);
