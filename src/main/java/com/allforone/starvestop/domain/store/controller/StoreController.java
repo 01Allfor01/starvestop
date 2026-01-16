@@ -25,11 +25,8 @@ public class StoreController {
     private final StoreService storeService;
 
     @PostMapping
-    public ResponseEntity<CommonResponse<StoreResponse>> createStore(
-            @AuthenticationPrincipal AuthUser authUser,
-            @Valid @RequestBody StoreRequest request
-    ) {
-        StoreResponse response = storeService.createStore(authUser.getUserId(), request);
+    public ResponseEntity<CommonResponse<StoreResponse>> createStore(@Valid @RequestBody StoreRequest request) {
+        StoreResponse response = storeService.createStore(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(STORE_CREATE_SUCCESS, response));
     }
 
