@@ -22,7 +22,7 @@ public class CreateUserSubscriptionResponse {
     private final List<MealTime> mealTimeList;
 
     public static CreateUserSubscriptionResponse from(UserSubscription userSubscription) {
-        List<Day> dayList = Day.from(userSubscription.getMealTime());
+        List<Day> dayList = Day.from(userSubscription.getDay());
         List<MealTime> mealTimeList = MealTime.from(userSubscription.getMealTime());
         return new CreateUserSubscriptionResponse(
                 userSubscription.getId(),
