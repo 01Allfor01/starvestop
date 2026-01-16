@@ -7,8 +7,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     //인증인가
-
-    //권한
+    UN_AUTHENTICATION(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다"),
     USER_ROLE_CHANGE_NOT_ALLOWED(HttpStatus.FORBIDDEN,"유저 권한 수정이 불가합니다"),
 

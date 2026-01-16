@@ -19,8 +19,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-@Component
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -41,7 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         if (!jwtUtil.validateToken(token)) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰");
+            filterChain.doFilter(request, response);
             return;
         }
 
