@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.subscription.dto;
+package com.allforone.starvestop.domain.usersubscription.dto;
 
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.usersubscription.entity.UserSubscription;

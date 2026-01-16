@@ -2,7 +2,8 @@ package com.allforone.starvestop.domain.payment.dto.response;
 
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.product.dto.ProductInfo;
-import com.allforone.starvestop.domain.subscription.dto.UserSubscriptionInfo;
+
+import com.allforone.starvestop.domain.usersubscription.dto.UserSubscriptionInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
