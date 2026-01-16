@@ -15,10 +15,9 @@ import java.util.List;
 public class GetUserSubscriptionResponse {
 
     private final Long userSubscriptionId;
-    private final Long subscriptionId;
     private final String subscriptionName;
+    private final String storeName;
     private final BigDecimal price;
-    private final Long storeId;
     private final LocalDateTime createdAt;
     private final LocalDateTime expiresAt;
     private final List<Day> dayList;
@@ -33,10 +32,9 @@ public class GetUserSubscriptionResponse {
 
         return new GetUserSubscriptionResponse(
                 userSubscription.getId(),
-                userSubscription.getSubscription().getId(),
                 userSubscription.getSubscription().getSubscriptionName(),
+                userSubscription.getSubscription().getStore().getStoreName(),
                 userSubscription.getSubscription().getPrice(),
-                userSubscription.getSubscription().getStore().getId(),
                 userSubscription.getCreatedAt(),
                 userSubscription.getExpiresAt(),
                 dayList,
