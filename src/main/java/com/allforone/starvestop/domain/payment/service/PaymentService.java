@@ -102,7 +102,6 @@ public class PaymentService {
         return GetPaymentDetailsResponse.from(payment.getOrderId(), payment.getStatus(), productInfo, userSubscriptionInfo, payment.getCreatedAt());
     }
 
-
     private String generateOrderId() {
         return "PAY_" + UUID.randomUUID().toString().replace("-", "");
     }
