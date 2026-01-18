@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class CreatePaymentRequest {
     private Long productId;
-    private Long userSubscriptionId;
+    private Long subscriptionId;
     @NotNull
     private BigDecimal amount;
 }

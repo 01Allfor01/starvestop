@@ -6,8 +6,12 @@ import com.allforone.starvestop.domain.store.entity.Store;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findAllByStatus(ProductStatus status);
+
     List<Product> findAllByStore(Store store);
+
+    Optional<Product> findByIdAndIsDeletedIsFalse(Long id);
 }

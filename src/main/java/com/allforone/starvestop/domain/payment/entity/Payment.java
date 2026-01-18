@@ -51,6 +51,9 @@ public class Payment extends BaseEntity {
     private PurchaseType purchaseType;
 
     @Column
+    private String purchaseName;
+
+    @Column
     private LocalDateTime paymentAt;
 
     @Column
@@ -60,12 +63,14 @@ public class Payment extends BaseEntity {
             User user,
             Long purchaseId,
             PurchaseType purchaseType,
+            String purchaseName,
             String orderId,
             BigDecimal amount
     ) {
         this.user = user;
         this.purchaseId = purchaseId;
         this.purchaseType = purchaseType;
+        this.purchaseName = purchaseName;
         this.orderId = orderId;
         this.amount = amount;
         this.status = PaymentStatus.CREATED;
@@ -75,6 +80,7 @@ public class Payment extends BaseEntity {
             User user,
             Long purchaseId,
             PurchaseType purchaseType,
+            String purchaseName,
             String orderId,
             BigDecimal amount
     ) {
@@ -82,6 +88,7 @@ public class Payment extends BaseEntity {
                 user,
                 purchaseId,
                 purchaseType,
+                purchaseName,
                 orderId,
                 amount
         );

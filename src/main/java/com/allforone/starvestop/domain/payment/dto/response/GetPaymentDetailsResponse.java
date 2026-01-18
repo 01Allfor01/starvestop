@@ -1,9 +1,7 @@
 package com.allforone.starvestop.domain.payment.dto.response;
 
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
-import com.allforone.starvestop.domain.product.dto.ProductInfo;
-
-import com.allforone.starvestop.domain.usersubscription.dto.UserSubscriptionInfo;
+import com.allforone.starvestop.domain.payment.enums.PurchaseType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -15,22 +13,25 @@ public class GetPaymentDetailsResponse {
 
     private final String orderId;
     private final PaymentStatus status;
-    private final ProductInfo productInfo;
-    private final UserSubscriptionInfo userSubscriptionInfo;
+    private final PurchaseType purchaseType;
+    private final Long purchaseId;
+    private final String purchaseName;
     private final LocalDateTime createdAt;
 
     public static GetPaymentDetailsResponse from(
             String orderId,
             PaymentStatus status,
-            ProductInfo productInfo,
-            UserSubscriptionInfo userSubscriptionInfo,
+            PurchaseType purchaseType,
+            Long purchaseId,
+            String purchaseName,
             LocalDateTime createdAt
     ) {
         return new GetPaymentDetailsResponse(
                 orderId,
                 status,
-                productInfo,
-                userSubscriptionInfo,
+                purchaseType,
+                purchaseId,
+                purchaseName,
                 createdAt
         );
     }
