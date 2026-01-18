@@ -47,7 +47,8 @@ public class Payment extends BaseEntity {
     @Column
     private Long purchaseId;
 
-    @Column
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private PurchaseType purchaseType;
 
     @Column

@@ -8,12 +8,12 @@ import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsRes
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,10 +35,16 @@ public class PaymentController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<GetPaymentResponse>>> getMyPaymentList(@AuthenticationPrincipal AuthUser authUser) {
-        List<GetPaymentResponse> response = paymentService.getMyPaymentList(authUser.getUserId());
+    public ResponseEntity<CommonResponse<Slice<GetPaymentResponse>>> getMyPaymentList(
+            @AuthenticationPrincipal AuthUser authUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        CommonResponse<List<GetPaymentResponse>> result = CommonResponse.success(SuccessMessage.MY_PAYMENT_LIST_GET_SUCCESS, response);
+        Pageable pageable = Pageable.ofSize(size).withPage(page);
+
+        Slice<GetPaymentResponse> response = paymentService.getMyPaymentList(authUser.getUserId(), pageable);
+
+        CommonResponse<Slice<GetPaymentResponse>> result = CommonResponse.success(SuccessMessage.MY_PAYMENT_LIST_GET_SUCCESS, response);
 
         return ResponseEntity.ok(result);
     }

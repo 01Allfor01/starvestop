@@ -22,6 +22,6 @@ public class SignUpRequest {
     @Size(min = 2, max = 15, message = "닉네임은 2자 이상 15자 이하로 입력해주세요")
     private String nickname;
     @NotBlank(message = "유저이름을 입력해주세요")
-    @Size(min = 2, max = 15, message = "유저명은 2자 이상 30자 이하로 입력해주세요")
+    @Size(min = 2, max = 30, message = "유저명은 2자 이상 30자 이하로 입력해주세요")
     private String username;
 }

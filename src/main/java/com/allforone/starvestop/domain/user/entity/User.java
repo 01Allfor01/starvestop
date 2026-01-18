@@ -3,6 +3,7 @@ package com.allforone.starvestop.domain.user.entity;
 import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,10 +31,10 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 15)
     private String nickname;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private String username;
 
     private User(String email, String password, UserRole role, String nickname, String username) {

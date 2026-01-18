@@ -11,9 +11,13 @@ import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
 import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
 import com.allforone.starvestop.domain.user.entity.User;
+import com.allforone.starvestop.domain.user.enums.UserRole;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,10 +38,14 @@ public class PaymentService {
             Long userId,
             CreatePaymentRequest request
     ) {
-
         String orderId = generateOrderId();
 
-        User user = userRepository.getReferenceById(userId);
+        User user = userRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (!user.getRole().equals(UserRole.USER)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
 
         Long purchaseId = request.getPurchaseId();
         String purchaseName = "";
@@ -48,7 +56,7 @@ public class PaymentService {
                     .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND))
                     .getProductName();
         }
-        if (purchaseType.equals(PurchaseType.PRODUCT)) {
+        if (purchaseType.equals(PurchaseType.SUBSCRIPTION)) {
             purchaseName = subscriptionRepository.findByIdAndIsDeletedIsFalse(purchaseId)
                     .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND))
                     .getSubscriptionName();
@@ -71,10 +79,17 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetPaymentResponse> getMyPaymentList(Long userId) {
-        List<Payment> paymentList = paymentRepository.getPaymentsByUserId(userId);
+    public Slice<GetPaymentResponse> getMyPaymentList(Long userId, Pageable pageable) {
 
-        return paymentList.stream().map(GetPaymentResponse::from).toList();
+        Slice<Payment> paymentSlice =
+                paymentRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+
+        List<GetPaymentResponse> content = paymentSlice.getContent()
+                .stream()
+                .map(GetPaymentResponse::from)
+                .toList();
+
+        return new SliceImpl<>(content, pageable, paymentSlice.hasNext());
     }
 
     @Transactional(readOnly = true)
