@@ -3,7 +3,6 @@ package com.allforone.starvestop.domain.user.entity;
 import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
