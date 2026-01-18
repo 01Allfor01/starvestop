@@ -15,6 +15,8 @@ public class CreateProductRequest {
     private String productName;
     @NotBlank(message = "상품 설명을 적어주세요")
     private String description;
+    @NotNull(message = "상품 재고를 적어주세요")
+    private Long stock;
     @NotNull(message = "상품 가격을 적어주세요")
     @DecimalMin(value = "0.0", inclusive = true, message = "상품 가격은 0 이상이어야 합니다")
     private BigDecimal price;

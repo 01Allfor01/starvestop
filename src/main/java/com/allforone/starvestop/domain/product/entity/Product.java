@@ -7,19 +7,18 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 
 @Getter
 @Entity
 @Table(name = "products")
-@SQLRestriction("is_deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "product_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -33,6 +32,9 @@ public class Product extends BaseEntity {
     private String description;
 
     @Column(nullable = false)
+    private Long stock;
+
+    @Column(nullable = false)
     private BigDecimal price;
 
     @Column(nullable = false)
@@ -42,22 +44,24 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
-    private Product(Store store, String productName, String description, BigDecimal price, BigDecimal salePrice, String status) {
+    private Product(Store store, String productName, String description, Long stock, BigDecimal price, BigDecimal salePrice, String status) {
         this.store = store;
         this.productName = productName;
         this.description = description;
+        this.stock = stock;
         this.price = price;
         this.salePrice = salePrice;
         this.status = ProductStatus.valueOf(status);
     }
 
-    public static Product create(Store store, String productName, String description, BigDecimal price, BigDecimal salePrice, String status) {
-        return new Product(store, productName, description, price, salePrice, status);
+    public static Product create(Store store, String productName, String description, Long stock, BigDecimal price, BigDecimal salePrice, String status) {
+        return new Product(store, productName, description, stock, price, salePrice, status);
     }
 
-    public void update(String productName, String description, BigDecimal price, BigDecimal salePrice, String status) {
+    public void update(String productName, String description, Long stock, BigDecimal price, BigDecimal salePrice, String status) {
         this.productName = (this.productName.equals(productName)) ? this.productName : productName;
         this.description = (this.description.equals(description)) ? this.description : description;
+        this.stock = (this.stock.equals(stock)) ? this.stock : stock;
         this.price = (this.price.equals(price)) ? this.price : price;
         this.salePrice = (this.salePrice.equals(salePrice)) ? this.salePrice : salePrice;
         this.status = (this.status.equals(ProductStatus.valueOf(status))) ? this.status : ProductStatus.valueOf(status);
