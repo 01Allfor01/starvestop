@@ -34,33 +34,22 @@ public class PaymentService {
             Long userId,
             CreatePaymentRequest request
     ) {
-        Long productId = request.getProductId();
-        Long subscriptionId = request.getSubscriptionId();
-        if (productId == null && subscriptionId == null) {
-            throw new CustomException(ErrorCode.PAYMENT_TARGET_REQUIRED);
-        }
-        if (productId != null && subscriptionId != null) {
-            throw new CustomException(ErrorCode.PAYMENT_TARGET_AMBIGUOUS);
-        }
 
         String orderId = generateOrderId();
 
         User user = userRepository.getReferenceById(userId);
 
-        Long purchaseId;
-        String purchaseName;
-        PurchaseType purchaseType;
+        Long purchaseId = request.getPurchaseId();
+        String purchaseName = "";
+        PurchaseType purchaseType = request.getPurchaseType();
 
-        if (productId != null) {
-            purchaseId = productId;
-            purchaseType = PurchaseType.PRODUCT;
-            purchaseName = productRepository.findByIdAndIsDeletedIsFalse(productId)
+        if (purchaseType.equals(PurchaseType.PRODUCT)) {
+            purchaseName = productRepository.findByIdAndIsDeletedIsFalse(purchaseId)
                     .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND))
                     .getProductName();
-        } else {
-            purchaseId = subscriptionId;
-            purchaseType = PurchaseType.SUBSCRIPTION;
-            purchaseName = subscriptionRepository.findByIdAndIsDeletedIsFalse(subscriptionId)
+        }
+        if (purchaseType.equals(PurchaseType.PRODUCT)) {
+            purchaseName = subscriptionRepository.findByIdAndIsDeletedIsFalse(purchaseId)
                     .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND))
                     .getSubscriptionName();
         }
