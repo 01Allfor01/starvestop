@@ -1,26 +1,27 @@
 package com.allforone.starvestop.domain.store.dto;
 
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotNull;
+import com.allforone.starvestop.domain.store.enums.StoreStatus;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.geo.Point;
 
 import java.time.LocalTime;
 
 @Getter
 @NoArgsConstructor
-public class CreateStoreRequest {
+public class UpdateStoreRequest {
 
-    @NotNull(message = "매장 이름을 적어주세요")
+    @Size(max=255)
+    @NotBlank(message = "매장 이름을 적어주세요")
     private String storeName;
 
-    @NotNull(message = "주소를 적어주세요")
+    @Size(max=255)
+    @NotBlank(message = "주소를 적어주세요")
     private String address;
 
-    @NotNull(message = "매장 설명을 적어주세요")
+    @Size(max=255)
+    @NotBlank(message = "매장 설명을 적어주세요")
     private String description;
 
     @NotNull(message = "매장 카테고리를 선택해주세요")
@@ -41,4 +42,6 @@ public class CreateStoreRequest {
 
     @NotNull(message = "매장 마감 시간을 입력해주세요")
     private LocalTime closeTime;
+
+    private StoreStatus status;
 }

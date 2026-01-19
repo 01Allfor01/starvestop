@@ -24,19 +24,43 @@ public class Subscription extends BaseEntity {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-    @Column(name = "subscription_name", nullable = false)
+    @Column(name = "subscription_name", nullable = false, length = 100)
     private String subscriptionName;
+
+    @Column(nullable = false, length = 255)
+    private String description;
+
+    @Column(nullable = false)
+    private int day;
+
+    @Column(nullable = false)
+    private int mealTime;
 
     @Column(nullable = false)
     private BigDecimal price;
 
-    public Subscription(Store store, String subscriptionName, BigDecimal price) {
+    @Column(nullable = false)
+    private Long stock;
+
+    @Column(nullable = false)
+    private boolean isJoinable;
+
+    public Subscription(Store store, String subscriptionName, String description, int day, int mealTime, BigDecimal price, Long stock) {
         this.store = store;
         this.subscriptionName = subscriptionName;
+        this.description = description;
+        this.day = day;
+        this.mealTime = mealTime;
         this.price = price;
+        this.stock = stock;
+        this.isJoinable = true;
     }
 
-    public static Subscription create(Store store, String subscriptionName, BigDecimal price) {
-        return new Subscription(store, subscriptionName, price);
+    public static Subscription create(Store store, String subscriptionName, String description, int day, int mealTime, BigDecimal price, Long stock) {
+        return new Subscription(store, subscriptionName, description, day, mealTime, price, stock);
+    }
+
+    public void changeIsJoinable(boolean joinable) {
+        this.isJoinable = joinable;
     }
 }

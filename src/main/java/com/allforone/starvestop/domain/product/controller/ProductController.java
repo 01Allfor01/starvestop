@@ -4,8 +4,7 @@ import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.dto.request.UpdateProductRequest;
-import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
-import com.allforone.starvestop.domain.product.dto.response.UpdateProductResponse;
+import com.allforone.starvestop.domain.product.dto.response.*;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,18 +13,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_CREATE_SUCCESS;
-import static com.allforone.starvestop.common.enums.SuccessMessage.PRODUCT_UPDATE_SUCCESS;
+import java.util.List;
+
+import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/products")
 public class ProductController {
 
     private final ProductService productService;
 
     //특정 매장 상품 추가
-    @PostMapping()
+    @PostMapping("/products")
     public ResponseEntity<CommonResponse<CreateProductResponse>> createProduct(@AuthenticationPrincipal AuthUser authUser,
                                                                                @Valid @RequestBody CreateProductRequest request) {
         CreateProductResponse createProductResponse = productService.createProduct(authUser, request);
@@ -36,8 +35,41 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    //특정 매장 상품 목록 조회
+    @GetMapping("/stores/{storeId}/products")
+    public ResponseEntity<CommonResponse<List<GetProductResponse>>> getProductStoreList(@PathVariable Long storeId) {
+        List<GetProductResponse> getProductResponseList = productService.getProductStoreList(storeId);
+
+        CommonResponse<List<GetProductResponse>> response =
+                CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseList);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    //마감 세일 상품 목록 조회
+    @GetMapping("/products/sale")
+    public ResponseEntity<CommonResponse<List<GetProductSaleResponse>>> getProductSaleList() {
+        List<GetProductSaleResponse> getProductSaleResponseList = productService.getProductSaleList();
+
+        CommonResponse<List<GetProductSaleResponse>> response =
+                CommonResponse.success(PRODUCT_LIST_BY_SALE_SUCCESS, getProductSaleResponseList);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    //상품 상세 조회
+    @GetMapping("/products/{productId}")
+    public ResponseEntity<CommonResponse<GetProductDetailResponse>> getProduct(@PathVariable Long productId) {
+        GetProductDetailResponse getProductResponse = productService.getProduct(productId);
+
+        CommonResponse<GetProductDetailResponse> response =
+                CommonResponse.success(PRODUCT_GET_SUCCESS, getProductResponse);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     //특정 매장 상품 수정
-    @PutMapping("/{productId}")
+    @PatchMapping("/products/{productId}")
     public ResponseEntity<CommonResponse<UpdateProductResponse>> updateProduct(@AuthenticationPrincipal AuthUser authUser,
                                                                                @PathVariable Long productId,
                                                                                @RequestBody UpdateProductRequest request) {
@@ -46,7 +78,17 @@ public class ProductController {
         CommonResponse<UpdateProductResponse> response =
                 CommonResponse.success(PRODUCT_UPDATE_SUCCESS, updateProductResponse);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    //상품 삭제
+    @DeleteMapping("/products/{productId}")
+    public ResponseEntity<CommonResponse<Void>> deleteProduct(@AuthenticationPrincipal AuthUser authUser,
+                                                              @PathVariable Long productId) {
+        productService.delete(authUser, productId);
+
+        CommonResponse<Void> response = CommonResponse.successNoData(PRODUCT_DELETE_SUCCESS);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

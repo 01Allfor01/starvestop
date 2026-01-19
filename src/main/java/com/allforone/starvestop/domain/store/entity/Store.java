@@ -53,6 +53,9 @@ public class Store extends BaseEntity {
     @Enumerated(value = EnumType.STRING)
     private StoreStatus status;
 
+    @Column(nullable = false)
+    private String businessRegistrationNumber;
+
     private Store(
             User user,
             String storeName,
@@ -61,7 +64,9 @@ public class Store extends BaseEntity {
             StoreCategory category,
             Point location,
             LocalTime openTime,
-            LocalTime closeTime
+            LocalTime closeTime,
+            StoreStatus status,
+            String businessRegistrationNumber
     ) {
         this.user = user;
         this.storeName = storeName;
@@ -71,7 +76,8 @@ public class Store extends BaseEntity {
         this.location = location;
         this.openTime = openTime;
         this.closeTime = closeTime;
-        this.status = StoreStatus.OPENED;
+        this.status = status;
+        this.businessRegistrationNumber = businessRegistrationNumber;
     }
 
     public static Store create(
@@ -82,7 +88,9 @@ public class Store extends BaseEntity {
             StoreCategory category,
             Point location,
             LocalTime openTime,
-            LocalTime closeTime
+            LocalTime closeTime,
+            StoreStatus status,
+            String businessRegistrationNumber
     ) {
 
         return new Store(
@@ -93,7 +101,29 @@ public class Store extends BaseEntity {
                 category,
                 location,
                 openTime,
-                closeTime
+                closeTime,
+                status,
+                businessRegistrationNumber
         );
+    }
+
+    public void update(
+            String storeName,
+            String address,
+            String description,
+            StoreCategory category,
+            Point location,
+            LocalTime openTime,
+            LocalTime closeTime,
+            StoreStatus status
+    ) {
+        this.storeName = storeName;
+        this.address = address;
+        this.description = description;
+        this.category = category;
+        this.location = location;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+        this.status = status;
     }
 }
