@@ -93,13 +93,7 @@ public class PaymentService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        return GetPaymentDetailsResponse.from(
-                payment.getOrderId(),
-                payment.getStatus(),
-                payment.getPurchaseType(),
-                payment.getPurchaseId(),
-                payment.getPurchaseName(),
-                payment.getCreatedAt());
+        return GetPaymentDetailsResponse.from(payment);
     }
 
     private String generateOrderId() {
