@@ -57,7 +57,7 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public List<GetSubscriptionResponse> getSubscriptionList() {
 
-        List<Subscription> subscriptionList = subscriptionRepository.findAllByIsDeletedFalse();
+        List<Subscription> subscriptionList = subscriptionRepository.findAllByIsDeletedIsFalse();
         return subscriptionList.stream().map(GetSubscriptionResponse::from).toList();
     }
 
@@ -79,7 +79,7 @@ public class SubscriptionService {
 
     @Transactional(readOnly = true)
     public List<GetSubscriptionResponse> getSubscriptionListByStore(Long storeId) {
-        List<Subscription> subscriptionList = subscriptionRepository.findByStoreIdAndIsDeletedFalse(storeId);
+        List<Subscription> subscriptionList = subscriptionRepository.findByStoreIdAndIsDeletedIsFalse(storeId);
         return subscriptionList.stream().map(GetSubscriptionResponse::from).toList();
     }
 
@@ -107,7 +107,7 @@ public class SubscriptionService {
 
     private Subscription getSubscriptionOrThrow(Long subscriptionId) {
 
-        return subscriptionRepository.findByIdAndIsDeletedFalse(subscriptionId).orElseThrow(
+        return subscriptionRepository.findByIdAndIsDeletedIsFalse(subscriptionId).orElseThrow(
                 () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
         );
     }
