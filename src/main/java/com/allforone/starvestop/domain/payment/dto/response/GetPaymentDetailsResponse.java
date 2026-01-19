@@ -16,9 +16,9 @@ public class GetPaymentDetailsResponse {
     private final Long paymentId;
     private final String orderId;
     private final PaymentStatus status;
-    private final PurchaseType purchaseType;
     private final Long purchaseId;
     private final String purchaseName;
+    private final PurchaseType purchaseType;
     private final BigDecimal amount;
     private final LocalDateTime createdAt;
 
@@ -27,9 +27,9 @@ public class GetPaymentDetailsResponse {
                 payment.getId(),
                 payment.getOrderId(),
                 payment.getStatus(),
-                payment.getPurchaseType(),
                 payment.getPurchaseId(),
                 payment.getPurchaseName(),
+                payment.getPurchaseType(),
                 payment.getAmount(),
                 payment.getCreatedAt()
         );
