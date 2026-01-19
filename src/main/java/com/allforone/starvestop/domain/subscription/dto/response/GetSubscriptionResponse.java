@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class GetSubscriptionResponse {
 
-    private final Long Id;
+    private final Long subscriptionId;
     private final Long storeId;
     private final String storeName;
     private final String subscriptionName;

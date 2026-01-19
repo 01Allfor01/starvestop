@@ -5,7 +5,6 @@ import com.allforone.starvestop.domain.store.entity.Store;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,12 +26,10 @@ public class Subscription extends BaseEntity {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-    @Column(name = "subscription_name", nullable = false)
-    @Size(max = 100)
+    @Column(name = "subscription_name", nullable = false, length = 100)
     private String subscriptionName;
 
-    @Column(nullable = false)
-    @Size(max = 255)
+    @Column(nullable = false, length = 255)
     private String description;
 
     @Column(nullable = false)
