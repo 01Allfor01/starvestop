@@ -1,37 +1,37 @@
 package com.allforone.starvestop.domain.payment.dto.response;
 
+import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
-import com.allforone.starvestop.domain.product.dto.ProductInfo;
-
-import com.allforone.starvestop.domain.usersubscription.dto.UserSubscriptionInfo;
+import com.allforone.starvestop.domain.payment.enums.PurchaseType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
 public class GetPaymentDetailsResponse {
 
+    private final Long paymentId;
     private final String orderId;
     private final PaymentStatus status;
-    private final ProductInfo productInfo;
-    private final UserSubscriptionInfo userSubscriptionInfo;
+    private final Long purchaseId;
+    private final String purchaseName;
+    private final PurchaseType purchaseType;
+    private final BigDecimal amount;
     private final LocalDateTime createdAt;
 
-    public static GetPaymentDetailsResponse from(
-            String orderId,
-            PaymentStatus status,
-            ProductInfo productInfo,
-            UserSubscriptionInfo userSubscriptionInfo,
-            LocalDateTime createdAt
-    ) {
+    public static GetPaymentDetailsResponse from(Payment payment) {
         return new GetPaymentDetailsResponse(
-                orderId,
-                status,
-                productInfo,
-                userSubscriptionInfo,
-                createdAt
+                payment.getId(),
+                payment.getOrderId(),
+                payment.getStatus(),
+                payment.getPurchaseId(),
+                payment.getPurchaseName(),
+                payment.getPurchaseType(),
+                payment.getAmount(),
+                payment.getCreatedAt()
         );
     }
 }
