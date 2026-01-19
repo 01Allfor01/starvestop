@@ -128,7 +128,7 @@ public class ProductService {
 
     //매장 조회
     private Store getStoreOrThrow(Long storeId) {
-        return storeRepository.findByIdAndIsDeletedFalse(storeId).orElseThrow(
+        return storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND));
     }
 }
