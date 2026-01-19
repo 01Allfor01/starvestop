@@ -9,14 +9,12 @@ import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 
 @Getter
 @Entity
 @Table(name = "subscriptions")
-@SQLRestriction("is_deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Subscription extends BaseEntity {
 
@@ -70,5 +68,9 @@ public class Subscription extends BaseEntity {
 
     public static Subscription create(Store store, String subscriptionName, String description, int day, int mealTime, BigDecimal price, Long stock) {
         return new Subscription(store, subscriptionName, description, day, mealTime, price, stock);
+    }
+
+    public void changeIsJoinable(boolean joinable) {
+        this.isJoinable = joinable;
     }
 }

@@ -6,17 +6,19 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.subscription.dto.request.CreateSubscriptionRequest;
+import com.allforone.starvestop.domain.subscription.dto.request.UpdateSubscriptionRequest;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.GetSubscriptionResponse;
+import com.allforone.starvestop.domain.subscription.dto.response.UpdateSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -53,10 +55,10 @@ public class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<GetSubscriptionResponse> getSubscriptionList(Pageable pageable) {
+    public List<GetSubscriptionResponse> getSubscriptionList() {
 
-        Slice<Subscription> subscriptionList = subscriptionRepository.findAllBy(pageable);
-        return subscriptionList.map(GetSubscriptionResponse::from);
+        List<Subscription> subscriptionList = subscriptionRepository.findAllByIsDeletedFalse();
+        return subscriptionList.stream().map(GetSubscriptionResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
@@ -75,6 +77,20 @@ public class SubscriptionService {
         subscription.delete();
     }
 
+    @Transactional(readOnly = true)
+    public List<GetSubscriptionResponse> getSubscriptionListByStore(Long storeId) {
+        List<Subscription> subscriptionList = subscriptionRepository.findByStoreIdAndIsDeletedFalse(storeId);
+        return subscriptionList.stream().map(GetSubscriptionResponse::from).toList();
+    }
+
+    @Transactional
+    public UpdateSubscriptionResponse updateSubscription(UpdateSubscriptionRequest request, Long subscriptionId) {
+        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
+        subscription.changeIsJoinable(request.isJoinable());
+        subscriptionRepository.flush();
+        return UpdateSubscriptionResponse.from(subscription);
+    }
+
     private static void checkPermission(AuthUser authUser, Subscription subscription) {
 
         Long ownerId = subscription.getStore().getUser().getId();
@@ -89,18 +105,11 @@ public class SubscriptionService {
         throw new CustomException(ErrorCode.FORBIDDEN);
     }
 
-
     private Subscription getSubscriptionOrThrow(Long subscriptionId) {
 
-        return subscriptionRepository.findById(subscriptionId).orElseThrow(
+        return subscriptionRepository.findByIdAndIsDeletedFalse(subscriptionId).orElseThrow(
                 () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
         );
-    }
-
-    @Transactional(readOnly = true)
-    public Slice<GetSubscriptionResponse> getSubscriptionListByStore(Long storeId, Pageable pageable) {
-        Slice<Subscription> subscriptionList = subscriptionRepository.findAllByStoreId(storeId, pageable);
-        return subscriptionList.map(GetSubscriptionResponse::from);
     }
 }
 
