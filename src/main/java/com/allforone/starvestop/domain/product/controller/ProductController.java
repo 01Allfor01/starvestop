@@ -8,13 +8,12 @@ import com.allforone.starvestop.domain.product.dto.response.*;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
@@ -38,15 +37,10 @@ public class ProductController {
 
     //특정 매장 상품 목록 조회
     @GetMapping("/stores/{storeId}/products")
-    public ResponseEntity<CommonResponse<Slice<GetProductResponse>>> getProductStoreList(
-            @PathVariable Long storeId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public ResponseEntity<CommonResponse<List<GetProductResponse>>> getProductStoreList(@PathVariable Long storeId) {
+        List<GetProductResponse> getProductResponseSlice = productService.getProductStoreList(storeId);
 
-        Slice<GetProductResponse> getProductResponseSlice = productService.getProductStoreList(storeId, pageable);
-
-        CommonResponse<Slice<GetProductResponse>> response =
+        CommonResponse<List<GetProductResponse>> response =
                 CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseSlice);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -54,14 +48,10 @@ public class ProductController {
 
     //마감 세일 상품 목록 조회
     @GetMapping("/products/sale")
-    public ResponseEntity<CommonResponse<Slice<GetProductSaleResponse>>> getProductSaleList(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public ResponseEntity<CommonResponse<List<GetProductSaleResponse>>> getProductSaleList() {
+        List<GetProductSaleResponse> getProductSaleResponseSlice = productService.getProductSaleList();
 
-        Slice<GetProductSaleResponse> getProductSaleResponseSlice = productService.getProductSaleList(pageable);
-
-        CommonResponse<Slice<GetProductSaleResponse>> response =
+        CommonResponse<List<GetProductSaleResponse>> response =
                 CommonResponse.success(PRODUCT_LIST_BY_SALE_SUCCESS, getProductSaleResponseSlice);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);

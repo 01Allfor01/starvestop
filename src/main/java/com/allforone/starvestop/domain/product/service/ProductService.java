@@ -13,10 +13,10 @@ import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +37,8 @@ public class ProductService {
                 request.getDescription(),
                 request.getStock(),
                 request.getPrice(),
-                request.getSalePrice(), request.getStatus());
+                request.getSalePrice(),
+                request.getStatus());
 
         Product savedProduct = productRepository.save(product);
 
@@ -46,20 +47,26 @@ public class ProductService {
 
     //매장 상품 목록 조회
     @Transactional(readOnly = true)
-    public Slice<GetProductResponse> getProductStoreList(Long storeId, Pageable pageable) {
+    public List<GetProductResponse> getProductStoreList(Long storeId) {
         Store store = getStoreOrThrow(storeId);
 
-        Slice<Product> productSlice = productRepository.findAllByStoreAndIsDeletedFalse(store, pageable);
+        List<Product> productSlice = productRepository.findAllByStoreAndIsDeletedFalse(store);
 
-        return productSlice.map(GetProductResponse::from);
+        return productSlice
+                .stream()
+                .map(GetProductResponse::from)
+                .toList();
     }
 
     //마감 세일 상품 목록 조회
     @Transactional(readOnly = true)
-    public Slice<GetProductSaleResponse> getProductSaleList(Pageable pageable) {
-        Slice<Product> productSlice = productRepository.findAllByStatusAndIsDeletedFalse(ProductStatus.SALE, pageable);
+    public List<GetProductSaleResponse> getProductSaleList() {
+        List<Product> productSlice = productRepository.findAllByStatusAndIsDeletedFalse(ProductStatus.SALE);
 
-        return productSlice.map(GetProductSaleResponse::from);
+        return productSlice
+                .stream()
+                .map(GetProductSaleResponse::from)
+                .toList();
     }
 
     //상품 상세 조회
