@@ -30,7 +30,7 @@ public class SubscriptionService {
     @Transactional
     public CreateSubscriptionResponse createSubscription(AuthUser authUser, Long storeId, @Valid CreateSubscriptionRequest request) {
 
-        Store store = storeRepository.findById(storeId).orElseThrow(
+        Store store = storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
 
@@ -39,7 +39,15 @@ public class SubscriptionService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        Subscription subscription = Subscription.create(store, request.getSubscriptionName(), request.getDescription(), request.getPrice());
+        Subscription subscription = Subscription.create(
+                store,
+                request.getSubscriptionName(),
+                request.getDescription(),
+                request.getDay(),
+                request.getMealTime(),
+                request.getPrice(),
+                request.getStock()
+        );
 
         Subscription savedSubscription = subscriptionRepository.save(subscription);
 
@@ -47,9 +55,9 @@ public class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetSubscriptionResponse> getSubscriptions() {
+    public List<GetSubscriptionResponse> getSubscriptionList() {
 
-        List<Subscription> subscriptionList = subscriptionRepository.findAll();
+        List<Subscription> subscriptionList = subscriptionRepository.findAllByIsDeletedIsFalse();
         return subscriptionList.stream().map(GetSubscriptionResponse::from).toList();
     }
 
@@ -61,29 +69,26 @@ public class SubscriptionService {
     }
 
     @Transactional
-    public UpdateSubscriptionResponse updateSubscription(AuthUser authUser, Long subscriptionId, @Valid UpdateSubscriptionRequest request) {
-
-        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
-        checkPermission(authUser, subscription);
-
-        subscription.update(
-                request.getSubscriptionName(),
-                request.getDescription(),
-                request.getPrice()
-        );
-
-        subscriptionRepository.flush();
-
-        return UpdateSubscriptionResponse.from(subscription);
-    }
-
-    @Transactional
     public void deleteSubscription(AuthUser authUser, Long subscriptionId) {
 
         Subscription subscription = getSubscriptionOrThrow(subscriptionId);
         checkPermission(authUser, subscription);
 
         subscription.delete();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetSubscriptionResponse> getSubscriptionListByStore(Long storeId) {
+        List<Subscription> subscriptionList = subscriptionRepository.findByStoreIdAndIsDeletedIsFalse(storeId);
+        return subscriptionList.stream().map(GetSubscriptionResponse::from).toList();
+    }
+
+    @Transactional
+    public UpdateSubscriptionResponse updateSubscription(UpdateSubscriptionRequest request, Long subscriptionId) {
+        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
+        subscription.changeIsJoinable(request.isJoinable());
+        subscriptionRepository.flush();
+        return UpdateSubscriptionResponse.from(subscription);
     }
 
     private static void checkPermission(AuthUser authUser, Subscription subscription) {
@@ -100,10 +105,9 @@ public class SubscriptionService {
         throw new CustomException(ErrorCode.FORBIDDEN);
     }
 
-
     private Subscription getSubscriptionOrThrow(Long subscriptionId) {
 
-        return subscriptionRepository.findById(subscriptionId).orElseThrow(
+        return subscriptionRepository.findByIdAndIsDeletedIsFalse(subscriptionId).orElseThrow(
                 () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
         );
     }
