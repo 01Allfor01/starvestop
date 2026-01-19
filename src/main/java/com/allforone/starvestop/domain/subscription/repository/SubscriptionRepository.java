@@ -12,5 +12,5 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
 
     List<Subscription> findByStoreIdAndIsDeletedFalse(Long storeId);
 
-    Optional<Subscription> findByIdAndIsDeletedFalse(Long subscriptionId);
+    Optional<Subscription> findByIdAndIsDeletedFalse(Long id);
 }
