@@ -30,7 +30,7 @@ public class SubscriptionService {
     @Transactional
     public CreateSubscriptionResponse createSubscription(AuthUser authUser, Long storeId, @Valid CreateSubscriptionRequest request) {
 
-        Store store = storeRepository.findById(storeId).orElseThrow(
+        Store store = storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
 
