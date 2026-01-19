@@ -5,6 +5,7 @@ import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.store.dto.StoreListResponse;
 import com.allforone.starvestop.domain.store.dto.StoreRequest;
 import com.allforone.starvestop.domain.store.dto.StoreResponse;
+import com.allforone.starvestop.domain.store.dto.UpdateStoreRequest;
 import com.allforone.starvestop.domain.store.service.StoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ public class StoreController {
     public ResponseEntity<CommonResponse<StoreResponse>> updateStore(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long storeId,
-            @Valid @RequestBody StoreRequest request
+            @Valid @RequestBody UpdateStoreRequest request
     ) {
         StoreResponse response = storeService.updateStore(authUser.getUserId(), storeId, request);
         return ResponseEntity.ok(CommonResponse.success(STORE_UPDATE_SUCCESS, response));

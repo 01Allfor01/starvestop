@@ -8,7 +8,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.geo.Point;
 
 import java.time.LocalTime;
@@ -16,7 +15,6 @@ import java.time.LocalTime;
 @Getter
 @Entity
 @Table(name = "stores")
-@SQLRestriction("is_deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Store extends BaseEntity {
 
@@ -55,6 +53,9 @@ public class Store extends BaseEntity {
     @Enumerated(value = EnumType.STRING)
     private StoreStatus status;
 
+    @Column(nullable = false)
+    private String businessRegistrationNumber;
+
     private Store(
             User user,
             String storeName,
@@ -64,7 +65,8 @@ public class Store extends BaseEntity {
             Point location,
             LocalTime openTime,
             LocalTime closeTime,
-            StoreStatus status
+            StoreStatus status,
+            String businessRegistrationNumber
     ) {
         this.user = user;
         this.storeName = storeName;
@@ -75,6 +77,7 @@ public class Store extends BaseEntity {
         this.openTime = openTime;
         this.closeTime = closeTime;
         this.status = status;
+        this.businessRegistrationNumber = businessRegistrationNumber;
     }
 
     public static Store create(
@@ -86,7 +89,8 @@ public class Store extends BaseEntity {
             Point location,
             LocalTime openTime,
             LocalTime closeTime,
-            StoreStatus status
+            StoreStatus status,
+            String businessRegistrationNumber
     ) {
 
         return new Store(
@@ -98,7 +102,8 @@ public class Store extends BaseEntity {
                 location,
                 openTime,
                 closeTime,
-                status
+                status,
+                businessRegistrationNumber
         );
     }
 

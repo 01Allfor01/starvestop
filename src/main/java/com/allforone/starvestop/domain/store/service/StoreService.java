@@ -5,8 +5,8 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.store.dto.StoreListResponse;
 import com.allforone.starvestop.domain.store.dto.StoreRequest;
 import com.allforone.starvestop.domain.store.dto.StoreResponse;
+import com.allforone.starvestop.domain.store.dto.UpdateStoreRequest;
 import com.allforone.starvestop.domain.store.entity.Store;
-import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.entity.User;
@@ -37,20 +37,20 @@ public class StoreService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        StoreCategory category = StoreCategory.valueOf(request.getCategory());
-        StoreStatus status = getStatus(request);
-        Point location = getLocation(request);
+        StoreStatus status = getStatus(request.getStatus());
+        Point location = getLocation(request.getLongitude(), request.getLatitude());
 
         Store store = Store.create(
                 user,
                 request.getStoreName(),
                 request.getAddress(),
                 request.getDescription(),
-                category,
+                request.getCategory(),
                 location,
                 request.getOpenTime(),
                 request.getCloseTime(),
-                status
+                status,
+                request.getBusinessRegistrationNumber()
         );
 
         Store savedStore = storeRepository.save(store);
@@ -58,20 +58,19 @@ public class StoreService {
     }
 
     @Transactional
-    public StoreResponse updateStore(Long userId, Long storeId, StoreRequest request) {
+    public StoreResponse updateStore(Long userId, Long storeId, UpdateStoreRequest request) {
         Store store = getStore(storeId);
 
         idMismatchCheck(userId, store);
 
-        StoreCategory category = StoreCategory.valueOf(request.getCategory());
-        StoreStatus status = getStatus(request);
-        Point location = getLocation(request);
+        StoreStatus status = getStatus(request.getStatus());
+        Point location = getLocation(request.getLongitude(), request.getLatitude());
 
         store.update(
                 request.getStoreName(),
                 request.getAddress(),
                 request.getDescription(),
-                category,
+                request.getCategory(),
                 location,
                 request.getOpenTime(),
                 request.getCloseTime(),
@@ -99,11 +98,7 @@ public class StoreService {
 
     @Transactional(readOnly = true)
     public List<StoreListResponse> getStoreList() {
-        List<Store> storeList = storeRepository.findAll();
-
-        if (storeList.isEmpty()) {
-            throw new CustomException(ErrorCode.STORE_NOT_FOUND);
-        }
+        List<Store> storeList = storeRepository.findAllByIsDeletedTrue();
 
         List<StoreListResponse> response = new ArrayList<>();
         for (Store store : storeList) {
@@ -113,10 +108,9 @@ public class StoreService {
     }
 
     private Store getStore(Long storeId) {
-        Store store = storeRepository.findById(storeId).orElseThrow(
+        return storeRepository.findByIdAndIsDeletedTrue(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
-        return store;
     }
 
     private static void idMismatchCheck(Long userId, Store store) {
@@ -125,17 +119,15 @@ public class StoreService {
         }
     }
 
-    private StoreStatus getStatus(StoreRequest request) {
-        StoreStatus status = request.getStatus() == null
-                ? StoreStatus.CLOSED : StoreStatus.valueOf(request.getStatus());
-        return status;
+    private StoreStatus getStatus(StoreStatus status) {
+        return status == null
+                ? StoreStatus.CLOSED : status;
     }
 
-    private Point getLocation(StoreRequest request) {
-        Point location = new Point(
-                request.getLongitude(),
-                request.getLatitude()
+    private Point getLocation(Double longitude, Double latitude) {
+        return  new Point(
+                longitude,
+                latitude
         );
-        return location;
     }
 }
