@@ -98,7 +98,7 @@ public class StoreService {
 
     @Transactional(readOnly = true)
     public List<StoreListResponse> getStoreList() {
-        List<Store> storeList = storeRepository.findAllByIsDeletedTrue();
+        List<Store> storeList = storeRepository.findAllByIsDeletedFalse();
 
         List<StoreListResponse> response = new ArrayList<>();
         for (Store store : storeList) {
@@ -108,7 +108,7 @@ public class StoreService {
     }
 
     private Store getStore(Long storeId) {
-        return storeRepository.findByIdAndIsDeletedTrue(storeId).orElseThrow(
+        return storeRepository.findByIdAndIsDeletedFalse(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
     }
