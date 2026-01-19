@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    List<Product> findAllByStatusAndIsDeletedFalse(ProductStatus status);
+    List<Product> findAllByStatusAndIsDeletedIsFalse(ProductStatus status);
 
-    List<Product> findAllByStoreAndIsDeletedFalse(Store store);
+    List<Product> findAllByStoreAndIsDeletedIsFalse(Store store);
 
-    Optional<Product> findByIdAndIsDeletedFalse(Long id);
+    Optional<Product> findByIdAndIsDeletedIsFalse(Long id);
 }

@@ -50,7 +50,7 @@ public class ProductService {
     public List<GetProductResponse> getProductStoreList(Long storeId) {
         Store store = getStoreOrThrow(storeId);
 
-        List<Product> productSlice = productRepository.findAllByStoreAndIsDeletedFalse(store);
+        List<Product> productSlice = productRepository.findAllByStoreAndIsDeletedIsFalse(store);
 
         return productSlice
                 .stream()
@@ -61,7 +61,7 @@ public class ProductService {
     //마감 세일 상품 목록 조회
     @Transactional(readOnly = true)
     public List<GetProductSaleResponse> getProductSaleList() {
-        List<Product> productSlice = productRepository.findAllByStatusAndIsDeletedFalse(ProductStatus.SALE);
+        List<Product> productSlice = productRepository.findAllByStatusAndIsDeletedIsFalse(ProductStatus.SALE);
 
         return productSlice
                 .stream()
@@ -122,7 +122,7 @@ public class ProductService {
 
     //상품 조회
     private Product getProductOrThrow(Long productId) {
-        return productRepository.findByIdAndIsDeletedFalse(productId).orElseThrow(
+        return productRepository.findByIdAndIsDeletedIsFalse(productId).orElseThrow(
                 () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 
