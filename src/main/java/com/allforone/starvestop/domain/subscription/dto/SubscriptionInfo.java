@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.usersubscription.dto;
+package com.allforone.starvestop.domain.subscription.dto;
 
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.usersubscription.entity.UserSubscription;
@@ -13,7 +13,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class UserSubscriptionInfo {
+public class SubscriptionInfo {
     private final String name;
     private final BigDecimal price;
     private final LocalDateTime expiredAt;
@@ -21,8 +21,8 @@ public class UserSubscriptionInfo {
     private final List<MealTime> mealTimes;
     private final List<Day> days;
 
-    public static UserSubscriptionInfo from(UserSubscription userSubscription, Subscription subscription) {
-        return new UserSubscriptionInfo(
+    public static SubscriptionInfo from(UserSubscription userSubscription, Subscription subscription) {
+        return new SubscriptionInfo(
                 subscription.getSubscriptionName(),
                 subscription.getPrice(),
                 userSubscription.getExpiresAt(),
