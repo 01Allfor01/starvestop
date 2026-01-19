@@ -3,8 +3,6 @@ package com.allforone.starvestop.domain.subscription.entity;
 import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.domain.store.entity.Store;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,20 +31,15 @@ public class Subscription extends BaseEntity {
     private String description;
 
     @Column(nullable = false)
-    @Min(value = 1)
-    @Max(value = 127)
     private int day;
 
     @Column(nullable = false)
-    @Min(value = 1)
-    @Max(value = 7)
     private int mealTime;
 
     @Column(nullable = false)
     private BigDecimal price;
 
     @Column(nullable = false)
-    @Max(value = 9999)
     private Long stock;
 
     @Column(nullable = false)
