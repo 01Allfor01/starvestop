@@ -38,10 +38,10 @@ public class ProductController {
     //특정 매장 상품 목록 조회
     @GetMapping("/stores/{storeId}/products")
     public ResponseEntity<CommonResponse<List<GetProductResponse>>> getProductStoreList(@PathVariable Long storeId) {
-        List<GetProductResponse> getProductResponseSlice = productService.getProductStoreList(storeId);
+        List<GetProductResponse> getProductResponseList = productService.getProductStoreList(storeId);
 
         CommonResponse<List<GetProductResponse>> response =
-                CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseSlice);
+                CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseList);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -49,10 +49,10 @@ public class ProductController {
     //마감 세일 상품 목록 조회
     @GetMapping("/products/sale")
     public ResponseEntity<CommonResponse<List<GetProductSaleResponse>>> getProductSaleList() {
-        List<GetProductSaleResponse> getProductSaleResponseSlice = productService.getProductSaleList();
+        List<GetProductSaleResponse> getProductSaleResponseList = productService.getProductSaleList();
 
         CommonResponse<List<GetProductSaleResponse>> response =
-                CommonResponse.success(PRODUCT_LIST_BY_SALE_SUCCESS, getProductSaleResponseSlice);
+                CommonResponse.success(PRODUCT_LIST_BY_SALE_SUCCESS, getProductSaleResponseList);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
