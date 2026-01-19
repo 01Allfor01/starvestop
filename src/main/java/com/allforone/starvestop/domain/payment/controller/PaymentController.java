@@ -36,7 +36,7 @@ public class PaymentController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<Slice<GetPaymentResponse>>> getMyPaymentS(
+    public ResponseEntity<CommonResponse<Slice<GetPaymentResponse>>> getMyPaymentList(
             @AuthenticationPrincipal AuthUser authUser,
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
         Slice<GetPaymentResponse> response = paymentService.getMyPaymentList(authUser.getUserId(), pageable);
