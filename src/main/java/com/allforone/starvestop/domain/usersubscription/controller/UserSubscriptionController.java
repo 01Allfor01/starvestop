@@ -2,11 +2,9 @@ package com.allforone.starvestop.domain.usersubscription.controller;
 
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
-import com.allforone.starvestop.domain.usersubscription.dto.request.CreateUserSubscriptionRequest;
 import com.allforone.starvestop.domain.usersubscription.dto.response.CreateUserSubscriptionResponse;
 import com.allforone.starvestop.domain.usersubscription.dto.response.GetUserSubscriptionResponse;
 import com.allforone.starvestop.domain.usersubscription.service.UserSubscriptionService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,10 +25,9 @@ public class UserSubscriptionController {
     @PostMapping("/subscriptions/{subscriptionId}")
     public ResponseEntity<CommonResponse<CreateUserSubscriptionResponse>> createUserSubscription(
             @AuthenticationPrincipal AuthUser authUser,
-            @PathVariable Long subscriptionId,
-            @Valid @RequestBody CreateUserSubscriptionRequest request
+            @PathVariable Long subscriptionId
     ) {
-        CreateUserSubscriptionResponse response = userSubscriptionService.createUserSubscription(authUser, subscriptionId, request);
+        CreateUserSubscriptionResponse response = userSubscriptionService.createUserSubscription(authUser, subscriptionId);
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(USER_SUBSCRIPTION_CREATE_SUCCESS, response));
     }
 

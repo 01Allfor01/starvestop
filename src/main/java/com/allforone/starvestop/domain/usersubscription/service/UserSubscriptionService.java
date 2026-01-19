@@ -7,12 +7,10 @@ import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
-import com.allforone.starvestop.domain.usersubscription.dto.request.CreateUserSubscriptionRequest;
 import com.allforone.starvestop.domain.usersubscription.dto.response.CreateUserSubscriptionResponse;
 import com.allforone.starvestop.domain.usersubscription.dto.response.GetUserSubscriptionResponse;
 import com.allforone.starvestop.domain.usersubscription.entity.UserSubscription;
 import com.allforone.starvestop.domain.usersubscription.repository.UserSubscriptionRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,42 +26,34 @@ public class UserSubscriptionService {
     private final UserSubscriptionRepository userSubscriptionRepository;
 
     @Transactional
-    public CreateUserSubscriptionResponse createUserSubscription(
-            AuthUser authUser, Long subscriptionId,
-            @Valid CreateUserSubscriptionRequest request
-    ) {
+    public CreateUserSubscriptionResponse createUserSubscription(AuthUser authUser, Long subscriptionId) {
 
-        User user = userRepository.findById(authUser.getUserId()).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
-        );
+        User user = getUserOrThrow(authUser.getUserId());
 
-        Subscription subscription = subscriptionRepository.findById(subscriptionId).orElseThrow(
+        Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(subscriptionId).orElseThrow(
                 () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
         );
 
-        UserSubscription userSubscription = UserSubscription.create(user, subscription, request.getDay(), request.getMealTime());
+        UserSubscription userSubscription = UserSubscription.create(user, subscription);
         UserSubscription savedUserSubscription = userSubscriptionRepository.save(userSubscription);
 
         return CreateUserSubscriptionResponse.from(savedUserSubscription);
     }
 
+
     @Transactional(readOnly = true)
     public List<GetUserSubscriptionResponse> getUserSubscriptions(AuthUser authUser) {
 
-        User user = userRepository.findById(authUser.getUserId()).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
-        );
+        User user = getUserOrThrow(authUser.getUserId());
 
-        List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAllByUser(user);
+        List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAllByUserAndIsDeletedIsFalse(user);
         return userSubscriptionList.stream().map(GetUserSubscriptionResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
     public GetUserSubscriptionResponse getUserSubscription(AuthUser authUser, Long userSubscriptionId) {
 
-        UserSubscription userSubscription = userSubscriptionRepository.findById(userSubscriptionId).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_SUBSCRIPTION_NOT_FOUND)
-        );
+        UserSubscription userSubscription = getUserSubscriptionOrThrow(userSubscriptionId);
 
         if (!userSubscription.getUser().getId().equals(authUser.getUserId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
@@ -75,7 +65,7 @@ public class UserSubscriptionService {
     @Transactional
     public void deleteUserSubscription(AuthUser authUser, Long userSubscriptionId) {
 
-        UserSubscription userSubscription = getSubscriptionOrThrow(userSubscriptionId);
+        UserSubscription userSubscription = getUserSubscriptionOrThrow(userSubscriptionId);
 
         if (!userSubscription.getUser().getId().equals(authUser.getUserId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
@@ -84,9 +74,16 @@ public class UserSubscriptionService {
         userSubscription.delete();
     }
 
-    private UserSubscription getSubscriptionOrThrow(Long userSubscriptionId) {
+    private User getUserOrThrow(Long userId) {
 
-        return userSubscriptionRepository.findById(userSubscriptionId).orElseThrow(
+        return userRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+        );
+    }
+
+    private UserSubscription getUserSubscriptionOrThrow(Long userSubscriptionId) {
+
+        return userSubscriptionRepository.findByIdAndIsDeletedIsFalse(userSubscriptionId).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_SUBSCRIPTION_NOT_FOUND)
         );
     }
