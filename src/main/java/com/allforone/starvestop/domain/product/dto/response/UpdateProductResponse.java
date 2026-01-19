@@ -14,6 +14,7 @@ public class UpdateProductResponse {
     private final Long storeId;
     private final String productName;
     private final String description;
+    private final Long stock;
     private final BigDecimal price;
     private final BigDecimal salePrice;
     private final ProductStatus status;
@@ -24,6 +25,7 @@ public class UpdateProductResponse {
                 product.getStore().getId(),
                 product.getProductName(),
                 product.getDescription(),
+                product.getStock(),
                 product.getPrice(),
                 product.getSalePrice(),
                 product.getStatus()

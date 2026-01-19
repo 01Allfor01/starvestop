@@ -9,15 +9,21 @@ import java.math.BigDecimal;
 @Getter
 @AllArgsConstructor
 public class ProductInfo {
-    private final String name;
+    private final Long productId;
+    private final Long storeId;
+    private final String productName;
     private final String description;
+    private final Long stock;
     private final BigDecimal price;
     private final BigDecimal salePrice;
 
     public static ProductInfo from(Product product) {
         return new ProductInfo(
+                product.getId(),
+                product.getStore().getId(),
                 product.getProductName(),
                 product.getDescription(),
+                product.getStock(),
                 product.getPrice(),
                 product.getSalePrice()
         );
