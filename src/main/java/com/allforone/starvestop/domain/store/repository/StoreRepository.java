@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface StoreRepository extends JpaRepository<Store, Long> {
-    Optional<Store> findByIdAndIsDeletedIsFalse(Long id);
+    Optional<Store> findByIdAndIsDeletedFalse(Long id);
 }
