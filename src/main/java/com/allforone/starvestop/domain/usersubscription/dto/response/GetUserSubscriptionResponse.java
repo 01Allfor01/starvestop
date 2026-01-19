@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.usersubscription.dto.response;
 
 import com.allforone.starvestop.domain.usersubscription.entity.UserSubscription;
+import com.allforone.starvestop.domain.usersubscription.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -15,6 +16,7 @@ public class GetUserSubscriptionResponse {
     private final String subscriptionName;
     private final String storeName;
     private final BigDecimal price;
+    private final Status status;
     private final LocalDateTime createdAt;
     private final LocalDateTime expiresAt;
 
@@ -24,6 +26,7 @@ public class GetUserSubscriptionResponse {
                 userSubscription.getSubscription().getSubscriptionName(),
                 userSubscription.getSubscription().getStore().getStoreName(),
                 userSubscription.getSubscription().getPrice(),
+                userSubscription.getStatus(),
                 userSubscription.getCreatedAt(),
                 userSubscription.getExpiresAt()
         );

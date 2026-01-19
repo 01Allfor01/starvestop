@@ -3,6 +3,7 @@ package com.allforone.starvestop.domain.usersubscription.entity;
 import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.user.entity.User;
+import com.allforone.starvestop.domain.usersubscription.enums.Status;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -32,13 +33,17 @@ public class UserSubscription extends BaseEntity {
     private User user;
 
     @Column(nullable = false)
-    private LocalDateTime expiresAt;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
+    @Column(nullable = false)
+    private LocalDateTime expiresAt;
 
     public UserSubscription(User user, Subscription subscription) {
         this.user = user;
         this.subscription = subscription;
         this.expiresAt = LocalDateTime.now().plusMonths(1);
+        this.status = Status.PENDING;
     }
 
     public static UserSubscription create(User user, Subscription subscription) {
