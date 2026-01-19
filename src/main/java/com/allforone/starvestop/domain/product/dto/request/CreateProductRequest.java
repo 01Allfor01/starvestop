@@ -33,6 +33,6 @@ public class CreateProductRequest {
     @DecimalMin(value = "0.0", inclusive = true, message = "상품 세일 가격은 0 이상이어야 합니다")
     private BigDecimal salePrice;
 
-    @NotBlank(message = "상품 상태를 적어주세요")
+    @NotNull(message = "상품 상태를 적어주세요")
     private ProductStatus status;
 }
