@@ -22,6 +22,7 @@ public class StoreResponse {
     private final StoreStatus status;
     private final LocalTime openTime;
     private final LocalTime closeTime;
+    private final String businessRegistrationNumber;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
@@ -36,6 +37,7 @@ public class StoreResponse {
                 store.getStatus(),
                 store.getOpenTime(),
                 store.getCloseTime(),
+                store.getBusinessRegistrationNumber(),
                 store.getCreatedAt(),
                 store.getUpdatedAt()
         );
