@@ -1,6 +1,8 @@
 package com.allforone.starvestop.domain.subscription.entity;
 
 import com.allforone.starvestop.common.entity.BaseEntity;
+import com.allforone.starvestop.common.exception.CustomException;
+import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.store.entity.Store;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -58,6 +60,13 @@ public class Subscription extends BaseEntity {
 
     public static Subscription create(Store store, String subscriptionName, String description, int day, int mealTime, BigDecimal price, Long stock) {
         return new Subscription(store, subscriptionName, description, day, mealTime, price, stock);
+    }
+
+    public void decrease(Long count) {
+        if (this.stock == 0) {
+            throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
+        }
+        this.stock -= count;
     }
 
     public void changeIsJoinable(boolean joinable) {

@@ -41,6 +41,7 @@ public enum ErrorCode {
     PAYMENT_EXPIRED(HttpStatus.GONE, "결제 유효 시간이 만료되었습니다"),
     PAYMENT_VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "결제 정보 검증에 실패했습니다");
 
+
     private final HttpStatus status;
     private final String message;
 

@@ -9,6 +9,7 @@ import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentRespons
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
+import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.enums.PurchaseType;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
 import com.allforone.starvestop.domain.product.entity.Product;
@@ -97,11 +98,29 @@ public class PaymentService {
                 () -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND)
         );
 
+        if (payment.getStatus().equals(PaymentStatus.SUCCEEDED)) {
+            return "/success.html"
+                    + "?orderId=" + payment.getOrderId()
+                    + "&amount=" + payment.getAmount();
+        }
+
         if (payment.getAmount().compareTo(request.getAmount()) != 0) {
             throw new CustomException(ErrorCode.PAYMENT_VALIDATION_FAILED);
         }
 
         payment.success(request.getPaymentKey());
+
+        if (payment.getPurchaseType().equals(PurchaseType.SUBSCRIPTION)) {
+            Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(payment.getPurchaseId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+            subscription.decrease(1L);
+        } else if (payment.getPurchaseType().equals(PurchaseType.PRODUCT)) {
+            Product product = productRepository.findByIdAndIsDeletedIsFalse(payment.getPurchaseId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+            product.decrease(1L);
+        } else {
+            throw new CustomException(ErrorCode.PURCHASE_TYPE_NOT_FOUND);
+        }
 
         return "/success.html"
                 + "?orderId=" + payment.getOrderId()
