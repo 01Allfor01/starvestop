@@ -8,10 +8,14 @@ import lombok.Getter;
 @AllArgsConstructor
 public class UpdateSubscriptionResponse {
 
+    private final Long subscriptionId;
+    private final Long storeId;
     private final boolean isJoinable;
 
     public static UpdateSubscriptionResponse from(Subscription subscription) {
         return new UpdateSubscriptionResponse(
+                subscription.getId(),
+                subscription.getStore().getId(),
                 subscription.isJoinable()
         );
     }
