@@ -2,10 +2,10 @@ package com.allforone.starvestop.domain.store.controller;
 
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
-import com.allforone.starvestop.domain.store.dto.StoreListResponse;
-import com.allforone.starvestop.domain.store.dto.StoreRequest;
-import com.allforone.starvestop.domain.store.dto.StoreResponse;
-import com.allforone.starvestop.domain.store.dto.UpdateStoreRequest;
+import com.allforone.starvestop.domain.store.dto.request.StoreRequest;
+import com.allforone.starvestop.domain.store.dto.request.UpdateStoreRequest;
+import com.allforone.starvestop.domain.store.dto.response.StoreListResponse;
+import com.allforone.starvestop.domain.store.dto.response.StoreResponse;
 import com.allforone.starvestop.domain.store.service.StoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

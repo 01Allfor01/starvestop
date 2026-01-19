@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.store.dto;
+package com.allforone.starvestop.domain.store.dto.response;
 
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
