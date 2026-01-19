@@ -6,19 +6,17 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.subscription.dto.request.CreateSubscriptionRequest;
-import com.allforone.starvestop.domain.subscription.dto.request.UpdateSubscriptionRequest;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.GetSubscriptionResponse;
-import com.allforone.starvestop.domain.subscription.dto.response.UpdateSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +37,15 @@ public class SubscriptionService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        Subscription subscription = Subscription.create(store, request.getSubscriptionName(), request.getDescription(), request.getPrice());
+        Subscription subscription = Subscription.create(
+                store,
+                request.getSubscriptionName(),
+                request.getDescription(),
+                request.getDay(),
+                request.getMealTime(),
+                request.getPrice(),
+                request.getStock()
+        );
 
         Subscription savedSubscription = subscriptionRepository.save(subscription);
 
@@ -47,10 +53,10 @@ public class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetSubscriptionResponse> getSubscriptions() {
+    public Slice<GetSubscriptionResponse> getSubscriptionList(Pageable pageable) {
 
-        List<Subscription> subscriptionList = subscriptionRepository.findAll();
-        return subscriptionList.stream().map(GetSubscriptionResponse::from).toList();
+        Slice<Subscription> subscriptionList = subscriptionRepository.findAllBy(pageable);
+        return subscriptionList.map(GetSubscriptionResponse::from);
     }
 
     @Transactional(readOnly = true)
@@ -58,23 +64,6 @@ public class SubscriptionService {
 
         Subscription subscription = getSubscriptionOrThrow(subscriptionId);
         return GetSubscriptionResponse.from(subscription);
-    }
-
-    @Transactional
-    public UpdateSubscriptionResponse updateSubscription(AuthUser authUser, Long subscriptionId, @Valid UpdateSubscriptionRequest request) {
-
-        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
-        checkPermission(authUser, subscription);
-
-        subscription.update(
-                request.getSubscriptionName(),
-                request.getDescription(),
-                request.getPrice()
-        );
-
-        subscriptionRepository.flush();
-
-        return UpdateSubscriptionResponse.from(subscription);
     }
 
     @Transactional
@@ -106,6 +95,12 @@ public class SubscriptionService {
         return subscriptionRepository.findById(subscriptionId).orElseThrow(
                 () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
         );
+    }
+
+    @Transactional(readOnly = true)
+    public Slice<GetSubscriptionResponse> getSubscriptionListByStore(Long storeId, Pageable pageable) {
+        Slice<Subscription> subscriptionList = subscriptionRepository.findAllByStoreId(storeId, pageable);
+        return subscriptionList.map(GetSubscriptionResponse::from);
     }
 }
 

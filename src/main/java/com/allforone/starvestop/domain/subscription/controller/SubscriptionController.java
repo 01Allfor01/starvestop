@@ -3,19 +3,18 @@ package com.allforone.starvestop.domain.subscription.controller;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.subscription.dto.request.CreateSubscriptionRequest;
-import com.allforone.starvestop.domain.subscription.dto.request.UpdateSubscriptionRequest;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.GetSubscriptionResponse;
-import com.allforone.starvestop.domain.subscription.dto.response.UpdateSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.service.SubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
@@ -36,8 +35,10 @@ public class SubscriptionController {
     }
 
     @GetMapping("/subscriptions")
-    public ResponseEntity<CommonResponse<List<GetSubscriptionResponse>>> getSubscriptions() {
-        List<GetSubscriptionResponse> responseList = subscriptionService.getSubscriptions();
+    public ResponseEntity<CommonResponse<Slice<GetSubscriptionResponse>>> getSubscriptionList(
+            @PageableDefault(size = 10, page = 0) Pageable pageable
+    ) {
+        Slice<GetSubscriptionResponse> responseList = subscriptionService.getSubscriptionList(pageable);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, responseList));
     }
 
@@ -47,14 +48,13 @@ public class SubscriptionController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, response));
     }
 
-    @PatchMapping("/subscriptions/{subscriptionId}")
-    public ResponseEntity<CommonResponse<UpdateSubscriptionResponse>> updateSubscription(
-            @AuthenticationPrincipal AuthUser authUser,
-            @PathVariable Long subscriptionId,
-            @Valid @RequestBody UpdateSubscriptionRequest request
+    @GetMapping("/stores/{storeId}/subscriptions")
+    public ResponseEntity<CommonResponse<Slice<GetSubscriptionResponse>>> getSubscriptionListByStore(
+            @PathVariable Long storeId,
+            @PageableDefault(size = 10, page = 0) Pageable pageable
     ) {
-        UpdateSubscriptionResponse response = subscriptionService.updateSubscription(authUser, subscriptionId, request);
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_UPDATE_SUCCESS, response));
+        Slice<GetSubscriptionResponse> responseList = subscriptionService.getSubscriptionListByStore(storeId, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, responseList));
     }
 
     @DeleteMapping("/subscriptions/{subscriptionId}")
