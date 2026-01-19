@@ -1,8 +1,8 @@
 package com.allforone.starvestop.domain.subscription.dto.response;
 
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
-import com.allforone.starvestop.domain.usersubscription.enums.Day;
-import com.allforone.starvestop.domain.usersubscription.enums.MealTime;
+import com.allforone.starvestop.domain.subscription.enums.Day;
+import com.allforone.starvestop.domain.subscription.enums.MealTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
