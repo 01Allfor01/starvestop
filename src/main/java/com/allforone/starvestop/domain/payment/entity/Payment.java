@@ -4,9 +4,8 @@ import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
-import com.allforone.starvestop.domain.product.entity.Product;
+import com.allforone.starvestop.domain.payment.enums.PurchaseType;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.usersubscription.entity.UserSubscription;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -32,14 +31,6 @@ public class Payment extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_subscription_id")
-    private UserSubscription userSubscription;
-
     @Column
     private String paymentKey;
 
@@ -53,6 +44,16 @@ public class Payment extends BaseEntity {
     @Column(nullable = false)
     private BigDecimal amount;
 
+    @Column(nullable = false)
+    private Long purchaseId;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PurchaseType purchaseType;
+
+    @Column(nullable = false)
+    private String purchaseName;
+
     @Column
     private LocalDateTime paymentAt;
 
@@ -61,20 +62,16 @@ public class Payment extends BaseEntity {
 
     private Payment(
             User user,
-            Product product,
-            UserSubscription userSubscription,
+            Long purchaseId,
+            PurchaseType purchaseType,
+            String purchaseName,
             String orderId,
             BigDecimal amount
     ) {
-        if (product == null && userSubscription == null) {
-            throw new CustomException(ErrorCode.PAYMENT_TARGET_REQUIRED);
-        }
-        if (product != null && userSubscription != null) {
-            throw new CustomException(ErrorCode.PAYMENT_TARGET_AMBIGUOUS);
-        }
         this.user = user;
-        this.product = product;
-        this.userSubscription = userSubscription;
+        this.purchaseId = purchaseId;
+        this.purchaseType = purchaseType;
+        this.purchaseName = purchaseName;
         this.orderId = orderId;
         this.amount = amount;
         this.status = PaymentStatus.CREATED;
@@ -82,15 +79,17 @@ public class Payment extends BaseEntity {
 
     public static Payment create(
             User user,
-            Product product,
-            UserSubscription userSubscription,
+            Long purchaseId,
+            PurchaseType purchaseType,
+            String purchaseName,
             String orderId,
             BigDecimal amount
     ) {
         return new Payment(
                 user,
-                product,
-                userSubscription,
+                purchaseId,
+                purchaseType,
+                purchaseName,
                 orderId,
                 amount
         );

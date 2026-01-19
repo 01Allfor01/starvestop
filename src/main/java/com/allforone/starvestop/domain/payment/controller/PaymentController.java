@@ -35,7 +35,9 @@ public class PaymentController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<GetPaymentResponse>>> getMyPaymentList(@AuthenticationPrincipal AuthUser authUser) {
+    public ResponseEntity<CommonResponse<List<GetPaymentResponse>>> getMyPaymentList(
+            @AuthenticationPrincipal AuthUser authUser
+    ) {
         List<GetPaymentResponse> response = paymentService.getMyPaymentList(authUser.getUserId());
 
         CommonResponse<List<GetPaymentResponse>> result = CommonResponse.success(SuccessMessage.MY_PAYMENT_LIST_GET_SUCCESS, response);
