@@ -46,7 +46,7 @@ public class ProductService {
 
     //매장 상품 목록 조회
     @Transactional(readOnly = true)
-    public Slice<GetProductResponse> getProductStoreSlice(Long storeId, Pageable pageable) {
+    public Slice<GetProductResponse> getProductStoreList(Long storeId, Pageable pageable) {
         Store store = getStoreOrThrow(storeId);
 
         Slice<Product> productSlice = productRepository.findAllByStoreAndIsDeletedFalse(store, pageable);
@@ -56,7 +56,7 @@ public class ProductService {
 
     //마감 세일 상품 목록 조회
     @Transactional(readOnly = true)
-    public Slice<GetProductSaleResponse> getProductSaleSlice(Pageable pageable) {
+    public Slice<GetProductSaleResponse> getProductSaleList(Pageable pageable) {
         Slice<Product> productSlice = productRepository.findAllByStatusAndIsDeletedFalse(ProductStatus.SALE, pageable);
 
         return productSlice.map(GetProductSaleResponse::from);

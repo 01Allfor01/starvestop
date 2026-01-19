@@ -44,7 +44,7 @@ public class ProductController {
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        Slice<GetProductResponse> getProductResponseSlice = productService.getProductStoreSlice(storeId, pageable);
+        Slice<GetProductResponse> getProductResponseSlice = productService.getProductStoreList(storeId, pageable);
 
         CommonResponse<Slice<GetProductResponse>> response =
                 CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseSlice);
@@ -59,7 +59,7 @@ public class ProductController {
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        Slice<GetProductSaleResponse> getProductSaleResponseSlice = productService.getProductSaleSlice(pageable);
+        Slice<GetProductSaleResponse> getProductSaleResponseSlice = productService.getProductSaleList(pageable);
 
         CommonResponse<Slice<GetProductSaleResponse>> response =
                 CommonResponse.success(PRODUCT_LIST_BY_SALE_SUCCESS, getProductSaleResponseSlice);
