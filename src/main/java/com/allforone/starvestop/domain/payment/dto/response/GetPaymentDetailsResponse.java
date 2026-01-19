@@ -6,6 +6,7 @@ import com.allforone.starvestop.domain.payment.enums.PurchaseType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -18,11 +19,10 @@ public class GetPaymentDetailsResponse {
     private final PurchaseType purchaseType;
     private final Long purchaseId;
     private final String purchaseName;
+    private final BigDecimal amount;
     private final LocalDateTime createdAt;
 
-    public static GetPaymentDetailsResponse from(
-            Payment payment
-    ) {
+    public static GetPaymentDetailsResponse from(Payment payment) {
         return new GetPaymentDetailsResponse(
                 payment.getId(),
                 payment.getOrderId(),
@@ -30,6 +30,7 @@ public class GetPaymentDetailsResponse {
                 payment.getPurchaseType(),
                 payment.getPurchaseId(),
                 payment.getPurchaseName(),
+                payment.getAmount(),
                 payment.getCreatedAt()
         );
     }

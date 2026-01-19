@@ -12,26 +12,23 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class GetPaymentResponse {
 
+    private final Long paymentId;
     private final String orderId;
     private final PaymentStatus paymentStatus;
-    private final Long paymentId;
     private final Long productId;
     private final String productName;
     private final PurchaseType purchaseType;
-    private final BigDecimal productPrice;
-
     private final BigDecimal amount;
 
     public static GetPaymentResponse from(Payment payment) {
 
         return new GetPaymentResponse(
+                payment.getId(),
                 payment.getOrderId(),
                 payment.getStatus(),
-                payment.getId(),
                 payment.getPurchaseId(),
                 payment.getPurchaseName(),
                 payment.getPurchaseType(),
-                payment.getAmount(),
                 payment.getAmount()
         );
     }
