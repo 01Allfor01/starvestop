@@ -44,14 +44,14 @@ public class Payment extends BaseEntity {
     @Column(nullable = false)
     private BigDecimal amount;
 
-    @Column
+    @Column(nullable = false)
     private Long purchaseId;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PurchaseType purchaseType;
 
-    @Column
+    @Column(nullable = false)
     private String purchaseName;
 
     @Column
