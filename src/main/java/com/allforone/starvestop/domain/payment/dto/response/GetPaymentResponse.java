@@ -15,6 +15,7 @@ public class GetPaymentResponse {
     private final String orderId;
     private final PaymentStatus paymentStatus;
 
+    private final Long id;
     private final Long productId;
     private final String productName;
     private final PurchaseType purchaseType;
@@ -27,6 +28,7 @@ public class GetPaymentResponse {
         return new GetPaymentResponse(
                 payment.getOrderId(),
                 payment.getStatus(),
+                payment.getId(),
                 payment.getPurchaseId(),
                 payment.getPurchaseName(),
                 payment.getPurchaseType(),

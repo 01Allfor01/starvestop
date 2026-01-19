@@ -15,11 +15,10 @@ import com.allforone.starvestop.domain.user.enums.UserRole;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -77,12 +76,12 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<GetPaymentResponse> getMyPaymentList(Long userId, Pageable pageable) {
+    public List<GetPaymentResponse> getMyPaymentList(Long userId) {
 
-        Slice<Payment> paymentSlice =
-                paymentRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+        List<Payment> paymentList =
+                paymentRepository.findByUserIdAndIsDeletedIsFalseOrderByCreatedAtDesc(userId);
 
-        return paymentSlice.map(GetPaymentResponse::from);
+        return paymentList.stream().map(GetPaymentResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
