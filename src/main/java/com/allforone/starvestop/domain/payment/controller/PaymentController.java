@@ -10,6 +10,7 @@ import com.allforone.starvestop.domain.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,13 +36,9 @@ public class PaymentController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<Slice<GetPaymentResponse>>> getMyPaymentList(
+    public ResponseEntity<CommonResponse<Slice<GetPaymentResponse>>> getMyPaymentS(
             @AuthenticationPrincipal AuthUser authUser,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        Pageable pageable = Pageable.ofSize(size).withPage(page);
-
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
         Slice<GetPaymentResponse> response = paymentService.getMyPaymentList(authUser.getUserId(), pageable);
 
         CommonResponse<Slice<GetPaymentResponse>> result = CommonResponse.success(SuccessMessage.MY_PAYMENT_LIST_GET_SUCCESS, response);

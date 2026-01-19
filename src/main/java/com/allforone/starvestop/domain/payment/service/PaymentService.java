@@ -17,11 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -84,12 +82,7 @@ public class PaymentService {
         Slice<Payment> paymentSlice =
                 paymentRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
 
-        List<GetPaymentResponse> content = paymentSlice.getContent()
-                .stream()
-                .map(GetPaymentResponse::from)
-                .toList();
-
-        return new SliceImpl<>(content, pageable, paymentSlice.hasNext());
+        return paymentSlice.map(GetPaymentResponse::from);
     }
 
     @Transactional(readOnly = true)
