@@ -15,8 +15,8 @@ public class GetPaymentResponse {
     private final Long paymentId;
     private final String orderId;
     private final PaymentStatus paymentStatus;
-    private final Long productId;
-    private final String productName;
+    private final Long purchaseId;
+    private final String purchaseName;
     private final PurchaseType purchaseType;
     private final BigDecimal amount;
 
