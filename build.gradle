@@ -29,6 +29,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.security:spring-security-test'
     implementation 'org.hibernate.orm:hibernate-spatial'
     implementation 'org.n52.jackson:jackson-datatype-jts:1.2.10'
 
