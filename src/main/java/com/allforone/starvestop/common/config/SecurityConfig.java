@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/products/**").hasAnyRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH, "/products/**").hasAnyRole("OWNER")
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasAnyRole("OWNER", "ADMIN")

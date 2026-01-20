@@ -1,0 +1,58 @@
+name: Cd
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Grant Execute Permission For gradlew
+        run: chmod +x gradlew
+
+      - name: Build Jar
+        run: ./gradlew clean build
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/starvestop:latest
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.PEM_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/starvestop:latest
+            
+            docker stop starvestop || true
+            docker rm starvestop || true
+            
+            echo "${{ secrets.APPLICATION }}" > .env
+            
+            docker run -d --name starvestop \
+            --env-file .env \
+            -p 8080:8080 \
+            ${{ secrets.DOCKER_USERNAME }}/starvestop:latest
