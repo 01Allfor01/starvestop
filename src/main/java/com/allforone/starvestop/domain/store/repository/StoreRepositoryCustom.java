@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface StoreRepositoryCustom {
 
-    List<StoreListResponse> searchStoreListResponse(SearchStoreCond searchStoreCond);
+    List<StoreListResponse> searchStoreList(SearchStoreCond searchStoreCond);
 }

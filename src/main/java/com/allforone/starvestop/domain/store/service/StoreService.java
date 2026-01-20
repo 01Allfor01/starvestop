@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.store.service;
 
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.dto.request.StoreRequest;
 import com.allforone.starvestop.domain.store.dto.request.UpdateStoreRequest;
 import com.allforone.starvestop.domain.store.dto.response.StoreListResponse;
@@ -17,7 +18,6 @@ import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -97,14 +97,8 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public List<StoreListResponse> getStoreList() {
-        List<Store> storeList = storeRepository.findAllByIsDeletedIsFalse();
-
-        List<StoreListResponse> response = new ArrayList<>();
-        for (Store store : storeList) {
-            response.add(StoreListResponse.from(store));
-        }
-        return response;
+    public List<StoreListResponse> getStoreList(SearchStoreCond cond) {
+        return storeRepository.searchStoreList(cond);
     }
 
     private Store getStore(Long storeId) {

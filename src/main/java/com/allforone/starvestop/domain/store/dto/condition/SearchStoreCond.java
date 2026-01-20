@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class SearchStoreCond {
 
-    private String storeName;
+    private String keyword;
     private String category;
     private String productName;
 

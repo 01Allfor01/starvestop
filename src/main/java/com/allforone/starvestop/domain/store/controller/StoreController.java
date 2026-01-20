@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.store.controller;
 
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
+import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.dto.request.StoreRequest;
 import com.allforone.starvestop.domain.store.dto.request.UpdateStoreRequest;
 import com.allforone.starvestop.domain.store.dto.response.StoreListResponse;
@@ -57,8 +58,10 @@ public class StoreController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<StoreListResponse>>> getStoreList() {
-        List<StoreListResponse> response = storeService.getStoreList();
+    public ResponseEntity<CommonResponse<List<StoreListResponse>>> getStoreList(
+            @ModelAttribute @Valid SearchStoreCond request
+    ) {
+        List<StoreListResponse> response = storeService.getStoreList(request);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_LIST_GET_SUCCESS, response));
     }
 }
