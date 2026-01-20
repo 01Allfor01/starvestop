@@ -4,9 +4,8 @@ import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.data.geo.Point;
+import org.locationtech.jts.geom.Point;
 
-import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 

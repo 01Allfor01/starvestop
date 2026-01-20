@@ -1,5 +1,6 @@
 package com.allforone.starvestop.domain.store.repository;
 
+import com.allforone.starvestop.common.utils.GeometryUtil;
 import com.allforone.starvestop.domain.product.entity.QProduct;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.dto.response.StoreListResponse;
@@ -11,6 +12,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -70,11 +72,12 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
             return store.id.desc();
         }
 
+        Point now = GeometryUtil.createPoint(nowLongitude, nowLatitude);
+
         NumberExpression<Double> distanceExpression = Expressions.numberTemplate(Double.class,
-                "ST_Distance_Sphere({0}, POINT({1}, {2}))",
+                "ST_Distance_Sphere({0}, {1})",
                 store.location,
-                nowLongitude,
-                nowLatitude
+                now
         );
 
         return distanceExpression.asc();

@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.store.service;
 
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.common.utils.GeometryUtil;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.dto.request.StoreRequest;
 import com.allforone.starvestop.domain.store.dto.request.UpdateStoreRequest;
@@ -14,7 +15,7 @@ import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.geo.Point;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -119,9 +120,9 @@ public class StoreService {
     }
 
     private Point getLocation(Double longitude, Double latitude) {
-        return  new Point(
-                longitude,
-                latitude
-        );
+        Point point = GeometryUtil.createPoint(longitude, latitude);
+        return point;
     }
+
+
 }
