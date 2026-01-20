@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.product.service;
 
 import com.allforone.starvestop.common.dto.AuthUser;
+import com.allforone.starvestop.common.utils.GeometryUtil;
 import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
 import com.allforone.starvestop.domain.product.entity.Product;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.geo.Point;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -51,7 +51,7 @@ class ProductServiceTest {
         User user = User.create("lee@seo.jun", "password", UserRole.ADMIN, "lsj", "leeseojun");
         ReflectionTestUtils.setField(user, "id", 1L);
         store = Store.create(user, "올포원 가게", "내배캠", "이곳은 내배캠", StoreCategory.KOREAN_FOOD,
-                new Point(127.0016985, 37.5642135), LocalTime.now(), LocalTime.now().plusHours(9), StoreStatus.OPENED, "사업자 등록 번호");
+                GeometryUtil.createPoint(127.0016985, 37.5642135), LocalTime.now(), LocalTime.now().plusHours(9), StoreStatus.OPENED, "사업자 등록 번호");
         ReflectionTestUtils.setField(store, "id", 1L);
     }
 
