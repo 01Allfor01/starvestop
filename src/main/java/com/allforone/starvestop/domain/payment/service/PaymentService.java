@@ -121,9 +121,14 @@ public class PaymentService {
                     + "&amount=" + payment.getAmount();
         }
 
+        if (payment.getStatus().equals(PaymentStatus.FAILED) || payment.getStatus().equals(PaymentStatus.CANCELED)) {
+            return "/fail.html"
+                    + "?orderId=" + payment.getOrderId()
+                    + "&reason=ALREADY_PROCESSED";
+        }
+
         if (payment.getAmount().compareTo(request.getAmount()) != 0) {
-            releaseReservedStock(payment);
-            payment.fail();
+            failAndReleaseReservedStock(payment);
 
             return "/fail.html"
                     + "?orderId=" + payment.getOrderId()
@@ -173,6 +178,15 @@ public class PaymentService {
         } else {
             throw new CustomException(ErrorCode.PURCHASE_TYPE_NOT_FOUND);
         }
+    }
+
+    private void failAndReleaseReservedStock(Payment payment) {
+        if (!(payment.getStatus().equals(PaymentStatus.REQUESTED) || payment.getStatus().equals(PaymentStatus.PENDING))) {
+            return;
+        }
+
+        payment.fail();
+        releaseReservedStock(payment);
     }
 
     private String generateOrderId() {
