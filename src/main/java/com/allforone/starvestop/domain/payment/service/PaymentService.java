@@ -63,8 +63,6 @@ public class PaymentService {
                 throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
             }
 
-            product.decrease(1L);
-
             purchase = PurchaseDto.of(
                     product.getId(),
                     product.getProductName(),
@@ -77,8 +75,6 @@ public class PaymentService {
             if (subscription.getStock() <= 0) {
                 throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
             }
-
-            subscription.decrease(1L);
 
             purchase = PurchaseDto.of(
                     subscription.getId(),
@@ -102,6 +98,16 @@ public class PaymentService {
         try {
             paymentRepository.save(payment);
             payment.requestPayment();
+            if (purchaseType.equals(PurchaseType.PRODUCT)) {
+                Product product = productRepository.findByIdAndIsDeletedIsFalse(purchaseId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+                product.decrease(1L);
+
+            } else { // SUBSCRIPTION
+                Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(purchaseId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+                subscription.decrease(1L);
+            }
             return CreatePaymentResponse.from(payment);
 
         } catch (DataIntegrityViolationException e) {
@@ -164,7 +170,7 @@ public class PaymentService {
     }
 
 
-    public void releaseReservedStock(Payment payment) {
+    private void releaseReservedStock(Payment payment) {
         if (payment.getPurchaseType().equals(PurchaseType.PRODUCT)) {
             Product product = productRepository.findByIdAndIsDeletedIsFalse(payment.getPurchaseId()).orElseThrow(
                     () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
