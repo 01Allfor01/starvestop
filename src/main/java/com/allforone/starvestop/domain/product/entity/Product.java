@@ -1,6 +1,8 @@
 package com.allforone.starvestop.domain.product.entity;
 
 import com.allforone.starvestop.common.entity.BaseEntity;
+import com.allforone.starvestop.common.exception.CustomException;
+import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.store.entity.Store;
 import jakarta.persistence.*;
@@ -56,6 +58,17 @@ public class Product extends BaseEntity {
 
     public static Product create(Store store, String productName, String description, Long stock, BigDecimal price, BigDecimal salePrice, ProductStatus status) {
         return new Product(store, productName, description, stock, price, salePrice, status);
+    }
+
+    public void decrease(Long count) {
+        if (this.stock == 0) {
+            throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
+        }
+        this.stock -= count;
+    }
+
+    public void increase(Long count) {
+        this.stock += count;
     }
 
     public void update(String productName, String description, Long stock, BigDecimal price, BigDecimal salePrice, ProductStatus status) {
