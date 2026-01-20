@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <script src="https://js.tosspayments.com/v2/standard"></script>
 </head>
 <body>
@@ -13,10 +13,19 @@
     main();
 
     async function main() {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+
         const createRes = await fetch("/payments", {
             method: "POST",
-            headers: { "Content-Type": "application/json",
-                "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwidXNlcm5hbWUiOiLspazrlJQiLCJ1c2VyRW1haWwiOiJ6b29kaWUxMkB1c2VyLmNvbSIsInVzZXJSb2xlIjoiVVNFUiIsImlhdCI6MTc2ODgzMzQ1NiwiZXhwIjoxNzY4ODM3MDU2fQ.OaE-OFo3oLvR_koPdM2wz6x2O3VAzTNS-X64zJwf9w4"},
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token
+            },
             body: JSON.stringify({
                 purchaseId: 1,
                 purchaseType: "PRODUCT",
@@ -38,13 +47,13 @@
         const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
         const tossPayments = TossPayments(clientKey);
 
-        const widgets = tossPayments.widgets({ customerKey: String(data.orderId ?? "guest") });
+        const widgets = tossPayments.widgets({customerKey: String(data.orderId ?? "guest")});
 
-        await widgets.setAmount({ currency: "KRW", value: amount });
+        await widgets.setAmount({currency: "KRW", value: amount});
 
         await Promise.all([
-            widgets.renderPaymentMethods({ selector: "#payment-method", variantKey: "DEFAULT" }),
-            widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
+            widgets.renderPaymentMethods({selector: "#payment-method", variantKey: "DEFAULT"}),
+            widgets.renderAgreement({selector: "#agreement", variantKey: "AGREEMENT"}),
         ]);
 
         // 4) 결제 요청

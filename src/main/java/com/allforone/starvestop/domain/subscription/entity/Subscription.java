@@ -69,6 +69,10 @@ public class Subscription extends BaseEntity {
         this.stock -= count;
     }
 
+    public void increase(Long count) {
+        this.stock += count;
+    }
+
     public void changeIsJoinable(boolean joinable) {
         this.isJoinable = joinable;
     }

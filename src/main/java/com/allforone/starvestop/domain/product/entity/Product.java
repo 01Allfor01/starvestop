@@ -67,6 +67,10 @@ public class Product extends BaseEntity {
         this.stock -= count;
     }
 
+    public void increase(Long count) {
+        this.stock += count;
+    }
+
     public void update(String productName, String description, Long stock, BigDecimal price, BigDecimal salePrice, ProductStatus status) {
         this.productName = (this.productName.equals(productName)) ? this.productName : productName;
         this.description = (this.description.equals(description)) ? this.description : description;

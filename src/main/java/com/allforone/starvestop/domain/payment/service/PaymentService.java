@@ -62,14 +62,30 @@ public class PaymentService {
             if (product.getStock() <= 0) {
                 throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
             }
-            purchase = PurchaseDto.of(product.getId(), product.getProductName(), purchaseType, product.getStatus().equals(ProductStatus.GENERAL) ? product.getPrice() : product.getSalePrice());
+
+            product.decrease(1L);
+
+            purchase = PurchaseDto.of(
+                    product.getId(),
+                    product.getProductName(),
+                    purchaseType,
+                    product.getStatus().equals(ProductStatus.GENERAL) ? product.getPrice() : product.getSalePrice());
+
         } else if (purchaseType.equals(PurchaseType.SUBSCRIPTION)) {
             Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(purchaseId)
                     .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
             if (subscription.getStock() <= 0) {
                 throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
             }
-            purchase = PurchaseDto.of(subscription.getId(), subscription.getSubscriptionName(), purchaseType, subscription.getPrice());
+
+            subscription.decrease(1L);
+
+            purchase = PurchaseDto.of(
+                    subscription.getId(),
+                    subscription.getSubscriptionName(),
+                    purchaseType,
+                    subscription.getPrice());
+
         } else {
             throw new CustomException(ErrorCode.PURCHASE_TYPE_NOT_FOUND);
         }
@@ -87,6 +103,7 @@ public class PaymentService {
             paymentRepository.save(payment);
             payment.requestPayment();
             return CreatePaymentResponse.from(payment);
+
         } catch (DataIntegrityViolationException e) {
             throw new CustomException(ErrorCode.DUPLICATE_ORDER_ID);
         }
@@ -105,22 +122,15 @@ public class PaymentService {
         }
 
         if (payment.getAmount().compareTo(request.getAmount()) != 0) {
-            throw new CustomException(ErrorCode.PAYMENT_VALIDATION_FAILED);
+            releaseReservedStock(payment);
+            payment.fail();
+
+            return "/fail.html"
+                    + "?orderId=" + payment.getOrderId()
+                    + "&reason=AMOUNT_MISMATCH";
         }
 
         payment.success(request.getPaymentKey());
-
-        if (payment.getPurchaseType().equals(PurchaseType.SUBSCRIPTION)) {
-            Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(payment.getPurchaseId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
-            subscription.decrease(1L);
-        } else if (payment.getPurchaseType().equals(PurchaseType.PRODUCT)) {
-            Product product = productRepository.findByIdAndIsDeletedIsFalse(payment.getPurchaseId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-            product.decrease(1L);
-        } else {
-            throw new CustomException(ErrorCode.PURCHASE_TYPE_NOT_FOUND);
-        }
 
         return "/success.html"
                 + "?orderId=" + payment.getOrderId()
@@ -146,6 +156,23 @@ public class PaymentService {
         }
 
         return GetPaymentDetailsResponse.from(payment);
+    }
+
+
+    public void releaseReservedStock(Payment payment) {
+        if (payment.getPurchaseType().equals(PurchaseType.PRODUCT)) {
+            Product product = productRepository.findByIdAndIsDeletedIsFalse(payment.getPurchaseId()).orElseThrow(
+                    () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
+            );
+            product.increase(1L);
+        } else if (payment.getPurchaseType().equals(PurchaseType.SUBSCRIPTION)) {
+            Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(payment.getPurchaseId()).orElseThrow(
+                    () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
+            );
+            subscription.increase(1L);
+        } else {
+            throw new CustomException(ErrorCode.PURCHASE_TYPE_NOT_FOUND);
+        }
     }
 
     private String generateOrderId() {
