@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 @Table(name = "payments")
-@SQLRestriction("is_deleted = false")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Payment extends BaseEntity {
 
@@ -31,7 +30,7 @@ public class Payment extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column
+    @Column(unique = true)
     private String paymentKey;
 
     @Column(nullable = false, unique = true)

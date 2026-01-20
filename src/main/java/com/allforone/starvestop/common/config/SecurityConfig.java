@@ -1,8 +1,8 @@
 package com.allforone.starvestop.common.config;
 
-import com.allforone.starvestop.common.filter.JwtFilter;
 import com.allforone.starvestop.common.exception.JwtAccessDeniedHandler;
 import com.allforone.starvestop.common.exception.JwtAuthenticationEntryPoint;
+import com.allforone.starvestop.common.filter.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,12 +29,27 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
-                .anonymous(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        .requestMatchers(
+                                "/payment.html",
+                                "/success.html",
+                                "/fail.html",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/favicon.ico"
+                        ).permitAll()
+
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/payments/success").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/payments/fail").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/products/**").hasAnyRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH, "/products/**").hasAnyRole("OWNER")
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasAnyRole("OWNER", "ADMIN")
@@ -44,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
