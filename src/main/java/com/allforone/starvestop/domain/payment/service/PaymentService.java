@@ -31,7 +31,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
-    private final OrderProductRepository orderProductRepository;
+    private final OrderProductRepository    orderProductRepository;
     private final PaymentLogService paymentLogService;
 
     @Transactional

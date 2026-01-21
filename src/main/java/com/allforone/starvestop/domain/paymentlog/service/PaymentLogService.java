@@ -16,7 +16,8 @@ public class PaymentLogService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void savePaymentLog(Long paymentId, PaymentStatus paymentStatus, String pgStatus, String payload) {
-        PaymentLog.create(paymentId, paymentStatus, pgStatus, payload);
+        PaymentLog paymentLog = PaymentLog.create(paymentId, paymentStatus, pgStatus, payload);
+        paymentLogRepository.save(paymentLog);
     }
 
 
