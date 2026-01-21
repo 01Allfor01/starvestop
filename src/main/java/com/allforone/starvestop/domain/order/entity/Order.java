@@ -30,7 +30,7 @@ public class Order extends BaseEntity {
     private Store store;
 
     @Column(unique = true)
-    private String key;
+    private String orderKey;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

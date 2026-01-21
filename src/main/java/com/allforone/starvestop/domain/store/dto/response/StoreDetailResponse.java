@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.store.dto;
+package com.allforone.starvestop.domain.store.dto.response;
 
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
@@ -12,7 +12,7 @@ import java.time.LocalTime;
 
 @Getter
 @AllArgsConstructor
-public class StoreResponse {
+public class StoreDetailResponse {
     private final Long storeId;
     private final String storeName;
     private final String address;
@@ -26,8 +26,8 @@ public class StoreResponse {
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
-    public static StoreResponse from(Store store) {
-        return new StoreResponse(
+    public static StoreDetailResponse from(Store store) {
+        return new StoreDetailResponse(
                 store.getId(),
                 store.getStoreName(),
                 store.getAddress(),

@@ -16,6 +16,9 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다"),
     PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "입력하신 비밀번호가 일치하지 않습니다"),
 
+    //판매자
+    OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을수 없습니다"),
+
     //사용자 구독
     USER_SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 구독입니다"),
 
