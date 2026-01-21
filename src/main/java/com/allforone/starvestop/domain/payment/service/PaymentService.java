@@ -14,6 +14,7 @@ import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
+import com.allforone.starvestop.domain.paymentlog.service.PaymentLogService;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class PaymentService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
+    private final PaymentLogService paymentLogService;
 
     @Transactional
     public CreatePaymentResponse createPayment(
@@ -39,24 +41,26 @@ public class PaymentService {
     ) {
         Long orderId = request.getOrderId();
 
-        Order order = orderRepository.findByIdAndIsDeletedIsFalse(orderId).orElseThrow(
-                () -> new CustomException(ErrorCode.ORDER_NOT_FOUND)
-        );
+        Order order = orderRepository.findByIdAndIsDeletedIsFalse(orderId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+
         if (!userId.equals(order.getUser().getId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
         Payment payment = Payment.create(order);
-
         try {
             paymentRepository.save(payment);
-            payment.requestPayment();
-
-            return CreatePaymentResponse.from(payment);
-
         } catch (DataIntegrityViolationException e) {
             throw new CustomException(ErrorCode.DUPLICATE_ORDER_ID);
         }
+
+        paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
+
+        payment.requestPayment();
+        paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
+
+        return CreatePaymentResponse.from(payment);
     }
 
     @Transactional
@@ -66,6 +70,7 @@ public class PaymentService {
         );
 
         if (payment.getStatus().equals(PaymentStatus.SUCCEEDED)) {
+            paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
             return "/success.html"
                     + "?orderId=" + payment.getOrderKey()
                     + "&amount=" + payment.getTotalAmount();
@@ -86,7 +91,7 @@ public class PaymentService {
         }
 
         payment.success(request.getPaymentKey());
-
+        paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
         return "/success.html"
                 + "?orderId=" + payment.getOrderKey()
                 + "&amount=" + payment.getTotalAmount();
@@ -128,6 +133,7 @@ public class PaymentService {
         }
 
         payment.fail();
+        paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
 
         List<OrderProduct> orderProducts = orderProductRepository.findAllByOrder_Id((payment.getOrder().getId()));
         releaseReservedStock(orderProducts);
