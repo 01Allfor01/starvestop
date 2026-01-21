@@ -49,7 +49,7 @@ public class Payment extends BaseEntity {
     public Payment(Order order,String paymentKey){
         this.order=order;
         this.paymentKey=paymentKey;
-        this.orderKey=order.getKey();
+        this.orderKey=order.getOrderKey();
         this.totalAmount=order.getTotalAmount();
         this.status = PaymentStatus.CREATED;
     }
