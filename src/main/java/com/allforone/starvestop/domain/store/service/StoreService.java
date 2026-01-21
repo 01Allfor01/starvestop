@@ -30,7 +30,7 @@ public class StoreService {
     @Transactional
     public StoreDetailResponse createStore(CreateStoreRequest request) {
         Owner owner = ownerRepository.findById(request.getOwnerId()).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+                () -> new CustomException(ErrorCode.OWNER_NOT_FOUND));
 
         if (!UserRole.OWNER.equals(owner.getRole())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
