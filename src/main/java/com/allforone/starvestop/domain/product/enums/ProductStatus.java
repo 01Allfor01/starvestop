@@ -6,5 +6,7 @@ import lombok.Getter;
 public enum ProductStatus {
     GENERAL,
     SALE,
+    SUBSCRIPTION,
+
     ;
 }

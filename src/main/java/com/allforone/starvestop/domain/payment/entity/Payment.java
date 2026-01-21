@@ -3,14 +3,12 @@ package com.allforone.starvestop.domain.payment.entity;
 import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
-import com.allforone.starvestop.domain.payment.enums.PurchaseType;
-import com.allforone.starvestop.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,38 +18,27 @@ import java.time.LocalDateTime;
 @Table(name = "payments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Payment extends BaseEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payment_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @Column(unique = true)
     private String paymentKey;
 
     @Column(nullable = false, unique = true)
-    private String orderId;
+    private String orderKey;
+
+    @Column(nullable = false)
+    private BigDecimal totalAmount;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
-
-    @Column(nullable = false)
-    private BigDecimal amount;
-
-    @Column(nullable = false)
-    private Long purchaseId;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private PurchaseType purchaseType;
-
-    @Column(nullable = false)
-    private String purchaseName;
 
     @Column
     private LocalDateTime paymentAt;
@@ -59,39 +46,12 @@ public class Payment extends BaseEntity {
     @Column
     private LocalDateTime canceledAt;
 
-    private Payment(
-            User user,
-            Long purchaseId,
-            PurchaseType purchaseType,
-            String purchaseName,
-            String orderId,
-            BigDecimal amount
-    ) {
-        this.user = user;
-        this.purchaseId = purchaseId;
-        this.purchaseType = purchaseType;
-        this.purchaseName = purchaseName;
-        this.orderId = orderId;
-        this.amount = amount;
+    public Payment(Order order,String paymentKey){
+        this.order=order;
+        this.paymentKey=paymentKey;
+        this.orderKey=order.getKey();
+        this.totalAmount=order.getTotalAmount();
         this.status = PaymentStatus.CREATED;
-    }
-
-    public static Payment create(
-            User user,
-            Long purchaseId,
-            PurchaseType purchaseType,
-            String purchaseName,
-            String orderId,
-            BigDecimal amount
-    ) {
-        return new Payment(
-                user,
-                purchaseId,
-                purchaseType,
-                purchaseName,
-                orderId,
-                amount
-        );
     }
 
     private void requireStatus(PaymentStatus... allowed) {

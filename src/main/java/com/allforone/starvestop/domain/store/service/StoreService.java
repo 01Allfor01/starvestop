@@ -27,68 +27,68 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
 
-    @Transactional
-    public StoreResponse createStore(StoreRequest request) {
-        User user = userRepository.findById(request.getUserId()).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
-        );
+//    @Transactional
+//    public StoreResponse createStore(StoreRequest request) {
+//        User user = userRepository.findById(request.getUserId()).orElseThrow(
+//                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+//        );
+//
+//        if (!UserRole.OWNER.equals(user.getRole())) {
+//            throw new CustomException(ErrorCode.FORBIDDEN);
+//        }
+//
+//        StoreStatus status = getStatus(request.getStatus());
+//        Point location = getLocation(request.getLongitude(), request.getLatitude());
+//
+//        Store store = Store.create(
+//                user,
+//                request.getStoreName(),
+//                request.getAddress(),
+//                request.getDescription(),
+//                request.getCategory(),
+//                location,
+//                request.getOpenTime(),
+//                request.getCloseTime(),
+//                status,
+//                request.getBusinessRegistrationNumber()
+//        );
+//
+//        Store savedStore = storeRepository.save(store);
+//        return StoreResponse.from(savedStore);
+//    }
+//
+//    @Transactional
+//    public StoreResponse updateStore(Long userId, Long storeId, UpdateStoreRequest request) {
+//        Store store = getStore(storeId);
+//
+//        idMismatchCheck(userId, store);
+//
+//        StoreStatus status = getStatus(request.getStatus());
+//        Point location = getLocation(request.getLongitude(), request.getLatitude());
+//
+//        store.update(
+//                request.getStoreName(),
+//                request.getAddress(),
+//                request.getDescription(),
+//                request.getCategory(),
+//                location,
+//                request.getOpenTime(),
+//                request.getCloseTime(),
+//                status
+//        );
+//        storeRepository.flush();
+//
+//        return StoreResponse.from(store);
+//    }
 
-        if (!UserRole.OWNER.equals(user.getRole())) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
-
-        StoreStatus status = getStatus(request.getStatus());
-        Point location = getLocation(request.getLongitude(), request.getLatitude());
-
-        Store store = Store.create(
-                user,
-                request.getStoreName(),
-                request.getAddress(),
-                request.getDescription(),
-                request.getCategory(),
-                location,
-                request.getOpenTime(),
-                request.getCloseTime(),
-                status,
-                request.getBusinessRegistrationNumber()
-        );
-
-        Store savedStore = storeRepository.save(store);
-        return StoreResponse.from(savedStore);
-    }
-
-    @Transactional
-    public StoreResponse updateStore(Long userId, Long storeId, UpdateStoreRequest request) {
-        Store store = getStore(storeId);
-
-        idMismatchCheck(userId, store);
-
-        StoreStatus status = getStatus(request.getStatus());
-        Point location = getLocation(request.getLongitude(), request.getLatitude());
-
-        store.update(
-                request.getStoreName(),
-                request.getAddress(),
-                request.getDescription(),
-                request.getCategory(),
-                location,
-                request.getOpenTime(),
-                request.getCloseTime(),
-                status
-        );
-        storeRepository.flush();
-
-        return StoreResponse.from(store);
-    }
-
-    @Transactional
-    public void deleteStore(Long userId, Long storeId) {
-        Store store = getStore(storeId);
-
-        idMismatchCheck(userId, store);
-
-        store.delete();
-    }
+//    @Transactional
+//    public void deleteStore(Long userId, Long storeId) {
+//        Store store = getStore(storeId);
+//
+//        idMismatchCheck(userId, store);
+//
+//        store.delete();
+//    }
 
     @Transactional(readOnly = true)
     public StoreResponse getStoreDetail(Long storeId) {
@@ -113,11 +113,11 @@ public class StoreService {
         );
     }
 
-    private static void idMismatchCheck(Long userId, Store store) {
-        if (!store.getUser().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
-    }
+//    private static void idMismatchCheck(Long userId, Store store) {
+//        if (!store.getUser().getId().equals(userId)) {
+//            throw new CustomException(ErrorCode.FORBIDDEN);
+//        }
+//    }
 
     private StoreStatus getStatus(StoreStatus status) {
         return status == null

@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 
-    List<Subscription> findAllByIsDeletedIsFalse();
-
-    List<Subscription> findByStoreIdAndIsDeletedIsFalse(Long storeId);
-
-    Optional<Subscription> findByIdAndIsDeletedIsFalse(Long id);
+//    List<Subscription> findAllByIsDeletedIsFalse();
+//
+//    List<Subscription> findByStoreIdAndIsDeletedIsFalse(Long storeId);
+//
+//    Optional<Subscription> findByIdAndIsDeletedIsFalse(Long id);
 }

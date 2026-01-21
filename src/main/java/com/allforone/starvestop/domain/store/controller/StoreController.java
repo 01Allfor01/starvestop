@@ -23,42 +23,42 @@ import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 @RequestMapping("/stores")
 public class StoreController {
 
-    private final StoreService storeService;
-
-    @PostMapping
-    public ResponseEntity<CommonResponse<StoreResponse>> createStore(@Valid @RequestBody StoreRequest request) {
-        StoreResponse response = storeService.createStore(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(STORE_CREATE_SUCCESS, response));
-    }
-
-    @PatchMapping("/{storeId}")
-    public ResponseEntity<CommonResponse<StoreResponse>> updateStore(
-            @AuthenticationPrincipal AuthUser authUser,
-            @PathVariable Long storeId,
-            @Valid @RequestBody UpdateStoreRequest request
-    ) {
-        StoreResponse response = storeService.updateStore(authUser.getUserId(), storeId, request);
-        return ResponseEntity.ok(CommonResponse.success(STORE_UPDATE_SUCCESS, response));
-    }
-
-    @DeleteMapping("/{storeId}")
-    public ResponseEntity<CommonResponse<Void>> deleteStore(
-            @AuthenticationPrincipal AuthUser authUser,
-            @PathVariable Long storeId
-    ) {
-        storeService.deleteStore(authUser.getUserId(), storeId);
-        return ResponseEntity.ok(CommonResponse.successNoData(STORE_DELETE_SUCCESS));
-    }
-
-    @GetMapping("/{storeId}")
-    public ResponseEntity<CommonResponse<StoreResponse>> getStoreDetail(@PathVariable Long storeId) {
-        StoreResponse response = storeService.getStoreDetail(storeId);
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_DETAIL_GET_SUCCESS, response));
-    }
-
-    @GetMapping
-    public ResponseEntity<CommonResponse<List<StoreListResponse>>> getStoreList() {
-        List<StoreListResponse> response = storeService.getStoreList();
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_LIST_GET_SUCCESS, response));
-    }
+//    private final StoreService storeService;
+//
+//    @PostMapping
+//    public ResponseEntity<CommonResponse<StoreResponse>> createStore(@Valid @RequestBody StoreRequest request) {
+//        StoreResponse response = storeService.createStore(request);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(STORE_CREATE_SUCCESS, response));
+//    }
+//
+//    @PatchMapping("/{storeId}")
+//    public ResponseEntity<CommonResponse<StoreResponse>> updateStore(
+////            @AuthenticationPrincipal AuthUser authUser,
+////            @PathVariable Long storeId,
+////            @Valid @RequestBody UpdateStoreRequest request
+////    ) {
+////        StoreResponse response = storeService.updateStore(authUser.getUserId(), storeId, request);
+////        return ResponseEntity.ok(CommonResponse.success(STORE_UPDATE_SUCCESS, response));
+//    }
+//
+//    @DeleteMapping("/{storeId}")
+//    public ResponseEntity<CommonResponse<Void>> deleteStore(
+//            @AuthenticationPrincipal AuthUser authUser,
+//            @PathVariable Long storeId
+//    ) {
+//        storeService.deleteStore(authUser.getUserId(), storeId);
+//        return ResponseEntity.ok(CommonResponse.successNoData(STORE_DELETE_SUCCESS));
+//    }
+//
+//    @GetMapping("/{storeId}")
+//    public ResponseEntity<CommonResponse<StoreResponse>> getStoreDetail(@PathVariable Long storeId) {
+//        StoreResponse response = storeService.getStoreDetail(storeId);
+//        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_DETAIL_GET_SUCCESS, response));
+//    }
+//
+//    @GetMapping
+//    public ResponseEntity<CommonResponse<List<StoreListResponse>>> getStoreList() {
+//        List<StoreListResponse> response = storeService.getStoreList();
+//        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_LIST_GET_SUCCESS, response));
+//    }
 }
