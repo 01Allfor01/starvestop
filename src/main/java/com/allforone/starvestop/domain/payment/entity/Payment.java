@@ -46,12 +46,15 @@ public class Payment extends BaseEntity {
     @Column
     private LocalDateTime canceledAt;
 
-    public Payment(Order order,String paymentKey){
-        this.order=order;
-        this.paymentKey=paymentKey;
-        this.orderKey=order.getKey();
-        this.totalAmount=order.getTotalAmount();
+    private Payment(Order order) {
+        this.order = order;
+        this.orderKey = order.getOrderKey();
+        this.totalAmount = order.getTotalAmount();
         this.status = PaymentStatus.CREATED;
+    }
+
+    public static Payment create(Order order){
+        return new Payment(order);
     }
 
     private void requireStatus(PaymentStatus... allowed) {
