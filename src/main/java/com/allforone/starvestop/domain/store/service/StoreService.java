@@ -89,45 +89,45 @@ public class StoreService {
 //
 //        store.delete();
 //    }
-
-    @Transactional(readOnly = true)
-    public StoreResponse getStoreDetail(Long storeId) {
-        Store store = getStore(storeId);
-        return StoreResponse.from(store);
-    }
-
-    @Transactional(readOnly = true)
-    public List<StoreListResponse> getStoreList() {
-        List<Store> storeList = storeRepository.findAllByIsDeletedIsFalse();
-
-        List<StoreListResponse> response = new ArrayList<>();
-        for (Store store : storeList) {
-            response.add(StoreListResponse.from(store));
-        }
-        return response;
-    }
-
-    private Store getStore(Long storeId) {
-        return storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
-        );
-    }
-
-//    private static void idMismatchCheck(Long userId, Store store) {
-//        if (!store.getUser().getId().equals(userId)) {
-//            throw new CustomException(ErrorCode.FORBIDDEN);
-//        }
+//
+//    @Transactional(readOnly = true)
+//    public StoreResponse getStoreDetail(Long storeId) {
+//        Store store = getStore(storeId);
+//        return StoreResponse.from(store);
 //    }
-
-    private StoreStatus getStatus(StoreStatus status) {
-        return status == null
-                ? StoreStatus.CLOSED : status;
-    }
-
-    private Point getLocation(Double longitude, Double latitude) {
-        return  new Point(
-                longitude,
-                latitude
-        );
-    }
+//
+//    @Transactional(readOnly = true)
+//    public List<StoreListResponse> getStoreList() {
+//        List<Store> storeList = storeRepository.findAllByIsDeletedIsFalse();
+//
+//        List<StoreListResponse> response = new ArrayList<>();
+//        for (Store store : storeList) {
+//            response.add(StoreListResponse.from(store));
+//        }
+//        return response;
+//    }
+//
+//    private Store getStore(Long storeId) {
+//        return storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
+//                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+//        );
+//    }
+//
+////    private static void idMismatchCheck(Long userId, Store store) {
+////        if (!store.getUser().getId().equals(userId)) {
+////            throw new CustomException(ErrorCode.FORBIDDEN);
+////        }
+////    }
+//
+//    private StoreStatus getStatus(StoreStatus status) {
+//        return status == null
+//                ? StoreStatus.CLOSED : status;
+//    }
+//
+//    private Point getLocation(Double longitude, Double latitude) {
+//        return  new Point(
+//                longitude,
+//                latitude
+//        );
+//    }
 }
