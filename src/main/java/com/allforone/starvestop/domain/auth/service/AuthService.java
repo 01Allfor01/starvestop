@@ -39,13 +39,9 @@ public class AuthService {
         String userEmail = request.getEmail();
         String password = request.getPassword();
 
-        User foundUser = userRepository.findByEmail(userEmail).orElseThrow(
+        User foundUser = userRepository.findByEmailAndIsDeletedIsFalse(userEmail).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND)
         );
-
-        if(foundUser.isDeleted()){
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
 
         if (!passwordEncoder.matches(password, foundUser.getPassword())) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
