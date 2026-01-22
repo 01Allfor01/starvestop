@@ -26,16 +26,12 @@ public class UserService {
         String nickname = request.getNickname();
         UserRole role = UserRole.valueOf(request.getRole());
 
-        User foundUser = userRepository.findById(userId).orElseThrow(
+        User foundUser = userRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND)
         );
 
         if (role.equals(UserRole.ADMIN)) {
             throw new CustomException(ErrorCode.USER_ROLE_CHANGE_NOT_ALLOWED);
-        }
-
-        if (foundUser.isDeleted()) {
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
         }
 
         foundUser.update(nickname, passwordEncoder.encode(password), role);
