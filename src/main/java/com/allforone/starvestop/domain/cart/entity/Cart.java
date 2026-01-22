@@ -38,4 +38,8 @@ public class Cart extends BaseEntity {
     public static Cart create(User user, Product product, Integer quantity) {
         return new Cart(user, product, quantity);
     }
+
+    public void update(Integer quantity) {
+        this.quantity = quantity;
+    }
 }
