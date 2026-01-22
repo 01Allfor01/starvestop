@@ -49,7 +49,7 @@ public enum ErrorCode {
     PAYMENT_VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "결제 정보 검증에 실패했습니다"),
 
     //쿠폰
-    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 매장입니다"),
+    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쿠폰입니다"),
     ;
 
 
