@@ -20,10 +20,8 @@ public class PaymentLog {
     @Column(nullable = false)
     private Long paymentId;
 
-    @Column
     private Long userId;
 
-    @Column
     private String orderKey;
 
     @Column(nullable = false)
