@@ -31,7 +31,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
-    private final OrderProductRepository    orderProductRepository;
+    private final OrderProductRepository orderProductRepository;
     private final PaymentLogService paymentLogService;
 
     @Transactional
@@ -73,7 +73,7 @@ public class PaymentService {
             paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
             return "/success.html"
                     + "?orderId=" + payment.getOrderKey()
-                    + "&amount=" + payment.getTotalAmount();
+                    + "&amount=" + payment.getAmount();
         }
 
         if (payment.getStatus().equals(PaymentStatus.FAILED) || payment.getStatus().equals(PaymentStatus.CANCELED)) {
@@ -82,7 +82,7 @@ public class PaymentService {
                     + "&reason=ALREADY_PROCESSED";
         }
 
-        if (payment.getTotalAmount().compareTo(request.getAmount()) != 0) {
+        if (payment.getAmount().compareTo(request.getAmount()) != 0) {
             failAndReleaseReservedStock(payment);
 
             return "/fail.html"
@@ -94,7 +94,7 @@ public class PaymentService {
         paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
         return "/success.html"
                 + "?orderId=" + payment.getOrderKey()
-                + "&amount=" + payment.getTotalAmount();
+                + "&amount=" + payment.getAmount();
     }
 
     @Transactional(readOnly = true)

@@ -22,7 +22,7 @@ public class GetPaymentResponse {
                 payment.getId(),
                 payment.getOrderKey(),
                 payment.getStatus(),
-                payment.getTotalAmount()
+                payment.getAmount()
         );
     }
 }
