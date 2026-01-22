@@ -40,5 +40,5 @@ public class Receipt extends BaseEntity {
     private OrderStatus orderStatus;
 
     @Column(nullable = false)
-    private BigDecimal total_amount;
+    private BigDecimal amount;
 }
