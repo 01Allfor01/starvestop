@@ -12,7 +12,6 @@ import com.allforone.starvestop.domain.auth.dto.response.SignUpResponse;
 import com.allforone.starvestop.domain.owner.entity.Owner;
 import com.allforone.starvestop.domain.owner.repository.OwnerRepository;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.enums.UserRole;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +38,7 @@ public class AuthService {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        User user = User.create(userEmail, passwordEncoder.encode(password), UserRole.USER, userName, nickname);
+        User user = User.create(userEmail, passwordEncoder.encode(password), userName, nickname);
 
         User savedUser = userRepository.save(user);
 
@@ -76,7 +75,7 @@ public class AuthService {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        Owner owner = Owner.create(userEmail, passwordEncoder.encode(password), UserRole.OWNER, userName);
+        Owner owner = Owner.create(userEmail, passwordEncoder.encode(password), userName);
 
         Owner savedOwner = ownerRepository.save(owner);
 

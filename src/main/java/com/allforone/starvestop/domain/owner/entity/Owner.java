@@ -29,18 +29,17 @@ public class Owner extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    private Owner(String email, String password, UserRole role, String userName){
+    private Owner(String email, String password, String userName){
         this.email = email;
         this.password = password;
-        this.role = role;
+        this.role = UserRole.OWNER;
         this.username = userName;
     }
 
-    public static Owner create(String email, String password, UserRole role, String userName) {
+    public static Owner create(String email, String password, String userName) {
         return new Owner(
                 email,
                 password,
-                role,
                 userName
         );
     }
