@@ -36,13 +36,13 @@ public class Product extends BaseEntity {
     private BigDecimal price;
 
     @Column(nullable = false)
-    private Long stock;
+    private Integer stock;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
-    private Product(Store store, String name, String description, BigDecimal price, Long stock, ProductStatus status) {
+    private Product(Store store, String name, String description, BigDecimal price, Integer stock, ProductStatus status) {
         this.store = store;
         this.name = name;
         this.description = description;
@@ -51,22 +51,22 @@ public class Product extends BaseEntity {
         this.status = status;
     }
 
-    public static Product create(Store store, String name, String description, BigDecimal price, Long stock, ProductStatus status) {
+    public static Product create(Store store, String name, String description, BigDecimal price, Integer stock, ProductStatus status) {
         return new Product(store, name, description, price, stock, status);
     }
 
-    public void decrease(Long count) {
+    public void decrease(Integer count) {
         if (this.stock == 0) {
             throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
         }
         this.stock -= count;
     }
 
-    public void increase(Long count) {
+    public void increase(Integer count) {
         this.stock += count;
     }
 
-    public void update(String productName, String description, Long stock, BigDecimal price, ProductStatus status) {
+    public void update(String productName, String description, Integer stock, BigDecimal price, ProductStatus status) {
         this.name = (this.name.equals(productName)) ? this.name : productName;
         this.description = (this.description.equals(description)) ? this.description : description;
         this.stock = (this.stock.equals(stock)) ? this.stock : stock;

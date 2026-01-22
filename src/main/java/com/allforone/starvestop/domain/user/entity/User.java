@@ -40,23 +40,32 @@ public class User extends BaseEntity {
 
     private String providerId;
 
-    private User(String email, String password, UserRole role, String nickname, String username) {
+    private User(String email, String password, UserRole role, String nickname, String username, AuthProvider provider, String providerId) {
         this.email = email;
         this.password = password;
         this.role = role;
         this.nickname = nickname;
         this.username = username;
-        this.provider = AuthProvider.LOCAL;
-        this.providerId = null;
+        this.provider = provider;
+        this.providerId = providerId;
     }
 
     public static User create(String email, String password, UserRole role, String nickname, String username) {
-        return new User(email, password, role, nickname, username);
+        return new User(email, password, role, nickname, username, AuthProvider.LOCAL, null);
+    }
+
+    public static User createKakao(String email, String password, UserRole role, String nickname, String username, String providerId) {
+        return new User(email, password, role, nickname, username, AuthProvider.KAKAO, providerId);
     }
 
     public void update(String nickname, String password, UserRole userRole) {
         this.nickname = nickname;
         this.password = password;
+        this.role = userRole;
+    }
+
+    public void updateOAuth(String nickname, UserRole userRole) {
+        this.nickname = nickname;
         this.role = userRole;
     }
 }
