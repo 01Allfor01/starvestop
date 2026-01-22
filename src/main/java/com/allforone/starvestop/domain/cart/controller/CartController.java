@@ -9,11 +9,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static com.allforone.starvestop.common.enums.SuccessMessage.CART_CREATE_SUCCESS;
+import static com.allforone.starvestop.common.enums.SuccessMessage.CART_GET_SUCCESS;
 
 @RestController("/carts")
 @RequiredArgsConstructor
@@ -27,4 +28,11 @@ public class CartController {
         CartResponse response = cartService.createCart(authUser.getUserId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(CART_CREATE_SUCCESS, response));
     }
+
+    @GetMapping
+    public ResponseEntity<CommonResponse<CartResponse>> getCart(@AuthenticationPrincipal AuthUser authUser) {
+        CartResponse response = cartService.getCart(authUser.getUserId());
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_GET_SUCCESS, response));
+    }
+
 }
