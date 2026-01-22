@@ -8,10 +8,14 @@ public enum SuccessMessage {
     SIGN_UP_SUCCESS("회원가입 성공"),
     SIGN_UP_OWNER_SUCCESS("판매자 회원가입 성공"),
     SIGN_IN_SUCCESS("로그인 성공"),
+
+    //사용자
     USER_UPDATE_SUCCESS("회원 정보 수정 성공"),
     USER_DELETE_SUCCESS("회원 탈퇴 성공"),
 
-    //사용자
+    //판매자
+    OWNER_UPDATE_SUCCESS("판매자 정보 수정 성공"),
+    OWNER_DELETE_SUCCESS("회원 탈퇴 성공"),
 
     //사용자 구독
     USER_SUBSCRIPTION_CREATE_SUCCESS("사용자 구독 생성 성공"),
