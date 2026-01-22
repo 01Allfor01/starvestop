@@ -49,7 +49,8 @@ public enum SuccessMessage {
 
     //쿠폰
     COUPON_CREATE_SUCCESS("쿠폰 등록 성공"),
-
+    COUPON_LIST_GET_SUCCESS("쿠폰 목록 조회 성공"),
+    COUPON_DETAIL_GET_SUCCESS("쿠폰 상세 조회 성공"),
 
     ;
 
