@@ -23,7 +23,7 @@ public class Coupon extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
-    private String couponName;
+    private String name;
 
     @Column(nullable = false)
     private BigDecimal discountAmount;
@@ -42,8 +42,8 @@ public class Coupon extends BaseEntity {
     @Column(nullable = false)
     private Integer stock;
 
-    public Coupon(String couponName, BigDecimal discountAmount, BigDecimal minAmount, Integer validDays, LocalDateTime expiresAt, Integer stock) {
-        this.couponName = couponName;
+    public Coupon(String name, BigDecimal discountAmount, BigDecimal minAmount, Integer validDays, LocalDateTime expiresAt, Integer stock) {
+        this.name = name;
         this.discountAmount = discountAmount;
         this.minAmount = minAmount;
         this.validDays = validDays;
@@ -52,7 +52,7 @@ public class Coupon extends BaseEntity {
         this.stock = stock;
     }
 
-    public static Coupon create(String couponName, BigDecimal discountAmount, BigDecimal minAmount, Integer validDays, LocalDateTime expiresAt, Integer stock) {
-        return new Coupon(couponName, discountAmount, minAmount, validDays, expiresAt, stock);
+    public static Coupon create(String name, BigDecimal discountAmount, BigDecimal minAmount, Integer validDays, LocalDateTime expiresAt, Integer stock) {
+        return new Coupon(name, discountAmount, minAmount, validDays, expiresAt, stock);
     }
 }

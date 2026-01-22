@@ -26,7 +26,7 @@ public class CreateCouponResponse {
     public static CreateCouponResponse from(Coupon coupon) {
         return new CreateCouponResponse(
                 coupon.getId(),
-                coupon.getCouponName(),
+                coupon.getName(),
                 coupon.getDiscountAmount(),
                 coupon.getMinAmount(),
                 coupon.getValidDays(),
