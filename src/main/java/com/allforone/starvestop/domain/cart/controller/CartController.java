@@ -5,6 +5,7 @@ import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.cart.dto.CartRequest;
 import com.allforone.starvestop.domain.cart.dto.CartResponse;
 import com.allforone.starvestop.domain.cart.service.CartService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class CartController {
 
     @PostMapping
     public ResponseEntity<CommonResponse<CartResponse>> createCart(@AuthenticationPrincipal AuthUser authUser,
-                                                                   @RequestBody CartRequest request) {
+                                                                   @Valid @RequestBody CartRequest request) {
         CartResponse response = cartService.createCart(authUser.getUserId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(CART_CREATE_SUCCESS, response));
     }
