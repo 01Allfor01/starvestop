@@ -32,11 +32,11 @@ public enum ErrorCode {
     SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구독입니다"),
 
     //주문
-    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다"),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND,"존재하지 않는 주문입니다"),
 
     //결제
     PAYMENT_TARGET_REQUIRED(HttpStatus.BAD_REQUEST, "결제 대상이 필요합니다"),
-    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제가 존재하지 않습니다"),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제내역이 존재하지 않습니다"),
     PAYMENT_TARGET_AMBIGUOUS(HttpStatus.BAD_REQUEST, "상품과 구독 중 하나만 선택해주세요"),
     INVALID_PAYMENT_STATE(HttpStatus.CONFLICT, "잘못된 결제 상태입니다"),
     DUPLICATE_ORDER_ID(HttpStatus.CONFLICT, "이미 존재하는 주문 번호입니다"),
@@ -47,6 +47,10 @@ public enum ErrorCode {
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "상품의 재고가 부족합니다"),
     PAYMENT_EXPIRED(HttpStatus.GONE, "결제 유효 시간이 만료되었습니다"),
     PAYMENT_VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "결제 정보 검증에 실패했습니다"),
+
+    //쿠폰
+    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쿠폰입니다"),
+    ;
 
     //결제 로그
     PAYMENT_LOG_NOT_FOUND(HttpStatus.NOT_FOUND, "결제로그가 존재하지 않습니다");
