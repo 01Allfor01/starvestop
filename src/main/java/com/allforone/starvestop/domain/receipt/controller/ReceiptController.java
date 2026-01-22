@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/receipt")
+@RequestMapping("/receipts")
 public class ReceiptController {
     private final ReceiptRepository receiptRepository;
 }
