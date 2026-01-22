@@ -2,9 +2,11 @@ package com.allforone.starvestop.domain.coupon.controller;
 
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.coupon.dto.request.CreateCouponRequest;
+import com.allforone.starvestop.domain.coupon.dto.request.UpdateCouponRequest;
 import com.allforone.starvestop.domain.coupon.dto.response.CreateCouponResponse;
 import com.allforone.starvestop.domain.coupon.dto.response.GetCouponDetailResponse;
 import com.allforone.starvestop.domain.coupon.dto.response.GetCouponResponse;
+import com.allforone.starvestop.domain.coupon.dto.response.UpdateCouponResponse;
 import com.allforone.starvestop.domain.coupon.service.CouponService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +44,20 @@ public class CouponController {
         GetCouponDetailResponse response = couponService.getCoupon(couponId);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(COUPON_DETAIL_GET_SUCCESS, response));
+    }
+
+    @PatchMapping("/{couponId}")
+    public ResponseEntity<CommonResponse<UpdateCouponResponse>> updateCoupon(
+            @PathVariable Long couponId, @Valid @RequestBody UpdateCouponRequest request
+    ) {
+        UpdateCouponResponse response = couponService.updateCoupon(couponId, request);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(COUPON_STATUS_UPDATE_SUCCESS, response));
+    }
+
+    @DeleteMapping("/{couponId}")
+    public ResponseEntity<CommonResponse<Void>> deleteCoupon(@PathVariable Long couponId) {
+        couponService.deleteCoupon(couponId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(COUPON_DELETE_SUCCESS));
     }
 }

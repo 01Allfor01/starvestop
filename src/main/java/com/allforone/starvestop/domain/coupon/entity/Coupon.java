@@ -55,4 +55,8 @@ public class Coupon extends BaseEntity {
     public static Coupon create(String name, BigDecimal discountAmount, BigDecimal minAmount, Integer validDays, LocalDateTime expiresAt, Integer stock) {
         return new Coupon(name, discountAmount, minAmount, validDays, expiresAt, stock);
     }
+
+    public void update(CouponStatus couponStatus) {
+        this.status = couponStatus;
+    }
 }
