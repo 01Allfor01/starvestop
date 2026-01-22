@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -17,6 +18,7 @@ public class GetReceiptDetailResponse {
     private final String orderKey;
     private final ReceiptStatus receiptStatus;
     private final BigDecimal amount;
+    private final LocalDateTime createAt;
     private final List<OrderProductDto> orderProducts;
 
     public static GetReceiptDetailResponse from(Receipt receipt, List<OrderProductDto> orderProducts) {
@@ -26,6 +28,7 @@ public class GetReceiptDetailResponse {
                 receipt.getOrderKey(),
                 receipt.getReceiptStatus(),
                 receipt.getAmount(),
+                receipt.getCreatedAt(),
                 orderProducts
         );
     }
