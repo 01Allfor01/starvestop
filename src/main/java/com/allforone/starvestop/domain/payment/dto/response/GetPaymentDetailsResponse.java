@@ -2,7 +2,6 @@ package com.allforone.starvestop.domain.payment.dto.response;
 
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
-import com.allforone.starvestop.domain.payment.enums.PurchaseType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -24,7 +23,7 @@ public class GetPaymentDetailsResponse {
                 payment.getId(),
                 payment.getOrderKey(),
                 payment.getStatus(),
-                payment.getTotalAmount(),
+                payment.getAmount(),
                 payment.getCreatedAt()
         );
     }

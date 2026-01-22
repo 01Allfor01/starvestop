@@ -13,6 +13,6 @@ public class CreatePaymentResponse {
     private final BigDecimal amount;
 
     public static CreatePaymentResponse from(Payment payment) {
-        return new CreatePaymentResponse(payment.getOrderKey(), payment.getTotalAmount());
+        return new CreatePaymentResponse(payment.getOrderKey(), payment.getAmount());
     }
 }
