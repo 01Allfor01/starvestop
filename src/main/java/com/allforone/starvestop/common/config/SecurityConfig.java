@@ -59,6 +59,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/coupons/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/coupons/**").hasAnyRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )

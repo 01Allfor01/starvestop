@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import static com.allforone.starvestop.domain.coupon.enums.CouponStatus.USABLE;
+
 @Getter
 @Entity
 @Table(name = "coupons")
@@ -21,7 +23,7 @@ public class Coupon extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String couponName;
 
     @Column(nullable = false)
     private BigDecimal discountAmount;
@@ -39,4 +41,18 @@ public class Coupon extends BaseEntity {
 
     @Column(nullable = false)
     private Integer stock;
+
+    public Coupon(String couponName, BigDecimal discountAmount, BigDecimal minAmount, Integer validDays, LocalDateTime expiresAt, Integer stock) {
+        this.couponName = couponName;
+        this.discountAmount = discountAmount;
+        this.minAmount = minAmount;
+        this.validDays = validDays;
+        this.expiresAt = expiresAt;
+        this.status = USABLE;
+        this.stock = stock;
+    }
+
+    public static Coupon create(String couponName, BigDecimal discountAmount, BigDecimal minAmount, Integer validDays, LocalDateTime expiresAt, Integer stock) {
+        return new Coupon(couponName, discountAmount, minAmount, validDays, expiresAt, stock);
+    }
 }
