@@ -32,7 +32,7 @@ public enum ErrorCode {
     SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구독입니다"),
 
     //주문
-    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND,"존재하지 않는 주문입니다"),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다"),
 
     //결제
     PAYMENT_TARGET_REQUIRED(HttpStatus.BAD_REQUEST, "결제 대상이 필요합니다"),
@@ -50,7 +50,7 @@ public enum ErrorCode {
 
     //쿠폰
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쿠폰입니다"),
-    ;
+
 
     //결제 로그
     PAYMENT_LOG_NOT_FOUND(HttpStatus.NOT_FOUND, "결제로그가 존재하지 않습니다");
