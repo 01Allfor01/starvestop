@@ -30,8 +30,8 @@ public class CartController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<CartResponse>> getCart(@AuthenticationPrincipal AuthUser authUser) {
-        CartResponse response = cartService.getCart(authUser.getUserId());
+    public ResponseEntity<CommonResponse<List<CartResponse>>> getCartList(@AuthenticationPrincipal AuthUser authUser) {
+        List<CartResponse> response = cartService.getCartList(authUser.getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_GET_SUCCESS, response));
     }
 

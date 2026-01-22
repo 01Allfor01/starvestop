@@ -40,10 +40,10 @@ public class CartService {
         return new CartResponse(savedCart);
     }
 
-    @Transactional
-    public CartResponse getCart(Long userId) {
+    @Transactional(readOnly = true)
+    public List<CartResponse> getCartList(Long userId) {
         List<Cart> cartList = cartRepository.findALLByUserIdAndIsDeletedIsFalse(userId);
 
-        return new CartResponse(cart);
+        return cartList.stream().map(CartResponse::new).toList();
     }
 }
