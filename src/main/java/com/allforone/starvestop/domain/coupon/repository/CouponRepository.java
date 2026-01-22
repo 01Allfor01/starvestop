@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface CouponRepository extends JpaRepository<Coupon, Long> {
 
-    List<Coupon> findAllAndIsDeletedIsFalse();
+    List<Coupon> findAllByIsDeletedIsFalse();
 
     Optional<Coupon> findByIdAndIsDeletedIsFalse(Long couponId);
 }

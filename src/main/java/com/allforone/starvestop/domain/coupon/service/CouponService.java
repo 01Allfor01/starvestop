@@ -39,7 +39,7 @@ public class CouponService {
 
     @Transactional(readOnly = true)
     public List<GetCouponResponse> getCoupons() {
-        List<Coupon> couponList = couponRepository.findAllAndIsDeletedIsFalse();
+        List<Coupon> couponList = couponRepository.findAllByIsDeletedIsFalse();
 
         return couponList.stream().map(GetCouponResponse::from).toList();
     }
