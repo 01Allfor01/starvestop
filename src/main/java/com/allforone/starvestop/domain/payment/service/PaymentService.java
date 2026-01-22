@@ -2,17 +2,25 @@ package com.allforone.starvestop.domain.payment.service;
 
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.domain.payment.dto.PurchaseDto;
+import com.allforone.starvestop.domain.payment.dto.request.ConfirmPaymentRequest;
 import com.allforone.starvestop.domain.payment.dto.request.CreatePaymentRequest;
+import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
+import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.enums.PurchaseType;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
+import com.allforone.starvestop.domain.product.entity.Product;
+import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
+import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -31,7 +39,7 @@ public class PaymentService {
     private final SubscriptionRepository subscriptionRepository;
 
     @Transactional
-    public void createPayment(
+    public CreatePaymentResponse createPayment(
             Long userId,
             CreatePaymentRequest request
     ) {
@@ -44,35 +52,100 @@ public class PaymentService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
+        PurchaseDto purchase = null;
         Long purchaseId = request.getPurchaseId();
-        String purchaseName = "";
         PurchaseType purchaseType = request.getPurchaseType();
 
         if (purchaseType.equals(PurchaseType.PRODUCT)) {
-            purchaseName = productRepository.findByIdAndIsDeletedIsFalse(purchaseId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND))
-                    .getProductName();
-        }
-        if (purchaseType.equals(PurchaseType.SUBSCRIPTION)) {
-            purchaseName = subscriptionRepository.findByIdAndIsDeletedIsFalse(purchaseId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND))
-                    .getSubscriptionName();
+            Product product = productRepository.findByIdAndIsDeletedIsFalse(purchaseId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+            if (product.getStock() <= 0) {
+                throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
+            }
+
+            purchase = PurchaseDto.of(
+                    product.getId(),
+                    product.getProductName(),
+                    purchaseType,
+                    product.getStatus().equals(ProductStatus.GENERAL) ? product.getPrice() : product.getSalePrice());
+
+        } else if (purchaseType.equals(PurchaseType.SUBSCRIPTION)) {
+            Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(purchaseId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+            if (subscription.getStock() <= 0) {
+                throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
+            }
+
+            purchase = PurchaseDto.of(
+                    subscription.getId(),
+                    subscription.getSubscriptionName(),
+                    purchaseType,
+                    subscription.getPrice());
+
+        } else {
+            throw new CustomException(ErrorCode.PURCHASE_TYPE_NOT_FOUND);
         }
 
         Payment payment = Payment.create(
                 user,
-                purchaseId,
-                purchaseType,
-                purchaseName,
+                purchase.getPurchaseId(),
+                purchase.getPurchaseType(),
+                purchase.getPurchaseName(),
                 orderId,
-                request.getAmount()
+                purchase.getAmount()
         );
 
         try {
             paymentRepository.save(payment);
+            payment.requestPayment();
+            if (purchaseType.equals(PurchaseType.PRODUCT)) {
+                Product product = productRepository.findByIdAndIsDeletedIsFalse(purchaseId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+                product.decrease(1L);
+
+            } else { // SUBSCRIPTION
+                Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(purchaseId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+                subscription.decrease(1L);
+            }
+            return CreatePaymentResponse.from(payment);
+
         } catch (DataIntegrityViolationException e) {
             throw new CustomException(ErrorCode.DUPLICATE_ORDER_ID);
         }
+    }
+
+    @Transactional
+    public String successPayment(ConfirmPaymentRequest request) throws JsonProcessingException {
+        Payment payment = paymentRepository.findPaymentByOrderId(request.getOrderId()).orElseThrow(
+                () -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND)
+        );
+
+        if (payment.getStatus().equals(PaymentStatus.SUCCEEDED)) {
+            return "/success.html"
+                    + "?orderId=" + payment.getOrderId()
+                    + "&amount=" + payment.getAmount();
+        }
+
+        if (payment.getStatus().equals(PaymentStatus.FAILED) || payment.getStatus().equals(PaymentStatus.CANCELED)) {
+            return "/fail.html"
+                    + "?orderId=" + payment.getOrderId()
+                    + "&reason=ALREADY_PROCESSED";
+        }
+
+        if (payment.getAmount().compareTo(request.getAmount()) != 0) {
+            failAndReleaseReservedStock(payment);
+
+            return "/fail.html"
+                    + "?orderId=" + payment.getOrderId()
+                    + "&reason=AMOUNT_MISMATCH";
+        }
+
+        payment.success(request.getPaymentKey());
+
+        return "/success.html"
+                + "?orderId=" + payment.getOrderId()
+                + "&amount=" + payment.getAmount();
     }
 
     @Transactional(readOnly = true)
@@ -94,6 +167,32 @@ public class PaymentService {
         }
 
         return GetPaymentDetailsResponse.from(payment);
+    }
+
+
+    private void releaseReservedStock(Payment payment) {
+        if (payment.getPurchaseType().equals(PurchaseType.PRODUCT)) {
+            Product product = productRepository.findByIdAndIsDeletedIsFalse(payment.getPurchaseId()).orElseThrow(
+                    () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
+            );
+            product.increase(1L);
+        } else if (payment.getPurchaseType().equals(PurchaseType.SUBSCRIPTION)) {
+            Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(payment.getPurchaseId()).orElseThrow(
+                    () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
+            );
+            subscription.increase(1L);
+        } else {
+            throw new CustomException(ErrorCode.PURCHASE_TYPE_NOT_FOUND);
+        }
+    }
+
+    private void failAndReleaseReservedStock(Payment payment) {
+        if (!(payment.getStatus().equals(PaymentStatus.REQUESTED) || payment.getStatus().equals(PaymentStatus.PENDING))) {
+            return;
+        }
+
+        payment.fail();
+        releaseReservedStock(payment);
     }
 
     private String generateOrderId() {
