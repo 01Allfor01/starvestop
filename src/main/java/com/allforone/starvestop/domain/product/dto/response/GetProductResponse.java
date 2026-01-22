@@ -27,7 +27,7 @@ public class GetProductResponse {
                 product.getDescription(),
                 product.getStock(),
                 product.getPrice(),
-                product.getSaleProduct().getSalePrice(),
+                product.getSalePrice(),
                 product.getStatus(),
                 product.getUpdatedAt()
         );

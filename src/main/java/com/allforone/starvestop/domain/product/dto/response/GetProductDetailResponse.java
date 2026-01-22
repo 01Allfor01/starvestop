@@ -36,7 +36,7 @@ public class GetProductDetailResponse {
                 product.getDescription(),
                 product.getStock(),
                 product.getPrice(),
-                product.getSaleProduct().getSalePrice(),
+                product.getSalePrice(),
                 product.getStatus(),
                 product.getCreatedAt(),
                 product.getUpdatedAt()

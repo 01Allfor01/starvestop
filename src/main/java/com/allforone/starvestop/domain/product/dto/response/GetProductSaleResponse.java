@@ -29,7 +29,7 @@ public class GetProductSaleResponse {
                 product.getDescription(),
                 product.getStock(),
                 product.getPrice(),
-                product.getSaleProduct().getSalePrice(),
+                product.getSalePrice(),
                 product.getUpdatedAt()
         );
     }
