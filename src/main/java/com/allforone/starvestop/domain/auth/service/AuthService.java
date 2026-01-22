@@ -5,6 +5,7 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.JwtUtil;
 import com.allforone.starvestop.common.utils.PasswordEncoder;
 import com.allforone.starvestop.domain.auth.dto.request.SignInRequest;
+import com.allforone.starvestop.domain.auth.dto.request.SignUpOwnerRequest;
 import com.allforone.starvestop.domain.auth.dto.request.SignUpRequest;
 import com.allforone.starvestop.domain.auth.dto.response.SignInResponse;
 import com.allforone.starvestop.domain.auth.dto.response.SignUpResponse;
@@ -66,7 +67,7 @@ public class AuthService {
     }
 
     @Transactional
-    public SignUpResponse signUpOwner(@Valid SignUpRequest request) {
+    public SignUpResponse signUpOwner(@Valid SignUpOwnerRequest request) {
         String userEmail = request.getEmail();
         String userName = request.getUsername();
         String password = request.getPassword();

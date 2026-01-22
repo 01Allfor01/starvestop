@@ -5,7 +5,6 @@ import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.common.enums.SuccessMessage;
 import com.allforone.starvestop.domain.owner.dto.UpdateOwnerRequest;
 import com.allforone.starvestop.domain.owner.dto.UpdateOwnerResponse;
-import com.allforone.starvestop.domain.owner.repository.OwnerRepository;
 import com.allforone.starvestop.domain.owner.service.OwnerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +20,6 @@ import static com.allforone.starvestop.common.enums.SuccessMessage.OWNER_UPDATE_
 public class OwnerController {
 
     private final OwnerService ownerService;
-    private final OwnerRepository ownerRepository;
 
     @PatchMapping
     public ResponseEntity<CommonResponse<UpdateOwnerResponse>> updateOwner(

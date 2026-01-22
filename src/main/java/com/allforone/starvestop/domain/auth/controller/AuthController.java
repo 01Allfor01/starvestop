@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.auth.controller;
 
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.auth.dto.request.SignInRequest;
+import com.allforone.starvestop.domain.auth.dto.request.SignUpOwnerRequest;
 import com.allforone.starvestop.domain.auth.dto.request.SignUpRequest;
 import com.allforone.starvestop.domain.auth.dto.response.SignInResponse;
 import com.allforone.starvestop.domain.auth.dto.response.SignUpResponse;
@@ -34,16 +35,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
-    // 회원 가입 - 판매자
-    @PostMapping("/signup/owner")
-    public ResponseEntity<CommonResponse<SignUpResponse>> signUpOwner(@Valid @RequestBody SignUpRequest request) {
-        SignUpResponse response = authService.signUpOwner(request);
-
-        CommonResponse<SignUpResponse> result = CommonResponse.success(SIGN_UP_OWNER_SUCCESS, response);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
-    }
-
     // 로그인
     @PostMapping("/signin")
     public ResponseEntity<CommonResponse<SignInResponse>> signIn(@Valid @RequestBody SignInRequest request) {
@@ -52,6 +43,16 @@ public class AuthController {
         CommonResponse<SignInResponse> result = CommonResponse.success(SIGN_IN_SUCCESS, response);
 
         return ResponseEntity.ok(result);
+    }
+
+    // 회원 가입 - 판매자
+    @PostMapping("/signup/owner")
+    public ResponseEntity<CommonResponse<SignUpResponse>> signUpOwner(@Valid @RequestBody SignUpOwnerRequest request) {
+        SignUpResponse response = authService.signUpOwner(request);
+
+        CommonResponse<SignUpResponse> result = CommonResponse.success(SIGN_UP_OWNER_SUCCESS, response);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     // 로그인 - 판매자
