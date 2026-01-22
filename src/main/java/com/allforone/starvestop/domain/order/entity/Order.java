@@ -37,5 +37,5 @@ public class Order extends BaseEntity {
     private OrderStatus status;
 
     @Column(nullable = false)
-    private BigDecimal totalAmount;
+    private BigDecimal amount;
 }
