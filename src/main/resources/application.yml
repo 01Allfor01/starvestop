@@ -15,3 +15,6 @@ spring:
       hibernate:
         format_sql: false
     show-sql: true
+  payment:
+    base-url: https://api.tosspayments.com/v1/payments
+    secret-key: ${PAYMENT_SECRET_KEY}
