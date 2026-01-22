@@ -41,4 +41,10 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_UPDATE_SUCCESS, response));
     }
 
+    @DeleteMapping("/{cartId}")
+    public ResponseEntity<CommonResponse<Void>> deleteCart(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long cartId) {
+        cartService.deleteCart(authUser.getUserId(), cartId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(CART_DELETE_SUCCESS));
+    }
+
 }

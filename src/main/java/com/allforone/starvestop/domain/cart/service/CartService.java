@@ -57,4 +57,15 @@ public class CartService {
         cartRepository.flush();
         return new CartResponse(cart);
     }
+
+    @Transactional
+    public void deleteCart(Long userId, Long cartId) {
+        Cart cart = cartRepository.findByIdAndIsDeletedIsFalse(cartId).orElseThrow(
+                () -> new CustomException(ErrorCode.CART_NOT_FOUND)
+        );
+        if (cart.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+        cartRepository.delete(cart);
+    }
 }

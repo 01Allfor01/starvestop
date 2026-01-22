@@ -21,6 +21,7 @@ public enum SuccessMessage {
     CART_CREATE_SUCCESS("장바구니 생성 성공"),
     CART_GET_SUCCESS("장바구니 조회 성공"),
     CART_UPDATE_SUCCESS("장바구니 수정 성공"),
+    CART_DELETE_SUCCESS("장바구니 삭제 성공"),
 
     //사용자 구독
     USER_SUBSCRIPTION_CREATE_SUCCESS("사용자 구독 생성 성공"),
@@ -62,7 +63,8 @@ public enum SuccessMessage {
     COUPON_DETAIL_GET_SUCCESS("쿠폰 상세 조회 성공"),
 
     //결제 로그
-    PAYMENT_LOG_GET_SUCCESS("결제 로그 조회 성공");
+    PAYMENT_LOG_GET_SUCCESS("결제 로그 조회 성공"),
+    ;
     private final String message;
 
     SuccessMessage(String message) {
