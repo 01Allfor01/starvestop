@@ -53,4 +53,14 @@ public class AuthController {
 
         return ResponseEntity.ok(result);
     }
+
+    // 로그인 - 판매자
+    @PostMapping("/signin/owner")
+    public ResponseEntity<CommonResponse<SignInResponse>> signInOwner(@Valid @RequestBody SignInRequest request) {
+        SignInResponse response = authService.signInOwner(request);
+
+        CommonResponse<SignInResponse> result = CommonResponse.success(SIGN_IN_SUCCESS, response);
+
+        return ResponseEntity.ok(result);
+    }
 }

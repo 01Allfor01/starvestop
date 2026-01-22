@@ -8,6 +8,8 @@ import com.allforone.starvestop.domain.auth.dto.request.SignInRequest;
 import com.allforone.starvestop.domain.auth.dto.request.SignUpRequest;
 import com.allforone.starvestop.domain.auth.dto.response.SignInResponse;
 import com.allforone.starvestop.domain.auth.dto.response.SignUpResponse;
+import com.allforone.starvestop.domain.owner.entity.Owner;
+import com.allforone.starvestop.domain.owner.repository.OwnerRepository;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final OwnerRepository ownerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -66,6 +69,24 @@ public class AuthService {
         User user = User.create(userEmail, passwordEncoder.encode(password), role, userName, nickname);
 
         User savedUser = userRepository.save(user);
+
+        String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
+
+        return new SignUpResponse(token);
+    }
+
+    private SignUpResponse getSignUpResponse(SignUpRequest request, UserRole role) {
+        String userEmail = request.getEmail();
+        String userName = request.getUsername();
+        String password = request.getPassword();
+
+        if (userRepository.existsByEmail(userEmail)) {
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        Owner owner = Owner.create(userEmail, passwordEncoder.encode(password), role, userName);
+
+        User savedUser = ownerRepository.save(user);
 
         String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
 
