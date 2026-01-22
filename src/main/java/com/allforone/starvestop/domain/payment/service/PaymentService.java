@@ -31,7 +31,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
-    private final OrderProductRepository    orderProductRepository;
+    private final OrderProductRepository orderProductRepository;
     private final PaymentLogService paymentLogService;
 
     @Transactional
@@ -55,10 +55,10 @@ public class PaymentService {
             throw new CustomException(ErrorCode.DUPLICATE_ORDER_ID);
         }
 
-        paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
+        paymentLogService.savePaymentLog(payment.getId(), order.getUser().getId(), payment.getOrderKey(), payment.getStatus(), null, null);
 
         payment.requestPayment();
-        paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
+        paymentLogService.savePaymentLog(payment.getId(), order.getUser().getId(), payment.getOrderKey(), payment.getStatus(), null, null);
 
         return CreatePaymentResponse.from(payment);
     }
@@ -70,10 +70,10 @@ public class PaymentService {
         );
 
         if (payment.getStatus().equals(PaymentStatus.SUCCEEDED)) {
-            paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
+            paymentLogService.savePaymentLog(payment.getId(), payment.getOrder().getUser().getId(), payment.getOrderKey(), payment.getStatus(), null, null);
             return "/success.html"
                     + "?orderId=" + payment.getOrderKey()
-                    + "&amount=" + payment.getTotalAmount();
+                    + "&amount=" + payment.getAmount();
         }
 
         if (payment.getStatus().equals(PaymentStatus.FAILED) || payment.getStatus().equals(PaymentStatus.CANCELED)) {
@@ -82,7 +82,7 @@ public class PaymentService {
                     + "&reason=ALREADY_PROCESSED";
         }
 
-        if (payment.getTotalAmount().compareTo(request.getAmount()) != 0) {
+        if (payment.getAmount().compareTo(request.getAmount()) != 0) {
             failAndReleaseReservedStock(payment);
 
             return "/fail.html"
@@ -91,10 +91,10 @@ public class PaymentService {
         }
 
         payment.success(request.getPaymentKey());
-        paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
+        paymentLogService.savePaymentLog(payment.getId(), payment.getOrder().getUser().getId(), payment.getOrderKey(), payment.getStatus(), null, null);
         return "/success.html"
                 + "?orderId=" + payment.getOrderKey()
-                + "&amount=" + payment.getTotalAmount();
+                + "&amount=" + payment.getAmount();
     }
 
     @Transactional(readOnly = true)
@@ -133,7 +133,7 @@ public class PaymentService {
         }
 
         payment.fail();
-        paymentLogService.savePaymentLog(payment.getId(), payment.getStatus(), null, null);
+        paymentLogService.savePaymentLog(payment.getId(), payment.getOrder().getUser().getId(), payment.getOrderKey(), payment.getStatus(), null, null);
 
         List<OrderProduct> orderProducts = orderProductRepository.findAllByOrder_Id((payment.getOrder().getId()));
         releaseReservedStock(orderProducts);
