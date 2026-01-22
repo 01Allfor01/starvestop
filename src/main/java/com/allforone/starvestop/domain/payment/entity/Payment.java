@@ -20,7 +20,6 @@ import java.time.LocalDateTime;
 public class Payment extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "payment_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -34,7 +33,7 @@ public class Payment extends BaseEntity {
     private String orderKey;
 
     @Column(nullable = false)
-    private BigDecimal totalAmount;
+    private BigDecimal amount;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -46,12 +45,15 @@ public class Payment extends BaseEntity {
     @Column
     private LocalDateTime canceledAt;
 
-    public Payment(Order order,String paymentKey){
-        this.order=order;
-        this.paymentKey=paymentKey;
-        this.orderKey=order.getOrderKey();
-        this.totalAmount=order.getTotalAmount();
+    private Payment(Order order) {
+        this.order = order;
+        this.orderKey = order.getOrderKey();
+        this.amount = order.getTotalAmount();
         this.status = PaymentStatus.CREATED;
+    }
+
+    public static Payment create(Order order){
+        return new Payment(order);
     }
 
     private void requireStatus(PaymentStatus... allowed) {

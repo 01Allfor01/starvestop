@@ -31,4 +31,16 @@ public class PaymentLog {
 
     @Column(nullable = false)
     private LocalDateTime timestamp;
+
+    private PaymentLog(Long paymentId, PaymentStatus paymentStatus, String pgStatus, String payload) {
+        this.paymentId = paymentId;
+        this.paymentStatus = paymentStatus;
+        this.pgStatus = pgStatus;
+        this.payload = payload;
+        this.timestamp=LocalDateTime.now();
+    }
+
+    public static PaymentLog create(Long paymentId, PaymentStatus paymentStatus, String pgStatus, String payload) {
+        return new PaymentLog(paymentId, paymentStatus, pgStatus, payload);
+    }
 }

@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.store.dto;
+package com.allforone.starvestop.domain.store.dto.request;
 
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
@@ -10,21 +10,18 @@ import java.time.LocalTime;
 
 @Getter
 @NoArgsConstructor
-public class StoreRequest {
+public class UpdateStoreRequest {
 
-    @NotNull(message = "판매자 아이디를 적어주세요")
-    private Long userId;
-
-    @Size(max=255)
+    @Size(max=255, message = "매장 이름은 255자 이하로 입력해주세요")
     @NotBlank(message = "매장 이름을 적어주세요")
     private String storeName;
 
-    @Size(max=255)
+    @Size(max=255, message = "매장 주소는 255자 이하로 입력해주세요")
     @NotBlank(message = "주소를 적어주세요")
     private String address;
 
-    @Size(max=255)
-    @NotNull(message = "매장 설명을 적어주세요")
+    @Size(max=255, message = "매장 설명은 255자 이하로 입력해주세요")
+    @NotBlank(message = "매장 설명을 적어주세요")
     private String description;
 
     @NotNull(message = "매장 카테고리를 선택해주세요")
@@ -47,7 +44,4 @@ public class StoreRequest {
     private LocalTime closeTime;
 
     private StoreStatus status;
-
-    @NotBlank(message = "사업자 등록 번호를 입력해주세요")
-    private String businessRegistrationNumber;
 }

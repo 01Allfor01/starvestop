@@ -16,6 +16,9 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다"),
     PASSWORD_MISMATCH(HttpStatus.UNAUTHORIZED, "입력하신 비밀번호가 일치하지 않습니다"),
 
+    //판매자
+    OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을수 없습니다"),
+
     //사용자 구독
     USER_SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 구독입니다"),
 
@@ -28,12 +31,16 @@ public enum ErrorCode {
     //구독
     SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구독입니다"),
 
+    //주문
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND,"존재하지 않는 주문입니다"),
+
     //결제
     PAYMENT_TARGET_REQUIRED(HttpStatus.BAD_REQUEST, "결제 대상이 필요합니다"),
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제내역이 존재하지 않습니다"),
     PAYMENT_TARGET_AMBIGUOUS(HttpStatus.BAD_REQUEST, "상품과 구독 중 하나만 선택해주세요"),
     INVALID_PAYMENT_STATE(HttpStatus.CONFLICT, "잘못된 결제 상태입니다"),
     DUPLICATE_ORDER_ID(HttpStatus.CONFLICT, "이미 존재하는 주문 번호입니다"),
+
 
     //구매
     PURCHASE_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품 유형입니다"),
