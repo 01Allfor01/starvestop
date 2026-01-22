@@ -54,7 +54,11 @@ public enum SuccessMessage {
     //쿠폰
     COUPON_CREATE_SUCCESS("쿠폰 등록 성공"),
 
-
+    //주문
+    ORDER_CREATE_SUCCESS("주문 생성 성공"),
+    ORDER_GET_SUCCESS("주문 조회 성공"),
+    ORDER_UPDATE_SUCCESS("주문 수정 성공"),
+    ORDER_DELETE_SUCCESS("주문 삭제 성공")
     ;
 
     private final String message;
