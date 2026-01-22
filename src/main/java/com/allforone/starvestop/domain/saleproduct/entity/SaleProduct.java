@@ -25,4 +25,17 @@ public class SaleProduct {
 
     @Column(nullable = false)
     private BigDecimal salePrice;
+
+    private SaleProduct(Product product, BigDecimal salePrice) {
+        this.product = product;
+        this.salePrice = salePrice;
+    }
+
+    public static SaleProduct create(Product product, BigDecimal salePrice) {
+        return new SaleProduct(product, salePrice);
+    }
+
+    public void update(BigDecimal salePrice) {
+        this.salePrice = salePrice;
+    }
 }
