@@ -10,7 +10,6 @@ import com.allforone.starvestop.domain.coupon.dto.response.GetCouponResponse;
 import com.allforone.starvestop.domain.coupon.dto.response.UpdateCouponResponse;
 import com.allforone.starvestop.domain.coupon.entity.Coupon;
 import com.allforone.starvestop.domain.coupon.repository.CouponRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +40,7 @@ public class CouponService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetCouponResponse> getCoupons() {
+    public List<GetCouponResponse> getCouponList() {
         List<Coupon> couponList = couponRepository.findAllByIsDeletedIsFalse();
 
         return couponList.stream().map(GetCouponResponse::from).toList();
@@ -55,7 +54,7 @@ public class CouponService {
     }
 
     @Transactional
-    public UpdateCouponResponse updateCoupon(Long couponId, @Valid UpdateCouponRequest request) {
+    public UpdateCouponResponse updateCoupon(Long couponId, UpdateCouponRequest request) {
         Coupon coupon = getCouponOrThrow(couponId);
         coupon.update(request.getCouponStatus());
         couponRepository.flush();

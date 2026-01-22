@@ -8,7 +8,6 @@ import com.allforone.starvestop.domain.coupon.dto.response.GetCouponDetailRespon
 import com.allforone.starvestop.domain.coupon.dto.response.GetCouponResponse;
 import com.allforone.starvestop.domain.coupon.dto.response.UpdateCouponResponse;
 import com.allforone.starvestop.domain.coupon.service.CouponService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,15 +25,15 @@ public class CouponController {
     private final CouponService couponService;
 
     @PostMapping
-    public ResponseEntity<CommonResponse<CreateCouponResponse>> createCoupon(@Valid @RequestBody CreateCouponRequest request) {
+    public ResponseEntity<CommonResponse<CreateCouponResponse>> createCoupon(@RequestBody CreateCouponRequest request) {
         CreateCouponResponse response = couponService.createCoupon(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(COUPON_CREATE_SUCCESS, response));
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<GetCouponResponse>>> getCoupons() {
-        List<GetCouponResponse> responseList = couponService.getCoupons();
+    public ResponseEntity<CommonResponse<List<GetCouponResponse>>> getCouponList() {
+        List<GetCouponResponse> responseList = couponService.getCouponList();
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(COUPON_LIST_GET_SUCCESS, responseList));
     }
@@ -48,7 +47,7 @@ public class CouponController {
 
     @PatchMapping("/{couponId}")
     public ResponseEntity<CommonResponse<UpdateCouponResponse>> updateCoupon(
-            @PathVariable Long couponId, @Valid @RequestBody UpdateCouponRequest request
+            @PathVariable Long couponId, @RequestBody UpdateCouponRequest request
     ) {
         UpdateCouponResponse response = couponService.updateCoupon(couponId, request);
 
