@@ -16,7 +16,6 @@ public class Cart extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -29,4 +28,14 @@ public class Cart extends BaseEntity {
 
     @Column(nullable = false)
     private Integer quantity;
+
+    private Cart(User user, Product product, Integer quantity){
+        this.user = user;
+        this.product = product;
+        this.quantity = quantity;
+    }
+
+    public static Cart create(User user, Product product, Integer quantity) {
+        return new Cart(user, product, quantity);
+    }
 }

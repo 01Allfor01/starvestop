@@ -22,6 +22,7 @@ public class Payment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long userId;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
@@ -45,15 +46,16 @@ public class Payment extends BaseEntity {
     @Column
     private LocalDateTime canceledAt;
 
-    private Payment(Order order) {
+    private Payment(Long userId, Order order, String orderKey, BigDecimal amount) {
+        this.userId = userId;
         this.order = order;
-        this.orderKey = order.getOrderKey();
-        this.amount = order.getAmount();
+        this.orderKey = orderKey;
+        this.amount = amount;
         this.status = PaymentStatus.CREATED;
     }
 
-    public static Payment create(Order order) {
-        return new Payment(order);
+    public static Payment create(Long userId, Order order, String orderKey, BigDecimal amount) {
+        return new Payment(userId, order, orderKey, amount);
     }
 
     private void requireStatus(PaymentStatus... allowed) {
