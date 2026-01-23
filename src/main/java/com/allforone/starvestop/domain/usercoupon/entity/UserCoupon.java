@@ -1,5 +1,6 @@
 package com.allforone.starvestop.domain.usercoupon.entity;
 
+import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.domain.coupon.entity.Coupon;
 import com.allforone.starvestop.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "user_coupons")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserCoupon {
+public class UserCoupon extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,13 +28,35 @@ public class UserCoupon {
     private Coupon coupon;
 
     @Column(nullable = false)
-    private LocalDateTime started_at;
+    private LocalDateTime startedAt;
 
     @Column(nullable = false)
-    private LocalDateTime expired_at;
+    private LocalDateTime expiredAt;
 
-    @Column(nullable = false)
-    private LocalDateTime created_at;
+    private LocalDateTime usedAt;
 
-    private LocalDateTime used_at;
+    public UserCoupon(
+            User user,
+            Coupon coupon,
+            LocalDateTime startedAt,
+            LocalDateTime expiredAt
+    ) {
+        this.user = user;
+        this.coupon = coupon;
+        this.startedAt = startedAt;
+        this.expiredAt = expiredAt;
+    }
+
+    public static UserCoupon create(
+            User user,
+            Coupon coupon,
+            LocalDateTime startedAt,
+            LocalDateTime expiredAt
+    ) {
+        return new UserCoupon(user, coupon, startedAt, expiredAt);
+    }
+
+    public void use() {
+        this.usedAt = LocalDateTime.now();
+    }
 }

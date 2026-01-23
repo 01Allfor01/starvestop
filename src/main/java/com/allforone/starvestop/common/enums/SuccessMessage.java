@@ -52,6 +52,11 @@ public enum SuccessMessage {
     COUPON_LIST_GET_SUCCESS("쿠폰 목록 조회 성공"),
     COUPON_DETAIL_GET_SUCCESS("쿠폰 상세 조회 성공"),
 
+    //사용자 쿠폰
+    USER_COUPON_CREATE_SUCCESS("사용자 쿠폰 등록 성공"),
+    USER_COUPON_LIST_GET_SUCCESS("사용자 쿠폰 목록 조회 성공"),
+    USER_COUPON_DETAIL_GET_SUCCESS("사용자 쿠폰 상세 조회 성공"),
+
     //결제 로그
     PAYMENT_LOG_GET_SUCCESS("결제 로그 조회 성공");
     private final String message;
