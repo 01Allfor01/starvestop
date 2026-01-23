@@ -37,7 +37,7 @@ public class UserSubscriptionService {
                 () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
 
         //3. 활성화 중인 구독이 있으면 예외 처리
-        boolean exist = userSubscriptionRepository.existsByUserAndSubscriptionIsDeletedIsFalse(user, subscription);
+        boolean exist = userSubscriptionRepository.existsByUserAndSubscriptionAndIsDeletedIsFalse(user, subscription);
         if (exist) {
             throw new CustomException(ErrorCode.USER_SUBSCRIPTION_EXIST);
         }
