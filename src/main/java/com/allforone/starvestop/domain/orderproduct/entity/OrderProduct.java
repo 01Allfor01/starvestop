@@ -30,4 +30,16 @@ public class OrderProduct {
 
     @Column(nullable = false)
     private Integer productPrice;
+
+    private OrderProduct(Order order, Long productId, String productName, Integer quantity, Integer productPrice) {
+        this.order = order;
+        this.productId = productId;
+        this.productName = productName;
+        this.quantity = quantity;
+        this.productPrice = productPrice;
+    }
+
+    public OrderProduct create(Order order, Long productId, String productName, Integer quantity, Integer productPrice) {
+        return new OrderProduct(order, productId, productName, quantity, productPrice);
+    }
 }

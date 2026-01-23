@@ -62,7 +62,11 @@ public enum SuccessMessage {
     COUPON_DELETE_SUCCESS("쿠폰 삭제 성공"),
 
     //결제 로그
-    PAYMENT_LOG_GET_SUCCESS("결제 로그 조회 성공");
+    PAYMENT_LOG_GET_SUCCESS("결제 로그 조회 성공"),
+
+    // 영수증
+    RECEIPT_GET_SUCCESS("영수증 조회 성공")
+    ;
     private final String message;
 
     SuccessMessage(String message) {
