@@ -19,7 +19,10 @@ public enum ErrorCode {
     // 판매자
     OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을수 없습니다"),
 
-    // 사용자 구독
+    //장바구니
+    CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니를 찾을 수 없습니다"),
+
+    //사용자 구독
     USER_SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 구독입니다"),
 
     // 상품
