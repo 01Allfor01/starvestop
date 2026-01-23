@@ -43,7 +43,7 @@ public class CartService {
 
     @Transactional(readOnly = true)
     public List<CartResponse> getCartList(Long userId) {
-        List<Cart> cartList = cartRepository.findALLByUserIdAndIsDeletedIsFalse(userId);
+        List<Cart> cartList = cartRepository.findAllByUserIdAndIsDeletedIsFalse(userId);
 
         return cartList.stream().map(CartResponse::new).toList();
     }

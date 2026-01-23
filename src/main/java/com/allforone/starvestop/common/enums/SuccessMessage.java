@@ -51,6 +51,11 @@ public enum SuccessMessage {
     SUBSCRIPTION_UPDATE_SUCCESS("구독 수정 성공"),
     SUBSCRIPTION_DELETE_SUCCESS("구독 삭제 성공"),
 
+    //주문
+    ORDER_CREATE_SUCCESS("주문 생성 성공"),
+    ORDER_GET_SUCCESS("주문 조회 성공"),
+    ORDER_UPDATE_SUCCESS("주문 수정 성공"),
+    ORDER_DELETE_SUCCESS("주문 삭제 성공"),
 
     //결제
     PAYMENT_CREATE_SUCCESS("결제 생성 성공"),

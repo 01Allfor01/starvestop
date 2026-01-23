@@ -38,4 +38,16 @@ public class Order extends BaseEntity {
 
     @Column(nullable = false)
     private BigDecimal amount;
+
+    private Order(Store store, String orderKey, User user, BigDecimal amount) {
+        this.store = store;
+        this.status = OrderStatus.PENDING;
+        this.orderKey = orderKey;
+        this.user = user;
+        this.amount = amount;
+    }
+
+    public static Order create(Store store, String orderKey, User user, BigDecimal amount) {
+        return new Order(store, orderKey, user, amount);
+    }
 }
