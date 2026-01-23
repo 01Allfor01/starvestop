@@ -33,7 +33,7 @@ public class UserCouponController {
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(USER_COUPON_CREATE_SUCCESS, response));
     }
 
-    @GetMapping("/user-coupons/me")
+    @GetMapping("/user-coupons")
     public ResponseEntity<CommonResponse<List<GetUserCouponResponse>>> getUserCouponList(@AuthenticationPrincipal AuthUser authUser) {
         List<GetUserCouponResponse> responseList = userCouponService.getUserCouponList(authUser);
 
