@@ -50,4 +50,8 @@ public class Order extends BaseEntity {
     public static Order create(Store store, String orderKey, User user, BigDecimal amount) {
         return new Order(store, orderKey, user, amount);
     }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
 }

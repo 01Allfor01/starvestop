@@ -33,6 +33,7 @@ public class OrderProduct {
     @Column(nullable = false)
     private BigDecimal productPrice;
 
+    private Boolean isDeleted;
 
     private OrderProduct(Order order, Long productId, String productName, Integer quantity, BigDecimal productPrice) {
         this.order = order;
@@ -40,8 +41,17 @@ public class OrderProduct {
         this.productName = productName;
         this.quantity = quantity;
         this.productPrice = productPrice;
+        this.isDeleted = false;
     }
     public static OrderProduct create(Order order, Long productId, String productName, Integer quantity, BigDecimal productPrice) {
         return new OrderProduct(order, productId, productName, quantity, productPrice);
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
+
+    public void recovery() {
+        this.isDeleted = false;
     }
 }

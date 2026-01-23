@@ -5,6 +5,7 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.cart.entity.Cart;
 import com.allforone.starvestop.domain.cart.repository.CartRepository;
 import com.allforone.starvestop.domain.order.dto.OrderResponse;
+import com.allforone.starvestop.domain.order.dto.UpdateOrderRequest;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.repository.OrderRepository;
 import com.allforone.starvestop.domain.orderproduct.entity.OrderProduct;
@@ -15,6 +16,7 @@ import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -67,13 +69,57 @@ public class OrderService {
 
         cartRepository.deleteAll(cartList);
 
-        return new OrderResponse(
-                order.getId(),
-                order.getStore().getId(),
-                order.getUser().getId(),
-                order.getOrderKey(),
-                order.getStatus(),
-                order.getAmount()
+        return OrderResponse.from(order);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getOrderList(Long userId) {
+        List<Order> orderList = orderRepository.findAllByUserIdAndIsDeletedIsFalse(userId);
+
+        return orderList.stream().map(OrderResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponse getOrder(Long userId, Long orderId) {
+        Order order = findOrder(orderId);
+
+        userCheck(userId, order);
+
+        return OrderResponse.from(order);
+    }
+
+    @Transactional
+    public OrderResponse updateOrder(Long userId, UpdateOrderRequest request) {
+        Order order = findOrder(request.getId());
+        userCheck(userId, order);
+        order.setStatus(request.getStatus());
+
+        orderRepository.flush();
+
+        return OrderResponse.from(order);
+    }
+
+    @Transactional
+    public void deleteOrder(Long userId, Long orderId) {
+        Order order = findOrder(orderId);
+        userCheck(userId, order);
+
+        List<OrderProduct> orderProductList = orderProductRepository.findAllByOrder_Id(orderId);
+
+        orderProductList.forEach(OrderProduct::delete);
+
+        order.delete();
+    }
+
+    private void userCheck(Long userId, Order order) {
+        if (!order.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+    }
+
+    private Order findOrder(Long orderId) {
+        return orderRepository.findByIdAndIsDeletedIsFalse(orderId).orElseThrow(
+                () -> new CustomException(ErrorCode.ORDER_NOT_FOUND)
         );
     }
 }
