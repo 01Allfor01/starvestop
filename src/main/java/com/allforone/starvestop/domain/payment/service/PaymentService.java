@@ -6,6 +6,8 @@ import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.repository.OrderRepository;
 import com.allforone.starvestop.domain.orderproduct.entity.OrderProduct;
 import com.allforone.starvestop.domain.orderproduct.repository.OrderProductRepository;
+import com.allforone.starvestop.domain.payment.dto.request.ConfirmPaymentRequest;
+import com.allforone.starvestop.domain.payment.dto.request.CreatePaymentRequest;
 import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
@@ -14,7 +16,11 @@ import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
 import com.allforone.starvestop.domain.paymentlog.service.PaymentLogService;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
+import com.allforone.starvestop.domain.user.entity.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -28,7 +34,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentService {
 
+    @Value("${spring.payment.secret-key}")
+    private String secretKey;
+
+    @Value("${spring.payment.base-url}")
+    private String baseUrl;
+
     private final PaymentRepository paymentRepository;
+    private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
     private final ProductRepository productRepository;
@@ -59,12 +72,9 @@ public class PaymentService {
         paymentLogService.savePaymentLog(payment.getId(), userId, orderKey, payment.getStatus(), null, null);
 
         payment.requestPayment();
-        paymentLogService.savePaymentLog(payment.getId(), userId, orderKey, payment.getStatus(), null, null);
+        paymentLogService.savePaymentLog(payment.getId(), order.getUser().getId(), payment.getOrderKey(), payment.getStatus(), null, null);
 
-        return new CreatePaymentResponse(
-                orderKey,
-                amount
-        );
+        return CreatePaymentResponse.from(payment);
     }
 
     // 승인 요청

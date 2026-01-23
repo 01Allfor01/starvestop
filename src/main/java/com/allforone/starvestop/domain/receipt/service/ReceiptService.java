@@ -41,7 +41,7 @@ public class ReceiptService {
     // 내 영수증 목록 조회 (N+1 발생 주의 지점 고도화때 해결할 예정)
     @Transactional(readOnly = true)
     public List<GetReceiptResponse> getReceiptList(Long userId) {
-        List<Receipt> receiptList = receiptRepository.findReceiptsByUser_Id(userId);
+        List<Receipt> receiptList = receiptRepository.findReceiptsByUserId(userId);
 
         return receiptList.stream().map((x) -> GetReceiptResponse.from(userId, x)).toList();
     }
