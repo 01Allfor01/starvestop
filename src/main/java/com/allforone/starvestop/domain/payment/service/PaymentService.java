@@ -133,7 +133,7 @@ public class PaymentService {
         paymentLogService.savePaymentLog(payment.getId(), payment.getOrder().getUser().getId(),
                 payment.getOrderKey(), payment.getStatus(), null, null);
 
-        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrder_Id(payment.getOrder().getId());
+        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderId(payment.getOrder().getId());
         releaseReservedStock(orderProducts);
     }
 
