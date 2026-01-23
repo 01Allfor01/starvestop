@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UpdateCouponResponse {
 
-    private final Long couponId;
-    private final String couponName;
+    private final Long id;
+    private final String name;
     private final CouponStatus couponStatus;
     private final LocalDateTime updatedAt;
 

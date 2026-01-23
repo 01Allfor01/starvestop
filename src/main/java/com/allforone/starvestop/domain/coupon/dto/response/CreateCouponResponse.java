@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CreateCouponResponse {
 
-    private final Long couponId;
-    private final String couponName;
+    private final Long id;
+    private final String name;
     private final BigDecimal discountAmount;
     private final BigDecimal minAmount;
     private final Integer validDays;
