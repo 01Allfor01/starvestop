@@ -31,7 +31,7 @@ public class UserCoupon extends BaseEntity {
     private LocalDateTime startedAt;
 
     @Column(nullable = false)
-    private LocalDateTime expiredAt;
+    private LocalDateTime expiresAt;
 
     private LocalDateTime usedAt;
 
@@ -44,16 +44,16 @@ public class UserCoupon extends BaseEntity {
         this.user = user;
         this.coupon = coupon;
         this.startedAt = startedAt;
-        this.expiredAt = expiredAt;
+        this.expiresAt = expiredAt;
     }
 
     public static UserCoupon create(
             User user,
             Coupon coupon,
             LocalDateTime startedAt,
-            LocalDateTime expiredAt
+            LocalDateTime expiresAt
     ) {
-        return new UserCoupon(user, coupon, startedAt, expiredAt);
+        return new UserCoupon(user, coupon, startedAt, expiresAt);
     }
 
     public void use() {

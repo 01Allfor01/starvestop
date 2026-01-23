@@ -14,7 +14,7 @@ public class CreateUserCouponResponse {
     private final Long userId;
     private final Long couponId;
     private final LocalDateTime startedAt;
-    private final LocalDateTime expiredAt;
+    private final LocalDateTime expiresAt;
     private final LocalDateTime createdAt;
 
     public static CreateUserCouponResponse from(UserCoupon userCoupon) {
@@ -23,7 +23,7 @@ public class CreateUserCouponResponse {
                 userCoupon.getUser().getId(),
                 userCoupon.getCoupon().getId(),
                 userCoupon.getStartedAt(),
-                userCoupon.getExpiredAt(),
+                userCoupon.getExpiresAt(),
                 userCoupon.getCreatedAt()
         );
     }
