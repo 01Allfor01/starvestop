@@ -20,7 +20,7 @@ public enum SuccessMessage {
     //사용자 구독
     USER_SUBSCRIPTION_CREATE_SUCCESS("사용자 구독 생성 성공"),
     USER_SUBSCRIPTION_GET_SUCCESS("사용자 구독 조회 성공"),
-    USER_SUBSCRIPTION_DELETE_SUCCESS("사용자 구독 삭제 성공"),
+    USER_SUBSCRIPTION_CANCEL_SUCCESS("사용자 구독 취소 성공"),
 
 
     //상품
