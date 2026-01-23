@@ -10,11 +10,11 @@ import java.math.BigDecimal;
 @Getter
 @AllArgsConstructor
 public class OrderResponse {
-    private final Long orderId;
+    private final Long id;
     private final Long storeId;
     private final Long userId;
     private final String orderKey;
-    private final OrderStatus orderStatus;
+    private final OrderStatus status;
     private final BigDecimal amount;
 
     public static OrderResponse from(Order order) {
