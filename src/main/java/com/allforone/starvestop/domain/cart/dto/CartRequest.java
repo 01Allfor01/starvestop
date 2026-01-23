@@ -12,5 +12,5 @@ public class CartRequest {
     private Long productId;
     @Min(value = 1, message = "수량이 잘못되었습니다")
     @NotNull(message = "상품 수량을 입력해주세요")
-    private Integer Quantity;
+    private Integer quantity;
 }
