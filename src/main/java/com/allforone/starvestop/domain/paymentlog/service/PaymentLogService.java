@@ -20,6 +20,7 @@ public class PaymentLogService {
 
     private final PaymentLogRepository paymentLogRepository;
 
+    // 로그 저장
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void savePaymentLog(Long userId, Long paymentId, String orderKey, PaymentStatus paymentStatus, String pgStatus, String payload) {
         PaymentLog paymentLog = PaymentLog.create(paymentId, userId, orderKey, paymentStatus, pgStatus, payload);
