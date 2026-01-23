@@ -54,7 +54,7 @@ public class OrderService {
         Order order = orderRepository.save(Order.create(store, orderKey, user, amount));
 
         List<OrderProduct> orderProductList = cartList.stream()
-                .map(cart -> new OrderProduct(
+                .map(cart -> OrderProduct.create(
                         order,
                         cart.getProduct().getId(),
                         cart.getProduct().getName(),
@@ -63,6 +63,8 @@ public class OrderService {
                 )).toList();
 
         orderProductRepository.saveAll(orderProductList);
+
+        cartRepository.deleteAll(cartList);
 
         return new OrderResponse(
                 order.getId(),

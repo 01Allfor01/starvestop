@@ -4,6 +4,8 @@ import com.allforone.starvestop.domain.orderproduct.entity.OrderProduct;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.math.BigDecimal;
+
 @Getter
 @AllArgsConstructor
 public class OrderProductDto {
@@ -11,7 +13,7 @@ public class OrderProductDto {
     private Long productId;
     private String productName;
     private Integer quantity;
-    private Integer productPrice;
+    private BigDecimal productPrice;
 
     public static OrderProductDto from(OrderProduct orderProduct) {
         return new OrderProductDto(

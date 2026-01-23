@@ -41,7 +41,7 @@ public class OrderProduct {
         this.quantity = quantity;
         this.productPrice = productPrice;
     }
-    public OrderProduct create(Order order, Long productId, String productName, Integer quantity, BigDecimal productPrice) {
+    public static OrderProduct create(Order order, Long productId, String productName, Integer quantity, BigDecimal productPrice) {
         return new OrderProduct(order, productId, productName, quantity, productPrice);
     }
 }
