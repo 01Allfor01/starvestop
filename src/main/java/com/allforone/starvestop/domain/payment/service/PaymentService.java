@@ -52,8 +52,6 @@ public class PaymentService {
 
         Order order = orderRepository.findByIdAndIsDeletedIsFalse(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
-
-
         if (!userId.equals(order.getUser().getId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
