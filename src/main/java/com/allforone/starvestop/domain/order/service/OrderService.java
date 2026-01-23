@@ -5,6 +5,7 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.cart.entity.Cart;
 import com.allforone.starvestop.domain.cart.repository.CartRepository;
 import com.allforone.starvestop.domain.order.dto.OrderResponse;
+import com.allforone.starvestop.domain.order.dto.UpdateOrderRequest;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.repository.OrderRepository;
 import com.allforone.starvestop.domain.orderproduct.entity.OrderProduct;
@@ -87,6 +88,21 @@ public class OrderService {
         if (!order.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
+
+        return OrderResponse.from(order);
+    }
+
+    @Transactional
+    public OrderResponse updateOrder(Long userId, UpdateOrderRequest request) {
+        Order order = orderRepository.findByIdAndIsDeletedIsFalse(request.getId()).orElseThrow(
+                () -> new CustomException(ErrorCode.ORDER_NOT_FOUND)
+        );
+        if (!order.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+        order.setStatus(request.getStatus());
+
+        orderRepository.flush();
 
         return OrderResponse.from(order);
     }
