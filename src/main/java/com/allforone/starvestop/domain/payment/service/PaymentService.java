@@ -18,6 +18,7 @@ import com.allforone.starvestop.domain.paymentlog.service.PaymentLogService;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
+
+    @Value("${spring.payment.secret-key}")
+    private String secretKey;
+
+    @Value("${spring.payment.base-url}")
+    private String baseUrl;
 
     private final PaymentRepository paymentRepository;
     private final ProductRepository productRepository;
