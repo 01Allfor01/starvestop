@@ -9,11 +9,14 @@ import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import com.allforone.starvestop.domain.usercoupon.dto.request.CreateUserCouponRequest;
 import com.allforone.starvestop.domain.usercoupon.dto.response.CreateUserCouponResponse;
+import com.allforone.starvestop.domain.usercoupon.dto.response.GetUserCouponResponse;
 import com.allforone.starvestop.domain.usercoupon.entity.UserCoupon;
 import com.allforone.starvestop.domain.usercoupon.repository.UserCouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,5 +40,41 @@ public class UserCouponService {
         UserCoupon savedUserCoupon = userCouponRepository.save(userCoupon);
 
         return CreateUserCouponResponse.from(savedUserCoupon);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetUserCouponResponse> getUserCouponList(AuthUser authUser) {
+        List<UserCoupon> responseList = userCouponRepository.findAllByUserIdAndIsDeletedIsFalseAndUsedAtIsNull(authUser.getUserId());
+
+        return responseList.stream().map(GetUserCouponResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public GetUserCouponResponse getUserCoupon(AuthUser authUser, Long userCouponId) {
+        UserCoupon userCoupon = getUserCouponOrThrow(userCouponId);
+
+        checkPermission(authUser, userCoupon);
+
+        return GetUserCouponResponse.from(userCoupon);
+    }
+
+    @Transactional
+    public void deleteUserCoupon(AuthUser authUser, Long userCouponId) {
+        UserCoupon userCoupon = getUserCouponOrThrow(userCouponId);
+        checkPermission(authUser, userCoupon);
+        userCoupon.delete();
+        userCouponRepository.flush();
+    }
+
+    private UserCoupon getUserCouponOrThrow(Long userCouponId) {
+        return userCouponRepository.findByIdAndIsDeletedIsFalse(userCouponId).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_COUPON_NOT_FOUND)
+        );
+    }
+
+    private void checkPermission(AuthUser authUser, UserCoupon userCoupon) {
+        if (!userCoupon.getUser().getId().equals(authUser.getUserId())) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
     }
 }

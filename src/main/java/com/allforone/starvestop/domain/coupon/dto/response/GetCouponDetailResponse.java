@@ -18,7 +18,7 @@ public class GetCouponDetailResponse {
     private final BigDecimal minAmount;
     private final Integer validDays;
     private final LocalDateTime expiresAt;
-    private final CouponStatus couponStatus;
+    private final CouponStatus status;
     private final Integer stock;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
