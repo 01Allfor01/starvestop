@@ -20,7 +20,7 @@ public class UpdateProductRequest {
 
     @Max(value = 10000, message = "상품 재고를 10000이하로 입력해주세요")
     @NotNull(message = "상품 재고를 적어주세요")
-    private Long stock;
+    private Integer stock;
 
     @NotNull(message = "상품 가격을 적어주세요")
     @DecimalMin(value = "0.0", inclusive = true, message = "상품 가격은 0 이상이어야 합니다")
