@@ -58,11 +58,10 @@ public class PaymentService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        User user = order.getUser();
         String orderKey = order.getOrderKey();
         BigDecimal amount = order.getAmount();
 
-        Payment payment = Payment.create(user, order, orderKey, amount);
+        Payment payment = Payment.create(userId, order, orderKey, amount);
 
         try {
             paymentRepository.save(payment);

@@ -5,7 +5,6 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
-import com.allforone.starvestop.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -23,10 +22,7 @@ public class Payment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
+    private Long userId;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
@@ -50,16 +46,16 @@ public class Payment extends BaseEntity {
     @Column
     private LocalDateTime canceledAt;
 
-    private Payment(User user, Order order, String orderKey, BigDecimal amount) {
-        this.user = user;
+    private Payment(Long userId, Order order, String orderKey, BigDecimal amount) {
+        this.userId = userId;
         this.order = order;
         this.orderKey = orderKey;
         this.amount = amount;
         this.status = PaymentStatus.CREATED;
     }
 
-    public static Payment create(User user, Order order, String orderKey, BigDecimal amount) {
-        return new Payment(user, order, orderKey, amount);
+    public static Payment create(Long userId, Order order, String orderKey, BigDecimal amount) {
+        return new Payment(userId, order, orderKey, amount);
     }
 
     private void requireStatus(PaymentStatus... allowed) {
