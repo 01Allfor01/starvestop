@@ -4,6 +4,7 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.cart.dto.CartRequest;
 import com.allforone.starvestop.domain.cart.dto.CartResponse;
+import com.allforone.starvestop.domain.cart.dto.UpdateCartRequest;
 import com.allforone.starvestop.domain.cart.entity.Cart;
 import com.allforone.starvestop.domain.cart.repository.CartRepository;
 import com.allforone.starvestop.domain.product.entity.Product;
@@ -45,5 +46,26 @@ public class CartService {
         List<Cart> cartList = cartRepository.findALLByUserIdAndIsDeletedIsFalse(userId);
 
         return cartList.stream().map(CartResponse::new).toList();
+    }
+
+    @Transactional
+    public CartResponse updateCart(UpdateCartRequest request) {
+        Cart cart = cartRepository.findByIdAndIsDeletedIsFalse(request.getId()).orElseThrow(
+                () -> new CustomException(ErrorCode.CART_NOT_FOUND)
+        );
+        cart.update(request.getQuantity());
+        cartRepository.flush();
+        return new CartResponse(cart);
+    }
+
+    @Transactional
+    public void deleteCart(Long userId, Long cartId) {
+        Cart cart = cartRepository.findByIdAndIsDeletedIsFalse(cartId).orElseThrow(
+                () -> new CustomException(ErrorCode.CART_NOT_FOUND)
+        );
+        if (!cart.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+        cartRepository.delete(cart);
     }
 }
