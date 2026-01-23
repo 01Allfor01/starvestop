@@ -56,7 +56,7 @@ public class Coupon extends BaseEntity {
         return new Coupon(name, discountAmount, minAmount, validDays, expiresAt, stock);
     }
 
-    public void update(CouponStatus couponStatus) {
-        this.status = couponStatus;
+    public void update(CouponStatus status) {
+        this.status = status;
     }
 }
