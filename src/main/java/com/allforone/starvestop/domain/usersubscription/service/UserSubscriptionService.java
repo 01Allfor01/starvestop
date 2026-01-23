@@ -88,6 +88,8 @@ public class UserSubscriptionService {
         checkPermission(authUser, userSubscription);
 
         userSubscription.delete();
+
+        userRepository.flush();
     }
 
     //본인 구독 확인
