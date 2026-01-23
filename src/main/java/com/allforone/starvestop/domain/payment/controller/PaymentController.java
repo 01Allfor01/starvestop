@@ -3,21 +3,17 @@ package com.allforone.starvestop.domain.payment.controller;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.common.enums.SuccessMessage;
-import com.allforone.starvestop.domain.payment.dto.request.ConfirmPaymentRequest;
 import com.allforone.starvestop.domain.payment.dto.request.CreatePaymentRequest;
-import com.allforone.starvestop.domain.payment.dto.request.FailPaymentRequest;
 import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.service.PaymentService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -33,24 +29,28 @@ public class PaymentController {
             @RequestBody CreatePaymentRequest request
     ) {
         Long userId = authUser.getUserId();
+        Long orderId = request.getOrderId();
 
-        CreatePaymentResponse result = paymentService.createPayment(userId, request);
+        CreatePaymentResponse result = paymentService.createPayment(userId, orderId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(SuccessMessage.PAYMENT_REQUIRE_SUCCESS,result));
+        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(SuccessMessage.PAYMENT_REQUIRE_SUCCESS, result));
     }
 
     @GetMapping("/success")
-    public void successPayment(@ModelAttribute ConfirmPaymentRequest request, HttpServletResponse response) throws IOException {
-        System.out.println(request.getOrderId());
-        String redirectUrl = paymentService.successPayment(request);
-        response.sendRedirect(redirectUrl);
+    public String success(
+            @RequestParam String paymentKey,
+            @RequestParam String orderId,
+            @RequestParam Long amount
+    ) {
+        return paymentService.confirmSuccess(paymentKey, orderId, amount);
     }
 
     @GetMapping("/fail")
-    public void failPayment(@ModelAttribute FailPaymentRequest request, HttpServletResponse response) throws IOException {
-
-        String redirectUrl = "/fail.html";
-        response.sendRedirect(redirectUrl);
+    public String fail(
+            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String orderId
+    ) {
+        return paymentService.failRedirect(code, orderId);
     }
 
     @GetMapping

@@ -15,7 +15,7 @@ public class CreateCouponRequest {
 
     @Size(max = 255, message = "쿠폰 이름은 255자 이하로 입력해주세요")
     @NotBlank(message = "쿠폰 이름을 적어주세요")
-    private String couponName;
+    private String name;
 
     @NotNull(message = "할인 금액을 적어주세요")
     private BigDecimal discountAmount;

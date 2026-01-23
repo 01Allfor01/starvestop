@@ -14,12 +14,12 @@
 
     async function main() {
         const token = localStorage.getItem("token");
-
         if (!token) {
             alert("로그인이 필요합니다.");
             return;
         }
 
+        // 1) 결제 준비(서버에서 orderKey/amount/orderName 내려줌)
         const createRes = await fetch("/payments", {
             method: "POST",
             headers: {
@@ -27,8 +27,7 @@
                 "Authorization": token
             },
             body: JSON.stringify({
-                purchaseId: 1,
-                purchaseType: "PRODUCT",
+                orderId: 1 // <- 주문 PK를 서버에 전달(서버가 orderKey를 만들어서 내려줌)
             })
         });
 
@@ -38,45 +37,31 @@
             return;
         }
 
-
         const data = createJson.data;
-        const orderId = data.orderId;
+        const orderKey = data.orderKey;
         const amount = Number(data.amount);
-        const orderName = data.purchaseName || "주문";
+        const customerKey = String(data.customerKey || "guest");
 
+        // 2) 토스 위젯 초기화
         const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
         const tossPayments = TossPayments(clientKey);
+        const widgets = tossPayments.widgets({ customerKey });
 
-        const widgets = tossPayments.widgets({customerKey: String(data.orderId ?? "guest")});
-
-        await widgets.setAmount({currency: "KRW", value: amount});
+        await widgets.setAmount({ currency: "KRW", value: amount });
 
         await Promise.all([
-            widgets.renderPaymentMethods({selector: "#payment-method", variantKey: "DEFAULT"}),
-            widgets.renderAgreement({selector: "#agreement", variantKey: "AGREEMENT"}),
+            widgets.renderPaymentMethods({ selector: "#payment-method", variantKey: "DEFAULT" }),
+            widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
         ]);
 
-        // 4) 결제 요청
-        // document.getElementById("payment-button").addEventListener("click", async () => {
-        //     await widgets.requestPayment({
-        //         orderId,
-        //         orderName,
-        //         successUrl: window.location.origin + "/payments/success",
-        //         failUrl: window.location.origin + "/fail.html",
-        //         customerEmail: "customer123@gmail.com",
-        //         customerName: "김토스",
-        //         customerMobilePhone: "01012341234",
-        //     });
-        // });
+        // 3) 결제 요청 → 성공/실패 시 서버 엔드포인트로 리다이렉트됨
         document.getElementById("payment-button").addEventListener("click", async (e) => {
-            e.preventDefault(); // 버튼 기본 동작 차단(예방용)
+            e.preventDefault();
             try {
                 await widgets.requestPayment({
-                    orderId,
-                    orderName,
+                    orderId: orderKey,
                     successUrl: window.location.origin + "/payments/success",
-                    failUrl: window.location.origin + "/payments/fail" +
-                        "",
+                    failUrl: window.location.origin + "/payments/fail",
                 });
             } catch (err) {
                 alert(`SDK 단계 실패: ${err?.code ?? "NO_CODE"} / ${err?.message ?? "NO_MESSAGE"}`);
