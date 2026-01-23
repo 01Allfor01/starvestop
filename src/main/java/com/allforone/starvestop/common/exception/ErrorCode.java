@@ -19,6 +19,9 @@ public enum ErrorCode {
     //판매자
     OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을수 없습니다"),
 
+    //장바구니
+    CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니를 찾을 수 없습니다"),
+
     //사용자 구독
     USER_SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 구독입니다"),
 
@@ -46,7 +49,10 @@ public enum ErrorCode {
     PURCHASE_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품 유형입니다"),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "상품의 재고가 부족합니다"),
     PAYMENT_EXPIRED(HttpStatus.GONE, "결제 유효 시간이 만료되었습니다"),
-    PAYMENT_VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "결제 정보 검증에 실패했습니다");
+    PAYMENT_VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "결제 정보 검증에 실패했습니다"),
+
+    //쿠폰,
+    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쿠폰입니다");
 
 
     private final HttpStatus status;

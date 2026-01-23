@@ -17,6 +17,12 @@ public enum SuccessMessage {
     OWNER_UPDATE_SUCCESS("판매자 정보 수정 성공"),
     OWNER_DELETE_SUCCESS("회원 탈퇴 성공"),
 
+    //장바구니
+    CART_CREATE_SUCCESS("장바구니 생성 성공"),
+    CART_GET_SUCCESS("장바구니 조회 성공"),
+    CART_UPDATE_SUCCESS("장바구니 수정 성공"),
+    CART_DELETE_SUCCESS("장바구니 삭제 성공"),
+
     //사용자 구독
     USER_SUBSCRIPTION_CREATE_SUCCESS("사용자 구독 생성 성공"),
     USER_SUBSCRIPTION_GET_SUCCESS("사용자 구독 조회 성공"),
@@ -44,6 +50,11 @@ public enum SuccessMessage {
     SUBSCRIPTION_UPDATE_SUCCESS("구독 수정 성공"),
     SUBSCRIPTION_DELETE_SUCCESS("구독 삭제 성공"),
 
+    //주문
+    ORDER_CREATE_SUCCESS("주문 생성 성공"),
+    ORDER_GET_SUCCESS("주문 조회 성공"),
+    ORDER_UPDATE_SUCCESS("주문 수정 성공"),
+    ORDER_DELETE_SUCCESS("주문 삭제 성공"),
 
     //결제
     PAYMENT_CREATE_SUCCESS("결제 생성 성공"),
@@ -53,14 +64,13 @@ public enum SuccessMessage {
 
     //쿠폰
     COUPON_CREATE_SUCCESS("쿠폰 등록 성공"),
+    COUPON_LIST_GET_SUCCESS("쿠폰 목록 조회 성공"),
+    COUPON_DETAIL_GET_SUCCESS("쿠폰 상세 조회 성공"),
 
-    //주문
-    ORDER_CREATE_SUCCESS("주문 생성 성공"),
-    ORDER_GET_SUCCESS("주문 조회 성공"),
-    ORDER_UPDATE_SUCCESS("주문 수정 성공"),
-    ORDER_DELETE_SUCCESS("주문 삭제 성공")
+    //결제 로그
+    PAYMENT_LOG_GET_SUCCESS("결제 로그 조회 성공"),
+
     ;
-
     private final String message;
 
     SuccessMessage(String message) {
