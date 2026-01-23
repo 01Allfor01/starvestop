@@ -66,6 +66,6 @@ public class CartService {
         if (!cart.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
-        cart.delete();
+        cartRepository.delete(cart);
     }
 }
