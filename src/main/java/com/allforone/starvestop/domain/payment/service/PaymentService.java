@@ -137,7 +137,7 @@ public class PaymentService {
     public List<GetPaymentResponse> getMyPaymentList(Long userId) {
 
         List<Payment> paymentList =
-                paymentRepository.findAllByOrder_User_IdAndIsDeletedIsFalseOrderByCreatedAtDesc(userId);
+                paymentRepository.findAllByOrderUserIdAndIsDeletedIsFalseOrderByCreatedAtDesc(userId);
 
         return paymentList.stream().map(GetPaymentResponse::from).toList();
     }
