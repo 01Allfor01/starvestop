@@ -8,6 +8,5 @@ import lombok.Getter;
 public class UpdateUserResponse {
     private final String email;
     private final String nickname;
-    private final String role;
     private final String username;
 }
