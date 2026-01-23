@@ -10,5 +10,5 @@ import java.time.LocalDateTime;
 public class CreateUserCouponRequest {
 
     private LocalDateTime startedAt;
-    private LocalDateTime expiredAt;
+    private LocalDateTime expiresAt;
 }

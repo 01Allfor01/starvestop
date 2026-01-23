@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CreateUserCouponResponse {
 
-    private final Long userCouponId;
+    private final Long id;
     private final Long userId;
     private final Long couponId;
     private final LocalDateTime startedAt;
