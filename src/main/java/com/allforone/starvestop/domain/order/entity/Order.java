@@ -47,7 +47,7 @@ public class Order extends BaseEntity {
         this.amount = amount;
     }
 
-    public Order create(Store store, String orderKey, User user, BigDecimal amount) {
+    public static Order create(Store store, String orderKey, User user, BigDecimal amount) {
         return new Order(store, orderKey, user, amount);
     }
 }
