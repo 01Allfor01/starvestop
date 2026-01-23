@@ -30,8 +30,8 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<OrderResponse>>> getOrder(@AuthenticationPrincipal AuthUser authUser) {
-        List<OrderResponse> response = orderService.getOrder(authUser.getUserId());
+    public ResponseEntity<CommonResponse<List<OrderResponse>>> getOrderList(@AuthenticationPrincipal AuthUser authUser) {
+        List<OrderResponse> response = orderService.getOrderList(authUser.getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(ORDER_GET_SUCCESS, response));
     }
 

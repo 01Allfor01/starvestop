@@ -73,7 +73,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderResponse> getOrder(Long userId) {
+    public List<OrderResponse> getOrderList(Long userId) {
         List<Order> orderList = orderRepository.findAllByUserIdAndIsDeletedIsFalse(userId);
 
         return orderList.stream().map(OrderResponse::from).toList();
