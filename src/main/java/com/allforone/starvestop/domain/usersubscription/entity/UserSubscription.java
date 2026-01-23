@@ -8,29 +8,33 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "user_subscriptions")
-@SQLRestriction("is_deleted = false")
+@Table(name = "user_subscriptions",
+    uniqueConstraints = {
+        @UniqueConstraint(
+                name = "unique_user_subscription",
+                columnNames = {"user_id", "subscription_id"}
+        )
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserSubscription extends BaseEntity {
 
     @Id
-    @Column(name = "user_subscription_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "subscription_id")
-    private Subscription subscription;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "subscription_id")
+    private Subscription subscription;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
