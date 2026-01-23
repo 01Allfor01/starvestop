@@ -33,11 +33,15 @@ public class OrderProduct {
     @Column(nullable = false)
     private BigDecimal productPrice;
 
-    public OrderProduct(Order order, Long productId, String productName, Integer quantity, BigDecimal productPrice) {
+
+    private OrderProduct(Order order, Long productId, String productName, Integer quantity, BigDecimal productPrice) {
         this.order = order;
         this.productId = productId;
         this.productName = productName;
         this.quantity = quantity;
         this.productPrice = productPrice;
+    }
+    public OrderProduct create(Order order, Long productId, String productName, Integer quantity, BigDecimal productPrice) {
+        return new OrderProduct(order, productId, productName, quantity, productPrice);
     }
 }
