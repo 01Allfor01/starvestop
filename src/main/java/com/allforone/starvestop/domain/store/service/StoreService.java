@@ -3,17 +3,17 @@ package com.allforone.starvestop.domain.store.service;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.GeometryUtil;
+import com.allforone.starvestop.domain.owner.entity.Owner;
+import com.allforone.starvestop.domain.owner.repository.OwnerRepository;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
-import com.allforone.starvestop.domain.store.dto.request.StoreRequest;
+import com.allforone.starvestop.domain.store.dto.request.CreateStoreRequest;
 import com.allforone.starvestop.domain.store.dto.request.UpdateStoreRequest;
+import com.allforone.starvestop.domain.store.dto.response.StoreDetailResponse;
 import com.allforone.starvestop.domain.store.dto.response.StoreListResponse;
-import com.allforone.starvestop.domain.store.dto.response.StoreResponse;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
-import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.enums.UserRole;
-import com.allforone.starvestop.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
@@ -26,15 +26,15 @@ import java.util.List;
 public class StoreService {
 
     private final StoreRepository storeRepository;
-    private final UserRepository userRepository;
+    private final OwnerRepository ownerRepository;
 
+    //매장 추가
     @Transactional
-    public StoreResponse createStore(StoreRequest request) {
-        User user = userRepository.findById(request.getUserId()).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
-        );
+    public StoreDetailResponse createStore(CreateStoreRequest request) {
+        Owner owner = ownerRepository.findById(request.getOwnerId()).orElseThrow(
+                () -> new CustomException(ErrorCode.OWNER_NOT_FOUND));
 
-        if (!UserRole.OWNER.equals(user.getRole())) {
+        if (!UserRole.OWNER.equals(owner.getRole())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
@@ -42,7 +42,7 @@ public class StoreService {
         Point location = getLocation(request.getLongitude(), request.getLatitude());
 
         Store store = Store.create(
-                user,
+                owner,
                 request.getStoreName(),
                 request.getAddress(),
                 request.getDescription(),
@@ -55,11 +55,12 @@ public class StoreService {
         );
 
         Store savedStore = storeRepository.save(store);
-        return StoreResponse.from(savedStore);
+        return StoreDetailResponse.from(savedStore);
     }
 
+    //매장 정보 수정
     @Transactional
-    public StoreResponse updateStore(Long userId, Long storeId, UpdateStoreRequest request) {
+    public StoreDetailResponse updateStore(Long userId, Long storeId, UpdateStoreRequest request) {
         Store store = getStore(storeId);
 
         idMismatchCheck(userId, store);
@@ -77,9 +78,10 @@ public class StoreService {
                 request.getCloseTime(),
                 status
         );
+
         storeRepository.flush();
 
-        return StoreResponse.from(store);
+        return StoreDetailResponse.from(store);
     }
 
     @Transactional
@@ -91,38 +93,41 @@ public class StoreService {
         store.delete();
     }
 
-    @Transactional(readOnly = true)
-    public StoreResponse getStoreDetail(Long storeId) {
-        Store store = getStore(storeId);
-        return StoreResponse.from(store);
-    }
-
+    //매장 목록 조회
     @Transactional(readOnly = true)
     public List<StoreListResponse> getStoreList(SearchStoreCond cond) {
         return storeRepository.searchStoreList(cond);
     }
 
-    private Store getStore(Long storeId) {
-        return storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
-        );
+    //매장 상세 조회
+    @Transactional(readOnly = true)
+    public StoreDetailResponse getStoreDetail(Long storeId) {
+        Store store = getStore(storeId);
+
+        return StoreDetailResponse.from(store);
     }
 
-    private static void idMismatchCheck(Long userId, Store store) {
-        if (!store.getUser().getId().equals(userId)) {
+    //매장 확인
+    private Store getStore(Long storeId) {
+        return storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
+                () -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+    }
+
+    //판매자 아이디 주인 확인
+    private static void idMismatchCheck(Long ownerId, Store store) {
+        if (!store.getOwner().getId().equals(ownerId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
     }
 
+    //매장 상태
     private StoreStatus getStatus(StoreStatus status) {
-        return status == null
-                ? StoreStatus.CLOSED : status;
+        return status == null ? StoreStatus.CLOSED : status;
     }
 
+    //매장
     private Point getLocation(Double longitude, Double latitude) {
         Point point = GeometryUtil.createPoint(longitude, latitude);
         return point;
     }
-
-
 }

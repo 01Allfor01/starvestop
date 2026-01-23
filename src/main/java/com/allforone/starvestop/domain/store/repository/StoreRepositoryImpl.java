@@ -57,7 +57,7 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
         if (!StringUtils.hasText(keyword)) {
             return null;
         }
-        return store.storeName.contains(keyword).or(product.productName.contains(keyword));
+        return store.storeName.contains(keyword).or(product.name.contains(keyword));
     }
 
     private BooleanExpression eqCategory(String category) {

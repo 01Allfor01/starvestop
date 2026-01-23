@@ -30,14 +30,14 @@ public class ProductService {
     public CreateProductResponse createProduct(AuthUser authUser, CreateProductRequest request) {
         Store store = getStoreOrThrow(request.getStoreId());
 
-        checkPermission(authUser, store.getUser().getId());
+        checkPermission(authUser, store.getOwner().getId());
 
         Product product = Product.create(store,
                 request.getProductName(),
                 request.getDescription(),
-                request.getStock(),
                 request.getPrice(),
                 request.getSalePrice(),
+                request.getStock(),
                 request.getStatus());
 
         Product savedProduct = productRepository.save(product);
@@ -50,9 +50,9 @@ public class ProductService {
     public List<GetProductResponse> getProductStoreList(Long storeId) {
         Store store = getStoreOrThrow(storeId);
 
-        List<Product> productSlice = productRepository.findAllByStoreAndIsDeletedIsFalse(store);
+        List<Product> productList = productRepository.findAllByStoreAndIsDeletedIsFalse(store);
 
-        return productSlice
+        return productList
                 .stream()
                 .map(GetProductResponse::from)
                 .toList();
@@ -61,9 +61,9 @@ public class ProductService {
     //마감 세일 상품 목록 조회
     @Transactional(readOnly = true)
     public List<GetProductSaleResponse> getProductSaleList() {
-        List<Product> productSlice = productRepository.findAllByStatusAndIsDeletedIsFalse(ProductStatus.SALE);
+        List<Product> productList = productRepository.findAllByStatusAndIsDeletedIsFalse(ProductStatus.SALE);
 
-        return productSlice
+        return productList
                 .stream()
                 .map(GetProductSaleResponse::from)
                 .toList();
@@ -82,7 +82,7 @@ public class ProductService {
     public UpdateProductResponse updateProduct(AuthUser authUser, Long productId, UpdateProductRequest request) {
         Product product = getProductOrThrow(productId);
 
-        checkPermission(authUser, product.getStore().getUser().getId());
+        checkPermission(authUser, product.getStore().getOwner().getId());
 
         product.update(
                 request.getProductName(),
@@ -102,7 +102,7 @@ public class ProductService {
     public void delete(AuthUser authUser, Long productId) {
         Product product = getProductOrThrow(productId);
 
-        checkPermission(authUser, product.getStore().getUser().getId());
+        checkPermission(authUser, product.getStore().getOwner().getId());
 
         product.delete();
     }

@@ -27,15 +27,15 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final StoreRepository storeRepository;
 
+    // 구독 생성
     @Transactional
     public CreateSubscriptionResponse createSubscription(AuthUser authUser, Long storeId, @Valid CreateSubscriptionRequest request) {
-
         Store store = storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
 
         Long ownerId = authUser.getUserId();
-        if (!ownerId.equals(store.getUser().getId())) {
+        if (!ownerId.equals(store.getOwner().getId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
@@ -54,46 +54,57 @@ public class SubscriptionService {
         return CreateSubscriptionResponse.from(savedSubscription);
     }
 
+    // 전체 구독 목록 조회
     @Transactional(readOnly = true)
     public List<GetSubscriptionResponse> getSubscriptionList() {
-
         List<Subscription> subscriptionList = subscriptionRepository.findAllByIsDeletedIsFalse();
+
         return subscriptionList.stream().map(GetSubscriptionResponse::from).toList();
     }
 
+
+    // 특정 매장 구독 목록 조회
+    @Transactional(readOnly = true)
+    public List<GetSubscriptionResponse> getSubscriptionListByStore(Long storeId) {
+        List<Subscription> subscriptionList = subscriptionRepository.findByStoreIdAndIsDeletedIsFalse(storeId);
+
+        return subscriptionList.stream().map(GetSubscriptionResponse::from).toList();
+    }
+
+    // 구독 상세 조회
     @Transactional(readOnly = true)
     public GetSubscriptionResponse getSubscription(Long subscriptionId) {
-
         Subscription subscription = getSubscriptionOrThrow(subscriptionId);
+
         return GetSubscriptionResponse.from(subscription);
     }
 
+    // 구독 수정
+    @Transactional
+    public UpdateSubscriptionResponse updateSubscription(UpdateSubscriptionRequest request, Long subscriptionId) {
+        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
+
+        subscription.changeIsJoinable(request.isJoinable());
+
+        subscriptionRepository.flush();
+
+        return UpdateSubscriptionResponse.from(subscription);
+    }
+
+    // 구독 삭제
     @Transactional
     public void deleteSubscription(AuthUser authUser, Long subscriptionId) {
-
         Subscription subscription = getSubscriptionOrThrow(subscriptionId);
+
         checkPermission(authUser, subscription);
 
         subscription.delete();
     }
 
-    @Transactional(readOnly = true)
-    public List<GetSubscriptionResponse> getSubscriptionListByStore(Long storeId) {
-        List<Subscription> subscriptionList = subscriptionRepository.findByStoreIdAndIsDeletedIsFalse(storeId);
-        return subscriptionList.stream().map(GetSubscriptionResponse::from).toList();
-    }
-
-    @Transactional
-    public UpdateSubscriptionResponse updateSubscription(UpdateSubscriptionRequest request, Long subscriptionId) {
-        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
-        subscription.changeIsJoinable(request.isJoinable());
-        subscriptionRepository.flush();
-        return UpdateSubscriptionResponse.from(subscription);
-    }
-
+    //권한 확인
     private static void checkPermission(AuthUser authUser, Subscription subscription) {
+        Long ownerId = subscription.getStore().getOwner().getId();
 
-        Long ownerId = subscription.getStore().getUser().getId();
         if (UserRole.ADMIN == authUser.getUserRole()) {
             return;
         }
@@ -105,11 +116,10 @@ public class SubscriptionService {
         throw new CustomException(ErrorCode.FORBIDDEN);
     }
 
+    //구독 조회
     private Subscription getSubscriptionOrThrow(Long subscriptionId) {
-
         return subscriptionRepository.findByIdAndIsDeletedIsFalse(subscriptionId).orElseThrow(
-                () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
-        );
+                () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
     }
 }
 

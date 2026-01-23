@@ -22,38 +22,46 @@ public class UserSubscriptionController {
 
     private final UserSubscriptionService userSubscriptionService;
 
+    //사용자 구독 추가
     @PostMapping("/subscriptions/{subscriptionId}")
     public ResponseEntity<CommonResponse<CreateUserSubscriptionResponse>> createUserSubscription(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long subscriptionId
     ) {
         CreateUserSubscriptionResponse response = userSubscriptionService.createUserSubscription(authUser, subscriptionId);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(USER_SUBSCRIPTION_CREATE_SUCCESS, response));
     }
 
+    //사용자 구독 목록 조회
     @GetMapping
     public ResponseEntity<CommonResponse<List<GetUserSubscriptionResponse>>> getUserSubscriptions(
             @AuthenticationPrincipal AuthUser authUser
     ) {
         List<GetUserSubscriptionResponse> responseList = userSubscriptionService.getUserSubscriptions(authUser);
+
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_SUBSCRIPTION_GET_SUCCESS, responseList));
     }
 
+    //사용자 구독 상세 조회
     @GetMapping("/{userSubscriptionId}")
     public ResponseEntity<CommonResponse<GetUserSubscriptionResponse>> getUserSubscription(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long userSubscriptionId
     ) {
         GetUserSubscriptionResponse response = userSubscriptionService.getUserSubscription(authUser, userSubscriptionId);
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_SUBSCRIPTION_GET_SUCCESS, response));
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_SUBSCRIPTION_GET_DETAIL_SUCCESS, response));
     }
 
+    //사용자 구독 취소
     @DeleteMapping("/{userSubscriptionId}")
     public ResponseEntity<CommonResponse<Void>> deleteUserSubscription(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long userSubscriptionId
     ) {
         userSubscriptionService.deleteUserSubscription(authUser, userSubscriptionId);
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(USER_SUBSCRIPTION_DELETE_SUCCESS));
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(USER_SUBSCRIPTION_CANCEL_SUCCESS));
     }
 }

@@ -33,6 +33,9 @@ dependencies {
     implementation 'org.hibernate.orm:hibernate-spatial'
     implementation 'org.n52.jackson:jackson-datatype-jts:1.2.10'
 
+    //Webflux
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
     // Bcrypt
     implementation 'at.favre.lib:bcrypt:0.10.2'
 

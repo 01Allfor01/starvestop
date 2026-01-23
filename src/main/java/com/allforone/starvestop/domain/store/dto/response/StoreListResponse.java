@@ -21,8 +21,8 @@ public class StoreListResponse {
     LocalTime closeTime;
     StoreStatus status;
 
-    public static StoreListResponse from(Store store) {
-        return new StoreListResponse(
+    public static StoreResponse from(Store store) {
+        return new StoreResponse(
                 store.getId(),
                 store.getStoreName(),
                 store.getAddress(),

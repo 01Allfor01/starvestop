@@ -12,15 +12,15 @@ import java.time.LocalTime;
 @NoArgsConstructor
 public class UpdateStoreRequest {
 
-    @Size(max=255)
+    @Size(max = 255, message = "매장 이름은 255자 이하로 입력해주세요")
     @NotBlank(message = "매장 이름을 적어주세요")
     private String storeName;
 
-    @Size(max=255)
+    @Size(max = 255, message = "매장 주소는 255자 이하로 입력해주세요")
     @NotBlank(message = "주소를 적어주세요")
     private String address;
 
-    @Size(max=255)
+    @Size(max = 255, message = "매장 설명은 255자 이하로 입력해주세요")
     @NotBlank(message = "매장 설명을 적어주세요")
     private String description;
 

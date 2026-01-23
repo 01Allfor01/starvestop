@@ -10,20 +10,20 @@ import java.time.LocalTime;
 
 @Getter
 @NoArgsConstructor
-public class StoreRequest {
+public class CreateStoreRequest {
 
     @NotNull(message = "판매자 아이디를 적어주세요")
-    private Long userId;
+    private Long ownerId;
 
-    @Size(max=255)
+    @Size(max = 255, message = "매장 이름은 255자 이하로 입력해주세요")
     @NotBlank(message = "매장 이름을 적어주세요")
     private String storeName;
 
-    @Size(max=255)
+    @Size(max = 255, message = "매장 주소는 255자 이하로 입력해주세요")
     @NotBlank(message = "주소를 적어주세요")
     private String address;
 
-    @Size(max=255)
+    @Size(max = 255, message = "매장 설명은 255자 이하로 입력해주세요")
     @NotNull(message = "매장 설명을 적어주세요")
     private String description;
 
@@ -48,6 +48,7 @@ public class StoreRequest {
 
     private StoreStatus status;
 
+    @Size(max = 255, message = "사업자 등록 번호는 255자 이하로 입력해주세요")
     @NotBlank(message = "사업자 등록 번호를 입력해주세요")
     private String businessRegistrationNumber;
 }

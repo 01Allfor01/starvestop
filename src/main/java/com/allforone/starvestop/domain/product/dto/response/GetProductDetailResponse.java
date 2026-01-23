@@ -18,7 +18,7 @@ public class GetProductDetailResponse {
     private final Point location;
     private final String productName;
     private final String description;
-    private final Long stock;
+    private final Integer stock;
     private final BigDecimal price;
     private final BigDecimal salePrice;
     private final ProductStatus status;
@@ -31,7 +31,7 @@ public class GetProductDetailResponse {
                 product.getStore().getId(),
                 product.getStore().getStoreName(),
                 product.getStore().getLocation(),
-                product.getProductName(),
+                product.getName(),
                 product.getDescription(),
                 product.getStock(),
                 product.getPrice(),

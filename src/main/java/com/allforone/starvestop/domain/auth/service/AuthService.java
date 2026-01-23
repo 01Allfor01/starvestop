@@ -5,11 +5,13 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.JwtUtil;
 import com.allforone.starvestop.common.utils.PasswordEncoder;
 import com.allforone.starvestop.domain.auth.dto.request.SignInRequest;
+import com.allforone.starvestop.domain.auth.dto.request.SignUpOwnerRequest;
 import com.allforone.starvestop.domain.auth.dto.request.SignUpRequest;
 import com.allforone.starvestop.domain.auth.dto.response.SignInResponse;
 import com.allforone.starvestop.domain.auth.dto.response.SignUpResponse;
+import com.allforone.starvestop.domain.owner.entity.Owner;
+import com.allforone.starvestop.domain.owner.repository.OwnerRepository;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.enums.UserRole;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,17 +23,28 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final OwnerRepository ownerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
     @Transactional
     public SignUpResponse signUp(SignUpRequest request) {
-        return getSignUpResponse(request, UserRole.USER);
-    }
+        String userEmail = request.getEmail();
+        String userName = request.getUsername();
+        String nickname = request.getNickname();
+        String password = request.getPassword();
 
-    @Transactional
-    public SignUpResponse signUpOwner(@Valid SignUpRequest request) {
-        return getSignUpResponse(request, UserRole.OWNER);
+        if (userRepository.existsByEmail(userEmail)) {
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        User user = User.create(userEmail, passwordEncoder.encode(password), userName, nickname);
+
+        User savedUser = userRepository.save(user);
+
+        String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
+
+        return new SignUpResponse(token);
     }
 
     @Transactional(readOnly = true)
@@ -39,13 +52,9 @@ public class AuthService {
         String userEmail = request.getEmail();
         String password = request.getPassword();
 
-        User foundUser = userRepository.findByEmail(userEmail).orElseThrow(
+        User foundUser = userRepository.findByEmailAndIsDeletedIsFalse(userEmail).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND)
         );
-
-        if(foundUser.isDeleted()){
-            throw new CustomException(ErrorCode.USER_NOT_FOUND);
-        }
 
         if (!passwordEncoder.matches(password, foundUser.getPassword())) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
@@ -56,23 +65,40 @@ public class AuthService {
         return new SignInResponse(token);
     }
 
-    //회원 가입 메서드
-    private SignUpResponse getSignUpResponse(SignUpRequest request, UserRole role) {
+    @Transactional
+    public SignUpResponse signUpOwner(@Valid SignUpOwnerRequest request) {
         String userEmail = request.getEmail();
         String userName = request.getUsername();
-        String nickname = request.getNickname();
         String password = request.getPassword();
 
-        if (userRepository.existsByEmail(userEmail)) {
+        if (ownerRepository.existsByEmail(userEmail)) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        User user = User.create(userEmail, passwordEncoder.encode(password), role, userName, nickname);
+        Owner owner = Owner.create(userEmail, passwordEncoder.encode(password), userName);
 
-        User savedUser = userRepository.save(user);
+        Owner savedOwner = ownerRepository.save(owner);
 
-        String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
+        String token = jwtUtil.generateToken(savedOwner.getUsername(), savedOwner.getEmail(), savedOwner.getId(), savedOwner.getRole());
 
         return new SignUpResponse(token);
+    }
+
+    @Transactional(readOnly = true)
+    public SignInResponse signInOwner(SignInRequest request) {
+        String userEmail = request.getEmail();
+        String password = request.getPassword();
+
+        Owner foundOwner = ownerRepository.findByEmailAndIsDeletedIsFalse(userEmail).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
+        );
+
+        if (!passwordEncoder.matches(password, foundOwner.getPassword())) {
+            throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
+        }
+
+        String token = jwtUtil.generateToken(foundOwner.getUsername(), foundOwner.getEmail(), foundOwner.getId(), foundOwner.getRole());
+
+        return new SignInResponse(token);
     }
 }
