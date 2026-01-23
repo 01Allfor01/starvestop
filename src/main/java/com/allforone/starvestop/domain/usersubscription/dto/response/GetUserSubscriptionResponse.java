@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class GetUserSubscriptionResponse {
-    private final Long userSubscriptionId;
+    private final Long id;
     private final Long subscriptionId;
     private final String subscriptionName;
     private final Long storeId;

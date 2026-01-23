@@ -20,6 +20,7 @@ public enum SuccessMessage {
     //사용자 구독
     USER_SUBSCRIPTION_CREATE_SUCCESS("구독 성공"),
     USER_SUBSCRIPTION_GET_SUCCESS("구독 조회 성공"),
+    USER_SUBSCRIPTION_GET_DETAIL_SUCCESS("구독 상세 조회 성공"),
     USER_SUBSCRIPTION_CANCEL_SUCCESS("구독 취소 성공"),
 
 

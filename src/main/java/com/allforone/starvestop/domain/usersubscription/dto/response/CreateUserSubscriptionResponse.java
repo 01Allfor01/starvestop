@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class CreateUserSubscriptionResponse {
-    private final Long userSubscriptionId;
+    private final Long id;
     private final Long userId;
     private final Long subscriptionId;
     private final Long storeId;

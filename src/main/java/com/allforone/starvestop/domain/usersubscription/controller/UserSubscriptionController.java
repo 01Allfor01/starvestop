@@ -51,7 +51,7 @@ public class UserSubscriptionController {
     ) {
         GetUserSubscriptionResponse response = userSubscriptionService.getUserSubscription(authUser, userSubscriptionId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_SUBSCRIPTION_GET_SUCCESS, response));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_SUBSCRIPTION_GET_DETAIL_SUCCESS, response));
     }
 
     //사용자 구독 취소

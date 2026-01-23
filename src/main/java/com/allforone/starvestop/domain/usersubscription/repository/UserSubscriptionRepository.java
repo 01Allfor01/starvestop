@@ -14,5 +14,7 @@ public interface UserSubscriptionRepository extends JpaRepository<UserSubscripti
 
     Optional<UserSubscription> findByIdAndIsDeletedIsFalse(Long userSubscriptionId);
 
-    boolean existsByUserAndSubscription(User user, Subscription subscription);
+    Optional<UserSubscription> findByUserAndSubscription(User user, Subscription subscription);
+
+    boolean existsByUserAndSubscriptionIsDeletedIsFalse(User user, Subscription subscription);
 }
