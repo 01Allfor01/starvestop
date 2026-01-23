@@ -19,6 +19,7 @@ public enum SuccessMessage {
 
     //장바구니
     CART_CREATE_SUCCESS("장바구니 생성 성공"),
+    CART_GET_SUCCESS("장바구니 조회 성공"),
 
     //사용자 구독
     USER_SUBSCRIPTION_CREATE_SUCCESS("사용자 구독 생성 성공"),

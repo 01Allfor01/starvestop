@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CartService {
@@ -36,5 +38,12 @@ public class CartService {
         Cart savedCart = cartRepository.save(cart);
 
         return new CartResponse(savedCart);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CartResponse> getCartList(Long userId) {
+        List<Cart> cartList = cartRepository.findALLByUserIdAndIsDeletedIsFalse(userId);
+
+        return cartList.stream().map(CartResponse::new).toList();
     }
 }
