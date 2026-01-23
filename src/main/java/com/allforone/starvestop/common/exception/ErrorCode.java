@@ -24,6 +24,7 @@ public enum ErrorCode {
 
     //사용자 구독
     USER_SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 구독입니다"),
+    USER_SUBSCRIPTION_EXIST(HttpStatus.CONFLICT, "이미 가입된 구독입니다"),
 
     // 상품
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다"),
@@ -54,6 +55,9 @@ public enum ErrorCode {
 
     // 쿠폰
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쿠폰입니다"),
+
+    //사용자 쿠폰
+    USER_COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 쿠폰입니다"),
 
 
     // 결제 로그
