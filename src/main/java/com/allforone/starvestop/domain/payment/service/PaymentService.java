@@ -6,8 +6,6 @@ import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.repository.OrderRepository;
 import com.allforone.starvestop.domain.orderproduct.entity.OrderProduct;
 import com.allforone.starvestop.domain.orderproduct.repository.OrderProductRepository;
-import com.allforone.starvestop.domain.payment.dto.request.ConfirmPaymentRequest;
-import com.allforone.starvestop.domain.payment.dto.request.CreatePaymentRequest;
 import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
@@ -16,11 +14,8 @@ import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
 import com.allforone.starvestop.domain.paymentlog.service.PaymentLogService;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
-import com.allforone.starvestop.domain.user.entity.User;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -44,7 +39,6 @@ public class PaymentService {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
-    private final ProductRepository productRepository;
     private final PaymentLogService paymentLogService;
 
     private final WebClient paymentWebClient;
