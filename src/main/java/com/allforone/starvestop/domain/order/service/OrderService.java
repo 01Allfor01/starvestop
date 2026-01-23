@@ -103,6 +103,11 @@ public class OrderService {
     public void deleteOrder(Long userId, Long orderId) {
         Order order = findOrder(orderId);
         userCheck(userId, order);
+
+        List<OrderProduct> orderProductList = orderProductRepository.findAllByOrder_Id(orderId);
+
+        orderProductList.forEach(OrderProduct::delete);
+
         order.delete();
     }
 
