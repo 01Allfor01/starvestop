@@ -5,29 +5,32 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
 public class GetProductSaleResponse {
     private final Long productId;
-    private final Long storedId;
+    private final Long storeId;
     private final String storeName;
     private final String productName;
     private final String description;
-    private final Long stock;
+    private final Integer stock;
     private final BigDecimal price;
     private final BigDecimal salePrice;
+    private final LocalDateTime updatedAt;
 
     public static GetProductSaleResponse from(Product product) {
         return new GetProductSaleResponse(
                 product.getId(),
                 product.getStore().getId(),
                 product.getStore().getStoreName(),
-                product.getProductName(),
+                product.getName(),
                 product.getDescription(),
                 product.getStock(),
                 product.getPrice(),
-                product.getSalePrice()
+                product.getSalePrice(),
+                product.getUpdatedAt()
         );
     }
 }

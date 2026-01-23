@@ -7,9 +7,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    List<Payment> findByUserIdAndIsDeletedIsFalseOrderByCreatedAtDesc(Long userId);
-
     Optional<Payment> findByIdAndIsDeletedIsFalse(Long userId);
 
-    Optional<Payment> findPaymentByOrderId(String orderId);
+    Optional<Payment> findPaymentByOrderKey(String orderOrderKey);
+
+    List<Payment> findAllByOrderUserIdAndIsDeletedIsFalseOrderByCreatedAtDesc(Long userId);
+
+    boolean existsByOrderKey(String orderKey);
 }

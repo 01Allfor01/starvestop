@@ -12,7 +12,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class GetSubscriptionResponse {
-
     private final Long subscriptionId;
     private final Long storeId;
     private final String storeName;
@@ -31,7 +30,7 @@ public class GetSubscriptionResponse {
                 subscription.getId(),
                 subscription.getStore().getId(),
                 subscription.getStore().getStoreName(),
-                subscription.getSubscriptionName(),
+                subscription.getName(),
                 subscription.getDescription(),
                 dayList,
                 mealTimeList,

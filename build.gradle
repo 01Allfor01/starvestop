@@ -30,6 +30,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.security:spring-security-test'
+    implementation 'org.hibernate.orm:hibernate-spatial'
+    implementation 'org.n52.jackson:jackson-datatype-jts:1.2.10'
+
+    //Webflux
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     // Bcrypt
     implementation 'at.favre.lib:bcrypt:0.10.2'
@@ -45,6 +50,12 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    //querydsl
+    implementation 'io.github.openfeign.querydsl:querydsl-core:6.12'
+    implementation 'io.github.openfeign.querydsl:querydsl-jpa:6.12'
+    annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:6.12:jpa'
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
 
 tasks.named('test') {

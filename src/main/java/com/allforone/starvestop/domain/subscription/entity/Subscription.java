@@ -18,7 +18,6 @@ import java.math.BigDecimal;
 public class Subscription extends BaseEntity {
 
     @Id
-    @Column(name = "subscription_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -26,10 +25,10 @@ public class Subscription extends BaseEntity {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
-    @Column(name = "subscription_name", nullable = false, length = 100)
-    private String subscriptionName;
+    @Column(nullable = false, length = 100)
+    private String name;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String description;
 
     @Column(nullable = false)
@@ -47,9 +46,9 @@ public class Subscription extends BaseEntity {
     @Column(nullable = false)
     private boolean isJoinable;
 
-    public Subscription(Store store, String subscriptionName, String description, int day, int mealTime, BigDecimal price, Long stock) {
+    public Subscription(Store store, String name, String description, int day, int mealTime, BigDecimal price, Long stock) {
         this.store = store;
-        this.subscriptionName = subscriptionName;
+        this.name = name;
         this.description = description;
         this.day = day;
         this.mealTime = mealTime;
@@ -62,6 +61,10 @@ public class Subscription extends BaseEntity {
         return new Subscription(store, subscriptionName, description, day, mealTime, price, stock);
     }
 
+    public void changeIsJoinable(boolean joinable) {
+        this.isJoinable = joinable;
+    }
+
     public void decrease(Long count) {
         if (this.stock == 0) {
             throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
@@ -71,9 +74,5 @@ public class Subscription extends BaseEntity {
 
     public void increase(Long count) {
         this.stock += count;
-    }
-
-    public void changeIsJoinable(boolean joinable) {
-        this.isJoinable = joinable;
     }
 }

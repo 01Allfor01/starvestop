@@ -33,6 +33,7 @@ public class SubscriptionController {
             @Valid @RequestBody CreateSubscriptionRequest request
     ) {
         CreateSubscriptionResponse response = subscriptionService.createSubscription(authUser, storeId, request);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(SUBSCRIPTION_CREATE_SUCCESS, response));
     }
 
@@ -40,15 +41,16 @@ public class SubscriptionController {
     @GetMapping("/subscriptions")
     public ResponseEntity<CommonResponse<List<GetSubscriptionResponse>>> getSubscriptionList() {
         List<GetSubscriptionResponse> responseList = subscriptionService.getSubscriptionList();
+
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, responseList));
     }
 
     // 특정 매장 구독 목록 조회
     @GetMapping("/stores/{storeId}/subscriptions")
     public ResponseEntity<CommonResponse<List<GetSubscriptionResponse>>> getSubscriptionListByStore(
-            @PathVariable Long storeId
-    ) {
+            @PathVariable Long storeId) {
         List<GetSubscriptionResponse> responseList = subscriptionService.getSubscriptionListByStore(storeId);
+
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, responseList));
     }
 
@@ -56,16 +58,19 @@ public class SubscriptionController {
     @GetMapping("/subscriptions/{subscriptionId}")
     public ResponseEntity<CommonResponse<GetSubscriptionResponse>> getSubscription(@PathVariable Long subscriptionId) {
         GetSubscriptionResponse response = subscriptionService.getSubscription(subscriptionId);
+
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, response));
     }
 
+    // 구독 수정
     @PatchMapping("/subscriptions/{subscriptionId}")
     public ResponseEntity<CommonResponse<UpdateSubscriptionResponse>> updateSubscription(
             @PathVariable Long subscriptionId,
             @Valid @RequestBody UpdateSubscriptionRequest request
     ) {
         UpdateSubscriptionResponse response = subscriptionService.updateSubscription(request, subscriptionId);
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, response));
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_UPDATE_SUCCESS, response));
     }
 
 
@@ -76,6 +81,7 @@ public class SubscriptionController {
             @PathVariable Long subscriptionId
     ) {
         subscriptionService.deleteSubscription(authUser, subscriptionId);
+
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(SUBSCRIPTION_DELETE_SUCCESS));
     }
 }

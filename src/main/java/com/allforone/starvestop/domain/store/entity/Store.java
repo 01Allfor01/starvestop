@@ -1,14 +1,14 @@
 package com.allforone.starvestop.domain.store.entity;
 
 import com.allforone.starvestop.common.entity.BaseEntity;
+import com.allforone.starvestop.domain.owner.entity.Owner;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
-import com.allforone.starvestop.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.geo.Point;
+import org.locationtech.jts.geom.Point;
 
 import java.time.LocalTime;
 
@@ -20,12 +20,11 @@ public class Store extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "store_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "owner_id", nullable = false)
+    private Owner owner;
 
     @Column(nullable = false)
     private String storeName;
@@ -40,7 +39,7 @@ public class Store extends BaseEntity {
     @Enumerated(value = EnumType.STRING)
     private StoreCategory category;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "POINT SRID 4326")
     private Point location;
 
     @Column(nullable = false)
@@ -57,7 +56,7 @@ public class Store extends BaseEntity {
     private String businessRegistrationNumber;
 
     private Store(
-            User user,
+            Owner owner,
             String storeName,
             String address,
             String description,
@@ -68,7 +67,7 @@ public class Store extends BaseEntity {
             StoreStatus status,
             String businessRegistrationNumber
     ) {
-        this.user = user;
+        this.owner = owner;
         this.storeName = storeName;
         this.address = address;
         this.description = description;
@@ -81,7 +80,7 @@ public class Store extends BaseEntity {
     }
 
     public static Store create(
-            User user,
+            Owner owner,
             String storeName,
             String address,
             String description,
@@ -94,7 +93,7 @@ public class Store extends BaseEntity {
     ) {
 
         return new Store(
-                user,
+                owner,
                 storeName,
                 address,
                 description,

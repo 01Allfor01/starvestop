@@ -2,157 +2,146 @@ package com.allforone.starvestop.domain.payment.service;
 
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
-import com.allforone.starvestop.domain.payment.dto.PurchaseDto;
-import com.allforone.starvestop.domain.payment.dto.request.ConfirmPaymentRequest;
-import com.allforone.starvestop.domain.payment.dto.request.CreatePaymentRequest;
+import com.allforone.starvestop.domain.order.entity.Order;
+import com.allforone.starvestop.domain.order.repository.OrderRepository;
+import com.allforone.starvestop.domain.orderproduct.entity.OrderProduct;
+import com.allforone.starvestop.domain.orderproduct.repository.OrderProductRepository;
 import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
-import com.allforone.starvestop.domain.payment.enums.PurchaseType;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
-import com.allforone.starvestop.domain.product.entity.Product;
-import com.allforone.starvestop.domain.product.enums.ProductStatus;
+import com.allforone.starvestop.domain.paymentlog.service.PaymentLogService;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
-import com.allforone.starvestop.domain.subscription.entity.Subscription;
-import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
-import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.enums.UserRole;
-import com.allforone.starvestop.domain.user.repository.UserRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
 
+    @Value("${spring.payment.secret-key}")
+    private String secretKey;
+
+    @Value("${spring.payment.base-url}")
+    private String baseUrl;
+
     private final PaymentRepository paymentRepository;
-    private final UserRepository userRepository;
     private final ProductRepository productRepository;
-    private final SubscriptionRepository subscriptionRepository;
+    private final OrderRepository orderRepository;
+    private final OrderProductRepository orderProductRepository;
+    private final PaymentLogService paymentLogService;
 
+    private final WebClient paymentWebClient;
+
+    // 결제 생성
     @Transactional
-    public CreatePaymentResponse createPayment(
-            Long userId,
-            CreatePaymentRequest request
-    ) {
-        String orderId = generateOrderId();
+    public CreatePaymentResponse createPayment(Long userId, Long orderId) {
+        Order order = orderRepository.findByIdAndIsDeletedIsFalse(orderId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
-        User user = userRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        if (!user.getRole().equals(UserRole.USER)) {
+        if (!userId.equals(order.getUser().getId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        PurchaseDto purchase = null;
-        Long purchaseId = request.getPurchaseId();
-        PurchaseType purchaseType = request.getPurchaseType();
+        String orderKey = order.getOrderKey();
+        BigDecimal amount = order.getAmount();
 
-        if (purchaseType.equals(PurchaseType.PRODUCT)) {
-            Product product = productRepository.findByIdAndIsDeletedIsFalse(purchaseId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-            if (product.getStock() <= 0) {
-                throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
-            }
-
-            purchase = PurchaseDto.of(
-                    product.getId(),
-                    product.getProductName(),
-                    purchaseType,
-                    product.getStatus().equals(ProductStatus.GENERAL) ? product.getPrice() : product.getSalePrice());
-
-        } else if (purchaseType.equals(PurchaseType.SUBSCRIPTION)) {
-            Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(purchaseId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
-            if (subscription.getStock() <= 0) {
-                throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
-            }
-
-            purchase = PurchaseDto.of(
-                    subscription.getId(),
-                    subscription.getSubscriptionName(),
-                    purchaseType,
-                    subscription.getPrice());
-
-        } else {
-            throw new CustomException(ErrorCode.PURCHASE_TYPE_NOT_FOUND);
+        if (paymentRepository.existsByOrderKey(orderKey)) {
+            throw new CustomException(ErrorCode.DUPLICATE_ORDER_ID);
         }
 
-        Payment payment = Payment.create(
-                user,
-                purchase.getPurchaseId(),
-                purchase.getPurchaseType(),
-                purchase.getPurchaseName(),
-                orderId,
-                purchase.getAmount()
-        );
+        Payment payment = Payment.create(userId, order, orderKey, amount);
+
+        paymentRepository.save(payment);
+        paymentLogService.savePaymentLog(payment.getId(), userId, orderKey, payment.getStatus(), null, null);
+
+        payment.requestPayment();
+        paymentLogService.savePaymentLog(payment.getId(), order.getUser().getId(), payment.getOrderKey(), payment.getStatus(), null, null);
+
+        return CreatePaymentResponse.from(payment);
+    }
+
+    // 승인 요청
+    @Transactional
+    public String confirmSuccess(String paymentKey, String orderId, Long amount) {
+        Payment payment = paymentRepository.findPaymentByOrderKey(orderId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        if (payment.getAmount().compareTo(BigDecimal.valueOf(amount)) != 0) {
+            failAndReleaseReservedStock(payment);
+            return "/fail.html?orderId=" + payment.getOrderKey() + "&reason=AMOUNT_MISMATCH";
+        }
 
         try {
-            paymentRepository.save(payment);
-            payment.requestPayment();
-            if (purchaseType.equals(PurchaseType.PRODUCT)) {
-                Product product = productRepository.findByIdAndIsDeletedIsFalse(purchaseId)
-                        .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-                product.decrease(1L);
+            paymentWebClient.post()
+                    .uri("/v1/payments/confirm")
+                    .bodyValue(Map.of(
+                            "paymentKey", paymentKey,
+                            "orderId", orderId,
+                            "amount", amount
+                    ))
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
 
-            } else { // SUBSCRIPTION
-                Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(purchaseId)
-                        .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
-                subscription.decrease(1L);
-            }
-            return CreatePaymentResponse.from(payment);
+            payment.success(paymentKey);
+            paymentLogService.savePaymentLog(payment.getId(), payment.getOrder().getUser().getId(),
+                    payment.getOrderKey(), payment.getStatus(), null, null);
 
-        } catch (DataIntegrityViolationException e) {
-            throw new CustomException(ErrorCode.DUPLICATE_ORDER_ID);
+            return "/success.html?orderId=" + payment.getOrderKey() + "&amount=" + payment.getAmount();
+
+        } catch (WebClientResponseException e) {
+            failAndReleaseReservedStock(payment);
+            paymentLogService.savePaymentLog(payment.getId(), payment.getOrder().getUser().getId(),
+                    payment.getOrderKey(), payment.getStatus(), String.valueOf(e.getStatusCode()), e.getResponseBodyAsString());
+
+            return "/fail.html?orderId=" + payment.getOrderKey() + "&reason=PG_CONFIRM_FAILED";
         }
     }
 
-    @Transactional
-    public String successPayment(ConfirmPaymentRequest request) throws JsonProcessingException {
-        Payment payment = paymentRepository.findPaymentByOrderId(request.getOrderId()).orElseThrow(
-                () -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND)
-        );
-
-        if (payment.getStatus().equals(PaymentStatus.SUCCEEDED)) {
-            return "/success.html"
-                    + "?orderId=" + payment.getOrderId()
-                    + "&amount=" + payment.getAmount();
+    @Transactional(readOnly = true)
+    public String failRedirect(String code, String orderId) {
+        if (orderId != null) {
+            return "/fail.html?orderId=" + orderId + "&reason=" + (code != null ? code : "FAILED");
         }
+        return "/fail.html?reason=" + (code != null ? code : "FAILED");
+    }
 
-        if (payment.getStatus().equals(PaymentStatus.FAILED) || payment.getStatus().equals(PaymentStatus.CANCELED)) {
-            return "/fail.html"
-                    + "?orderId=" + payment.getOrderId()
-                    + "&reason=ALREADY_PROCESSED";
+    private void releaseReservedStock(List<OrderProduct> orderProducts) {
+        for (OrderProduct orderProduct : orderProducts) {
+            productRepository.findByIdAndIsDeletedIsFalse(orderProduct.getProductId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND))
+                    .increase(orderProduct.getQuantity());
         }
+    }
 
-        if (payment.getAmount().compareTo(request.getAmount()) != 0) {
-            failAndReleaseReservedStock(payment);
-
-            return "/fail.html"
-                    + "?orderId=" + payment.getOrderId()
-                    + "&reason=AMOUNT_MISMATCH";
+    private void failAndReleaseReservedStock(Payment payment) {
+        if (!(payment.getStatus() == PaymentStatus.REQUESTED || payment.getStatus() == PaymentStatus.PENDING)) {
+            return;
         }
+        payment.fail();
+        paymentLogService.savePaymentLog(payment.getId(), payment.getOrder().getUser().getId(),
+                payment.getOrderKey(), payment.getStatus(), null, null);
 
-        payment.success(request.getPaymentKey());
-
-        return "/success.html"
-                + "?orderId=" + payment.getOrderId()
-                + "&amount=" + payment.getAmount();
+        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderId(payment.getOrder().getId());
+        releaseReservedStock(orderProducts);
     }
 
     @Transactional(readOnly = true)
     public List<GetPaymentResponse> getMyPaymentList(Long userId) {
 
         List<Payment> paymentList =
-                paymentRepository.findByUserIdAndIsDeletedIsFalseOrderByCreatedAtDesc(userId);
+                paymentRepository.findAllByOrderUserIdAndIsDeletedIsFalseOrderByCreatedAtDesc(userId);
 
         return paymentList.stream().map(GetPaymentResponse::from).toList();
     }
@@ -162,40 +151,10 @@ public class PaymentService {
         Payment payment = paymentRepository.findByIdAndIsDeletedIsFalse(paymentId).orElseThrow(
                 () -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        if (!payment.getUser().getId().equals(userId)) {
+        if (!payment.getOrder().getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
         return GetPaymentDetailsResponse.from(payment);
-    }
-
-
-    private void releaseReservedStock(Payment payment) {
-        if (payment.getPurchaseType().equals(PurchaseType.PRODUCT)) {
-            Product product = productRepository.findByIdAndIsDeletedIsFalse(payment.getPurchaseId()).orElseThrow(
-                    () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
-            );
-            product.increase(1L);
-        } else if (payment.getPurchaseType().equals(PurchaseType.SUBSCRIPTION)) {
-            Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(payment.getPurchaseId()).orElseThrow(
-                    () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND)
-            );
-            subscription.increase(1L);
-        } else {
-            throw new CustomException(ErrorCode.PURCHASE_TYPE_NOT_FOUND);
-        }
-    }
-
-    private void failAndReleaseReservedStock(Payment payment) {
-        if (!(payment.getStatus().equals(PaymentStatus.REQUESTED) || payment.getStatus().equals(PaymentStatus.PENDING))) {
-            return;
-        }
-
-        payment.fail();
-        releaseReservedStock(payment);
-    }
-
-    private String generateOrderId() {
-        return "PAY_" + UUID.randomUUID().toString().replace("-", "");
     }
 }

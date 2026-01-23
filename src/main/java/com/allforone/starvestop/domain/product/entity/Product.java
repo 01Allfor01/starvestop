@@ -20,7 +20,6 @@ public class Product extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "product_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -28,13 +27,13 @@ public class Product extends BaseEntity {
     private Store store;
 
     @Column(nullable = false)
-    private String productName;
+    private String name;
 
     @Column(nullable = false)
     private String description;
 
     @Column(nullable = false)
-    private Long stock;
+    private Integer stock;
 
     @Column(nullable = false)
     private BigDecimal price;
@@ -46,9 +45,22 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
-    private Product(Store store, String productName, String description, Long stock, BigDecimal price, BigDecimal salePrice, ProductStatus status) {
+    private Product(Store store, String name, String description, BigDecimal price, BigDecimal salePrice, Integer stock, ProductStatus status) {
         this.store = store;
-        this.productName = productName;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.salePrice = salePrice;
+        this.stock = stock;
+        this.status = status;
+    }
+
+    public static Product create(Store store, String name, String description, BigDecimal price, BigDecimal salePrice, Integer stock, ProductStatus status) {
+        return new Product(store, name, description, price, salePrice, stock, status);
+    }
+
+    public void update(String productName, String description, Integer stock, BigDecimal price, BigDecimal salePrice, ProductStatus status) {
+        this.name = productName;
         this.description = description;
         this.stock = stock;
         this.price = price;
@@ -56,28 +68,14 @@ public class Product extends BaseEntity {
         this.status = status;
     }
 
-    public static Product create(Store store, String productName, String description, Long stock, BigDecimal price, BigDecimal salePrice, ProductStatus status) {
-        return new Product(store, productName, description, stock, price, salePrice, status);
-    }
-
-    public void decrease(Long count) {
-        if (this.stock == 0) {
+    public void decrease(Integer count) {
+        if (this.stock == 0 || this.stock < count) {
             throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
         }
         this.stock -= count;
     }
 
-    public void increase(Long count) {
+    public void increase(Integer count) {
         this.stock += count;
     }
-
-    public void update(String productName, String description, Long stock, BigDecimal price, BigDecimal salePrice, ProductStatus status) {
-        this.productName = (this.productName.equals(productName)) ? this.productName : productName;
-        this.description = (this.description.equals(description)) ? this.description : description;
-        this.stock = (this.stock.equals(stock)) ? this.stock : stock;
-        this.price = (this.price.equals(price)) ? this.price : price;
-        this.salePrice = (this.salePrice.equals(salePrice)) ? this.salePrice : salePrice;
-        this.status = (this.status.equals(status)) ? this.status : status;
-    }
-
 }

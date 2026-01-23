@@ -7,7 +7,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UpdateSubscriptionResponse {
-
     private final Long subscriptionId;
     private final Long storeId;
     private final boolean isJoinable;
