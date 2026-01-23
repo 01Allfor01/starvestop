@@ -24,9 +24,10 @@ public enum SuccessMessage {
     CART_DELETE_SUCCESS("장바구니 삭제 성공"),
 
     //사용자 구독
-    USER_SUBSCRIPTION_CREATE_SUCCESS("사용자 구독 생성 성공"),
-    USER_SUBSCRIPTION_GET_SUCCESS("사용자 구독 조회 성공"),
-    USER_SUBSCRIPTION_DELETE_SUCCESS("사용자 구독 삭제 성공"),
+    USER_SUBSCRIPTION_CREATE_SUCCESS("구독 성공"),
+    USER_SUBSCRIPTION_GET_SUCCESS("구독 조회 성공"),
+    USER_SUBSCRIPTION_GET_DETAIL_SUCCESS("구독 상세 조회 성공"),
+    USER_SUBSCRIPTION_CANCEL_SUCCESS("구독 취소 성공"),
 
 
     //상품
@@ -63,6 +64,11 @@ public enum SuccessMessage {
     COUPON_DETAIL_GET_SUCCESS("쿠폰 상세 조회 성공"),
     COUPON_STATUS_UPDATE_SUCCESS("쿠폰 상태 수정 성공"),
     COUPON_DELETE_SUCCESS("쿠폰 삭제 성공"),
+
+    //사용자 쿠폰
+    USER_COUPON_CREATE_SUCCESS("사용자 쿠폰 등록 성공"),
+    USER_COUPON_LIST_GET_SUCCESS("사용자 쿠폰 목록 조회 성공"),
+    USER_COUPON_DETAIL_GET_SUCCESS("사용자 쿠폰 상세 조회 성공"),
 
     //결제 로그
     PAYMENT_LOG_GET_SUCCESS("결제 로그 조회 성공"),

@@ -41,4 +41,13 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<CommonResponse<Void>> exception(Exception e) {
+        log.error("예외 발생. ", e);
+
+        CommonResponse<Void> response = CommonResponse.exception("요청 본문 형식이 올바르지 않습니다");
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 }
