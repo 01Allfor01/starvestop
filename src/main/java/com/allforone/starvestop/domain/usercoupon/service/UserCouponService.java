@@ -33,7 +33,7 @@ public class UserCouponService {
                 () -> new CustomException(ErrorCode.COUPON_NOT_FOUND)
         );
 
-        UserCoupon userCoupon = UserCoupon.create(user, coupon, request.getStartedAt(), request.getExpiredAt());
+        UserCoupon userCoupon = UserCoupon.create(user, coupon, request.getStartedAt(), request.getExpiresAt());
         UserCoupon savedUserCoupon = userCouponRepository.save(userCoupon);
 
         return CreateUserCouponResponse.from(savedUserCoupon);
