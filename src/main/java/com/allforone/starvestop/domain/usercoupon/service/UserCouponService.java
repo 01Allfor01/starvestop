@@ -42,21 +42,39 @@ public class UserCouponService {
         return CreateUserCouponResponse.from(savedUserCoupon);
     }
 
+    @Transactional(readOnly = true)
     public List<GetUserCouponResponse> getUserCouponList(AuthUser authUser) {
         List<UserCoupon> responseList = userCouponRepository.findAllByUserIdAndIsDeletedIsFalseAndUsedAtIsNull(authUser.getUserId());
 
         return responseList.stream().map(GetUserCouponResponse::from).toList();
     }
 
+    @Transactional(readOnly = true)
     public GetUserCouponResponse getUserCoupon(AuthUser authUser, Long userCouponId) {
-        UserCoupon userCoupon = userCouponRepository.findByIdAndIsDeletedIsFalse(userCouponId).orElseThrow(
+        UserCoupon userCoupon = getUserCouponOrThrow(userCouponId);
+
+        checkPermission(authUser, userCoupon);
+
+        return GetUserCouponResponse.from(userCoupon);
+    }
+
+    @Transactional
+    public void deleteUserCoupon(AuthUser authUser, Long userCouponId) {
+        UserCoupon userCoupon = getUserCouponOrThrow(userCouponId);
+        checkPermission(authUser, userCoupon);
+        userCoupon.delete();
+        userCouponRepository.flush();
+    }
+
+    private UserCoupon getUserCouponOrThrow(Long userCouponId) {
+        return userCouponRepository.findByIdAndIsDeletedIsFalse(userCouponId).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_COUPON_NOT_FOUND)
         );
+    }
 
+    private void checkPermission(AuthUser authUser, UserCoupon userCoupon) {
         if (!userCoupon.getUser().getId().equals(authUser.getUserId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
-        
-        return GetUserCouponResponse.from(userCoupon);
     }
 }

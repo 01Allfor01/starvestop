@@ -50,4 +50,13 @@ public class UserCouponController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_COUPON_DETAIL_GET_SUCCESS, response));
     }
 
+    @DeleteMapping("/user-coupons/{userCouponId}")
+    public ResponseEntity<CommonResponse<Void>> deleteUserCoupon(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long userCouponId
+    ) {
+        userCouponService.deleteUserCoupon(authUser, userCouponId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(USER_COUPON_DELETE_SUCCESS));
+    }
 }
