@@ -15,6 +15,7 @@ import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -67,13 +68,13 @@ public class OrderService {
 
         cartRepository.deleteAll(cartList);
 
-        return new OrderResponse(
-                order.getId(),
-                order.getStore().getId(),
-                order.getUser().getId(),
-                order.getOrderKey(),
-                order.getStatus(),
-                order.getAmount()
-        );
+        return OrderResponse.from(order);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getOrder(Long userId) {
+        List<Order> orderList = orderRepository.findAllByUserIdAndIsDeletedIsFalse(userId);
+
+        return orderList.stream().map(OrderResponse::from).toList();
     }
 }
