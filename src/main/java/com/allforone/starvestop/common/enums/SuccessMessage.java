@@ -56,6 +56,9 @@ public enum SuccessMessage {
     ORDER_UPDATE_SUCCESS("주문 수정 성공"),
     ORDER_DELETE_SUCCESS("주문 삭제 성공"),
 
+    //주문상품
+    ORDER_PRODUCT_LIST_GET_SUCCESS("주문 상품 리스트 조회 성공"),
+
     //결제
     PAYMENT_CREATE_SUCCESS("결제 생성 성공"),
     PAYMENT_REQUIRE_SUCCESS("결제 요청 성공"),
