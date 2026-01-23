@@ -13,7 +13,7 @@ public class UpdateCouponResponse {
 
     private final Long id;
     private final String name;
-    private final CouponStatus couponStatus;
+    private final CouponStatus status;
     private final LocalDateTime updatedAt;
 
     public static UpdateCouponResponse from(Coupon coupon) {

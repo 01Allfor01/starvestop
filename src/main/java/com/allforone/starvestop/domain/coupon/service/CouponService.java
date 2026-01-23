@@ -56,7 +56,7 @@ public class CouponService {
     @Transactional
     public UpdateCouponResponse updateCoupon(Long couponId, UpdateCouponRequest request) {
         Coupon coupon = getCouponOrThrow(couponId);
-        coupon.update(request.getCouponStatus());
+        coupon.update(request.getStatus());
         couponRepository.flush();
         return UpdateCouponResponse.from(coupon);
     }

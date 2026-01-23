@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateCouponRequest {
 
-    private CouponStatus couponStatus;
+    private CouponStatus status;
 }

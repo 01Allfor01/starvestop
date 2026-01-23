@@ -56,6 +56,9 @@ public enum ErrorCode {
     // 쿠폰
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쿠폰입니다"),
 
+    //사용자 쿠폰
+    USER_COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 쿠폰입니다"),
+
 
     // 결제 로그
     PAYMENT_LOG_NOT_FOUND(HttpStatus.NOT_FOUND, "결제로그가 존재하지 않습니다"),
