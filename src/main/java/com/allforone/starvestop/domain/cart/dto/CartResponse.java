@@ -7,13 +7,13 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class CartResponse {
-    private Long cartId;
+    private Long id;
     private Long productId;
     private String productName;
     private Integer quantity;
 
     public CartResponse(Cart cart) {
-        this.cartId = cart.getId();
+        this.id = cart.getId();
         this.productId = cart.getProduct().getId();
         this.productName = cart.getProduct().getName();
         this.quantity = cart.getQuantity();

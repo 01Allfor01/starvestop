@@ -50,7 +50,7 @@ public class CartService {
 
     @Transactional
     public CartResponse updateCart(UpdateCartRequest request) {
-        Cart cart = cartRepository.findByIdAndIsDeletedIsFalse(request.getCartId()).orElseThrow(
+        Cart cart = cartRepository.findByIdAndIsDeletedIsFalse(request.getId()).orElseThrow(
                 () -> new CustomException(ErrorCode.CART_NOT_FOUND)
         );
         cart.update(request.getQuantity());

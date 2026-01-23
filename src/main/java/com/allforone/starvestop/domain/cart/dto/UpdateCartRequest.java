@@ -6,6 +6,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class UpdateCartRequest {
-    Long cartId;
+    Long id;
     Integer quantity;
 }
