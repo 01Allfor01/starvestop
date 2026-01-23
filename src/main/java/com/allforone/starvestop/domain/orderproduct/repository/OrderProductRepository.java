@@ -15,5 +15,5 @@ WHERE op.isDeleted = false
 """)
     List<OrderProduct> findAllByOrderIdAndUserIdAndIsDeletedIsFalse(Long userId, Long orderId);
 
-    List<OrderProduct> findAllByOrder_Id(Long orderId);
+    List<OrderProduct> findAllByOrderId(Long orderId);
 }

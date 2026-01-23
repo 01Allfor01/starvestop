@@ -60,7 +60,7 @@ public class ReceiptService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        List<OrderProduct> orderList = orderProductRepository.findAllByOrder_Id(orderId);
+        List<OrderProduct> orderList = orderProductRepository.findAllByOrderId(orderId);
 
         List<OrderProductDto> orderProductDtoList = orderList.stream().map(OrderProductDto::from).toList();
 

@@ -104,7 +104,7 @@ public class OrderService {
         Order order = findOrder(orderId);
         userCheck(userId, order);
 
-        List<OrderProduct> orderProductList = orderProductRepository.findAllByOrder_Id(orderId);
+        List<OrderProduct> orderProductList = orderProductRepository.findAllByOrderId(orderId);
 
         orderProductList.forEach(OrderProduct::delete);
 
