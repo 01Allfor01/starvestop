@@ -71,7 +71,7 @@ public class SubscriptionController {
     ) {
         UpdateSubscriptionResponse response = subscriptionService.updateSubscription(request, subscriptionId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, response));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_UPDATE_SUCCESS, response));
     }
 
 
