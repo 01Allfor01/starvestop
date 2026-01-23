@@ -9,11 +9,14 @@ import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import com.allforone.starvestop.domain.usercoupon.dto.request.CreateUserCouponRequest;
 import com.allforone.starvestop.domain.usercoupon.dto.response.CreateUserCouponResponse;
+import com.allforone.starvestop.domain.usercoupon.dto.response.GetUserCouponResponse;
 import com.allforone.starvestop.domain.usercoupon.entity.UserCoupon;
 import com.allforone.starvestop.domain.usercoupon.repository.UserCouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,5 +40,23 @@ public class UserCouponService {
         UserCoupon savedUserCoupon = userCouponRepository.save(userCoupon);
 
         return CreateUserCouponResponse.from(savedUserCoupon);
+    }
+
+    public List<GetUserCouponResponse> getUserCouponList(AuthUser authUser) {
+        List<UserCoupon> responseList = userCouponRepository.findAllByUserIdAndIsDeletedIsFalseAndUsedAtIsNull(authUser.getUserId());
+
+        return responseList.stream().map(GetUserCouponResponse::from).toList();
+    }
+
+    public GetUserCouponResponse getUserCoupon(AuthUser authUser, Long userCouponId) {
+        UserCoupon userCoupon = userCouponRepository.findByIdAndIsDeletedIsFalse(userCouponId).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_COUPON_NOT_FOUND)
+        );
+
+        if (!userCoupon.getUser().getId().equals(authUser.getUserId())) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+        
+        return GetUserCouponResponse.from(userCoupon);
     }
 }
