@@ -1,6 +1,9 @@
 package com.allforone.starvestop.domain.paymentlog.service;
 
+import com.allforone.starvestop.common.exception.CustomException;
+import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
+import com.allforone.starvestop.domain.paymentlog.dto.GetPaymentLogDetailResponse;
 import com.allforone.starvestop.domain.paymentlog.dto.GetPaymentLogResponse;
 import com.allforone.starvestop.domain.paymentlog.entity.PaymentLog;
 import com.allforone.starvestop.domain.paymentlog.repository.PaymentLogRepository;
@@ -17,16 +20,32 @@ public class PaymentLogService {
 
     private final PaymentLogRepository paymentLogRepository;
 
+    // 로그 저장
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void savePaymentLog(Long userId, Long paymentId, String orderKey, PaymentStatus paymentStatus, String pgStatus, String payload) {
         PaymentLog paymentLog = PaymentLog.create(paymentId, userId, orderKey, paymentStatus, pgStatus, payload);
         paymentLogRepository.save(paymentLog);
     }
+//    // 특정 유저 결제 로그 조회 >> 검색으로 대체 예정
+//    @Transactional(readOnly = true)
+//    public List<GetPaymentLogResponse> getPaymentLogListByUserId(Long userId) {
+//        List<PaymentLog> paymentLogList = paymentLogRepository.findByUserId(userId);
+//        return paymentLogList.stream().map(GetPaymentLogResponse::from).toList();
+//    }
 
+    // 결제로그 전체 조회
     @Transactional(readOnly = true)
-    public List<GetPaymentLogResponse> getPaymentListByUserId(Long userId) {
-        List<PaymentLog> paymentLogList = paymentLogRepository.findByUserId(userId);
+    public List<GetPaymentLogResponse> getPaymentLogResponseList() {
+        List<PaymentLog> paymentLogList = paymentLogRepository.findAll();
         return paymentLogList.stream().map(GetPaymentLogResponse::from).toList();
     }
 
+    // 결제로그 상세 조회
+    @Transactional(readOnly = true)
+    public GetPaymentLogDetailResponse getPaymentLogDetail(Long paymentLogId) {
+        PaymentLog paymentLog = paymentLogRepository.findById(paymentLogId).orElseThrow(
+                () -> new CustomException(ErrorCode.PAYMENT_LOG_NOT_FOUND)
+        );
+        return GetPaymentLogDetailResponse.from(paymentLog);
+    }
 }

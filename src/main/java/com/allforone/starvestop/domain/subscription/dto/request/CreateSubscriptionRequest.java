@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 @Getter
 @NoArgsConstructor
 public class CreateSubscriptionRequest {
-
     @NotBlank(message = "구독 이름을 적어주세요")
     @Size(max = 100, message = "구독 이름은 최대 100자까지 입력 가능합니다.")
     private String subscriptionName;
