@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Getter
 @Entity
 @Table(name = "order_products")
@@ -29,5 +31,13 @@ public class OrderProduct {
     private Integer quantity;
 
     @Column(nullable = false)
-    private Integer productPrice;
+    private BigDecimal productPrice;
+
+    public OrderProduct(Order order, Long productId, String productName, Integer quantity, BigDecimal productPrice) {
+        this.order = order;
+        this.productId = productId;
+        this.productName = productName;
+        this.quantity = quantity;
+        this.productPrice = productPrice;
+    }
 }

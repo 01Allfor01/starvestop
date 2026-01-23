@@ -7,6 +7,8 @@ import com.allforone.starvestop.domain.cart.repository.CartRepository;
 import com.allforone.starvestop.domain.order.dto.OrderResponse;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.repository.OrderRepository;
+import com.allforone.starvestop.domain.orderproduct.entity.OrderProduct;
+import com.allforone.starvestop.domain.orderproduct.repository.OrderProductRepository;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.entity.User;
@@ -26,6 +28,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
     private final CartRepository cartRepository;
+    private final OrderProductRepository orderProductRepository;
 
     public OrderResponse createOrder(Long userId, Long storeId) {
         User user = userRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
@@ -42,12 +45,24 @@ public class OrderService {
 
         cartRepository.flush();
 
+
         BigDecimal amount = cartList.stream()
                 .map(cart -> cart.getProduct().getPrice()
                         .multiply(BigDecimal.valueOf(cart.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Order order = orderRepository.save(Order.create(store, orderKey, user, amount));
+
+        List<OrderProduct> orderProductList = cartList.stream()
+                .map(cart -> new OrderProduct(
+                        order,
+                        cart.getProduct().getId(),
+                        cart.getProduct().getName(),
+                        cart.getQuantity(),
+                        cart.getProduct().getPrice()
+                )).toList();
+
+        orderProductRepository.saveAll(orderProductList);
 
         return new OrderResponse(
                 order.getId(),
