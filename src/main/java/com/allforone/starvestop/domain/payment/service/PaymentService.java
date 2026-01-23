@@ -16,6 +16,7 @@ import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
 import com.allforone.starvestop.domain.paymentlog.service.PaymentLogService;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
+import com.allforone.starvestop.domain.user.entity.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -50,12 +52,15 @@ public class PaymentService {
 
         Order order = orderRepository.findByIdAndIsDeletedIsFalse(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
-
         if (!userId.equals(order.getUser().getId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        Payment payment = Payment.create(order);
+        String orderKey = order.getOrderKey();
+        BigDecimal amount = order.getAmount();
+
+        Payment payment = Payment.create(userId, order, orderKey, amount);
+
         try {
             paymentRepository.save(payment);
         } catch (DataIntegrityViolationException e) {
