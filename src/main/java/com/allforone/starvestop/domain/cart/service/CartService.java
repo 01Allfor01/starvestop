@@ -43,14 +43,14 @@ public class CartService {
 
     @Transactional(readOnly = true)
     public List<CartResponse> getCartList(Long userId) {
-        List<Cart> cartList = cartRepository.findALLByUserIdAndIsDeletedIsFalse(userId);
+        List<Cart> cartList = cartRepository.findAllByUserIdAndIsDeletedIsFalse(userId);
 
         return cartList.stream().map(CartResponse::new).toList();
     }
 
     @Transactional
     public CartResponse updateCart(UpdateCartRequest request) {
-        Cart cart = cartRepository.findByIdAndIsDeletedIsFalse(request.getCartId()).orElseThrow(
+        Cart cart = cartRepository.findByIdAndIsDeletedIsFalse(request.getId()).orElseThrow(
                 () -> new CustomException(ErrorCode.CART_NOT_FOUND)
         );
         cart.update(request.getQuantity());

@@ -39,21 +39,22 @@ public class OrderService {
 
         String orderKey = UUID.randomUUID().toString();
 
-        List<Cart> cartList = cartRepository.findALLByUserIdAndIsDeletedIsFalse(userId);
+        List<Cart> cartList = cartRepository.findAllByUserId(userId);
 
-        cartList.forEach(cart -> cart.getProduct().decrease(cart.getQuantity()));
+        List<Cart> cartOrderList = cartList.stream().filter(cart -> cart.getProduct().getStore().getId().equals(storeId)).toList();
+
+        cartOrderList.forEach(cart -> cart.getProduct().decrease(cart.getQuantity()));
 
         cartRepository.flush();
 
-
-        BigDecimal amount = cartList.stream()
+        BigDecimal amount = cartOrderList.stream()
                 .map(cart -> cart.getProduct().getPrice()
                         .multiply(BigDecimal.valueOf(cart.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Order order = orderRepository.save(Order.create(store, orderKey, user, amount));
 
-        List<OrderProduct> orderProductList = cartList.stream()
+        List<OrderProduct> orderProductList = cartOrderList.stream()
                 .map(cart -> OrderProduct.create(
                         order,
                         cart.getProduct().getId(),
