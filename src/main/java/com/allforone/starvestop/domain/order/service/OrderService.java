@@ -77,4 +77,17 @@ public class OrderService {
 
         return orderList.stream().map(OrderResponse::from).toList();
     }
+
+    @Transactional(readOnly = true)
+    public OrderResponse getOrder(Long userId, Long orderId) {
+        Order order = orderRepository.findByIdAndIsDeletedIsFalse(orderId).orElseThrow(
+                () -> new CustomException(ErrorCode.ORDER_NOT_FOUND)
+        );
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        return OrderResponse.from(order);
+    }
 }

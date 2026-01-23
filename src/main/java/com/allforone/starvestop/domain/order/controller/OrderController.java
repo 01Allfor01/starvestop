@@ -34,4 +34,10 @@ public class OrderController {
         List<OrderResponse> response = orderService.getOrder(authUser.getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(ORDER_GET_SUCCESS, response));
     }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<CommonResponse<OrderResponse>> getOrder(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long orderId) {
+        OrderResponse response = orderService.getOrder(authUser.getUserId(), orderId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(ORDER_GET_SUCCESS, response));
+    }
 }
