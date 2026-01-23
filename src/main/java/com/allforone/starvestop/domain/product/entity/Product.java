@@ -69,7 +69,7 @@ public class Product extends BaseEntity {
     }
 
     public void decrease(Integer count) {
-        if (this.stock == 0) {
+        if (this.stock == 0 || this.stock < count) {
             throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
         }
         this.stock -= count;
