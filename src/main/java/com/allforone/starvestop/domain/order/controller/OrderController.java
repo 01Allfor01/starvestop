@@ -46,4 +46,10 @@ public class OrderController {
         OrderResponse response = orderService.updateOrder(authUser.getUserId(), request);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_UPDATE_SUCCESS, response));
     }
+
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity<CommonResponse<Void>> deleteOrder(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long orderId) {
+        orderService.deleteOrder(authUser.getUserId(), orderId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(ORDER_DELETE_SUCCESS));
+    }
 }

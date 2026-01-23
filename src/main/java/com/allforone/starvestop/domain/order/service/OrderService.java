@@ -81,29 +81,40 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public OrderResponse getOrder(Long userId, Long orderId) {
-        Order order = orderRepository.findByIdAndIsDeletedIsFalse(orderId).orElseThrow(
-                () -> new CustomException(ErrorCode.ORDER_NOT_FOUND)
-        );
+        Order order = findOrder(orderId);
 
-        if (!order.getUser().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
+        userCheck(userId, order);
 
         return OrderResponse.from(order);
     }
 
     @Transactional
     public OrderResponse updateOrder(Long userId, UpdateOrderRequest request) {
-        Order order = orderRepository.findByIdAndIsDeletedIsFalse(request.getId()).orElseThrow(
-                () -> new CustomException(ErrorCode.ORDER_NOT_FOUND)
-        );
-        if (!order.getUser().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
+        Order order = findOrder(request.getId());
+        userCheck(userId, order);
         order.setStatus(request.getStatus());
 
         orderRepository.flush();
 
         return OrderResponse.from(order);
+    }
+
+    @Transactional
+    public void deleteOrder(Long userId, Long orderId) {
+        Order order = findOrder(orderId);
+        userCheck(userId, order);
+        order.delete();
+    }
+
+    private void userCheck(Long userId, Order order) {
+        if (!order.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+    }
+
+    private Order findOrder(Long orderId) {
+        return orderRepository.findByIdAndIsDeletedIsFalse(orderId).orElseThrow(
+                () -> new CustomException(ErrorCode.ORDER_NOT_FOUND)
+        );
     }
 }
