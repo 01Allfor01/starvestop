@@ -38,6 +38,10 @@ public class OrderService {
 
         List<Cart> cartList = cartRepository.findALLByUserIdAndIsDeletedIsFalse(userId);
 
+        cartList.forEach(cart -> cart.getProduct().decrease(cart.getQuantity()));
+
+        cartRepository.flush();
+
         BigDecimal amount = cartList.stream()
                 .map(cart -> cart.getProduct().getPrice()
                         .multiply(BigDecimal.valueOf(cart.getQuantity())))
