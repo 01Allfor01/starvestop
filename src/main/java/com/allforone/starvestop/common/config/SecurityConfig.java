@@ -50,6 +50,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/payments/success").permitAll()
                         .requestMatchers(HttpMethod.GET, "/payments/fail").permitAll()
 
+                        .requestMatchers(HttpMethod.PATCH, "/users").hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/users").hasRole("USER")
+
+                        .requestMatchers(HttpMethod.PATCH, "/owners").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.DELETE, "/owners").hasRole("OWNER")
+
                         .requestMatchers(HttpMethod.POST, "/products/**").hasAnyRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH, "/products/**").hasAnyRole("OWNER")
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasAnyRole("OWNER", "ADMIN")
