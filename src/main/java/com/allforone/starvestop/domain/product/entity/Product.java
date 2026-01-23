@@ -33,26 +33,39 @@ public class Product extends BaseEntity {
     private String description;
 
     @Column(nullable = false)
+    private Integer stock;
+
+    @Column(nullable = false)
     private BigDecimal price;
 
     @Column(nullable = false)
-    private Integer stock;
+    private BigDecimal salePrice;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
-    private Product(Store store, String name, String description, BigDecimal price, Integer stock, ProductStatus status) {
+    private Product(Store store, String name, String description, BigDecimal price, BigDecimal salePrice, Integer stock, ProductStatus status) {
         this.store = store;
         this.name = name;
         this.description = description;
         this.price = price;
+        this.salePrice = salePrice;
         this.stock = stock;
         this.status = status;
     }
 
-    public static Product create(Store store, String name, String description, BigDecimal price, Integer stock, ProductStatus status) {
-        return new Product(store, name, description, price, stock, status);
+    public static Product create(Store store, String name, String description, BigDecimal price, BigDecimal salePrice, Integer stock, ProductStatus status) {
+        return new Product(store, name, description, price, salePrice, stock, status);
+    }
+
+    public void update(String productName, String description, Integer stock, BigDecimal price, BigDecimal salePrice, ProductStatus status) {
+        this.name = productName;
+        this.description = description;
+        this.stock = stock;
+        this.price = price;
+        this.salePrice = salePrice;
+        this.status = status;
     }
 
     public void decrease(Integer count) {
@@ -65,13 +78,4 @@ public class Product extends BaseEntity {
     public void increase(Integer count) {
         this.stock += count;
     }
-
-    public void update(String productName, String description, Integer stock, BigDecimal price, ProductStatus status) {
-        this.name = (this.name.equals(productName)) ? this.name : productName;
-        this.description = (this.description.equals(description)) ? this.description : description;
-        this.stock = (this.stock.equals(stock)) ? this.stock : stock;
-        this.price = (this.price.equals(price)) ? this.price : price;
-        this.status = (this.status.equals(status)) ? this.status : status;
-    }
-
 }
