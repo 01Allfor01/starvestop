@@ -1,0 +1,57 @@
+package com.allforone.starvestop.domain.order.entity;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Getter
+@Entity
+@Table(name = "order_products")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class OrderProduct {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
+
+    @Column(nullable = false)
+    private Long productId;
+
+    @Column(nullable = false)
+    private String productName;
+
+    @Column(nullable = false)
+    private Integer quantity;
+
+    @Column(nullable = false)
+    private BigDecimal productPrice;
+
+    private Boolean isDeleted;
+
+    private OrderProduct(Order order, Long productId, String productName, Integer quantity, BigDecimal productPrice) {
+        this.order = order;
+        this.productId = productId;
+        this.productName = productName;
+        this.quantity = quantity;
+        this.productPrice = productPrice;
+        this.isDeleted = false;
+    }
+
+    public static OrderProduct create(Order order, Long productId, String productName, Integer quantity, BigDecimal productPrice) {
+        return new OrderProduct(order, productId, productName, quantity, productPrice);
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
+
+    public void recovery() {
+        this.isDeleted = false;
+    }
+}

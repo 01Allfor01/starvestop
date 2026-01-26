@@ -1,0 +1,55 @@
+package com.allforone.starvestop.domain.subscription.entity;
+
+import com.allforone.starvestop.common.entity.BaseEntity;
+import com.allforone.starvestop.domain.subscription.enums.UserSubscriptionStatus;
+import com.allforone.starvestop.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Entity
+@Table(name = "user_subscriptions",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "unique_user_subscription",
+                        columnNames = {"user_id", "subscription_id"}
+                )
+        }
+)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class UserSubscription extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "subscription_id")
+    private Subscription subscription;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserSubscriptionStatus status;
+
+    @Column(nullable = false)
+    private LocalDateTime expiresAt;
+
+    public UserSubscription(User user, Subscription subscription) {
+        this.user = user;
+        this.subscription = subscription;
+        this.expiresAt = LocalDateTime.now().plusMonths(1);
+        this.status = UserSubscriptionStatus.PENDING;
+    }
+
+    public static UserSubscription create(User user, Subscription subscription) {
+        return new UserSubscription(user, subscription);
+    }
+}
