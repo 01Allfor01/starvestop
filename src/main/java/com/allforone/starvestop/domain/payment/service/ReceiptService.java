@@ -4,7 +4,7 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.dto.OrderProductDto;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
-import com.allforone.starvestop.domain.order.repository.OrderProductRepository;
+import com.allforone.starvestop.domain.order.service.OrderProductFunction;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.dto.response.GetReceiptDetailResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetReceiptResponse;
@@ -23,8 +23,8 @@ import java.util.List;
 public class ReceiptService {
 
     private final ReceiptRepository receiptRepository;
-    private final UserRepository userRepository;
-    private final OrderProductRepository orderProductRepository;
+    private final UserFunction userFunction;
+    private final OrderProductFunction orderProductFunction;
 
     // 영수증 생성
     @Transactional
@@ -60,7 +60,7 @@ public class ReceiptService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        List<OrderProduct> orderList = orderProductRepository.findAllByOrderId(orderId);
+        List<OrderProduct> orderList = orderProductFunction.findListByOrderId(orderId);
 
         List<OrderProductDto> orderProductDtoList = orderList.stream().map(OrderProductDto::from).toList();
 

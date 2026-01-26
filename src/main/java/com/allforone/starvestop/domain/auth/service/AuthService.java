@@ -10,7 +10,7 @@ import com.allforone.starvestop.domain.auth.dto.request.SignUpRequest;
 import com.allforone.starvestop.domain.auth.dto.response.SignInResponse;
 import com.allforone.starvestop.domain.auth.dto.response.SignUpResponse;
 import com.allforone.starvestop.domain.owner.entity.Owner;
-import com.allforone.starvestop.domain.owner.repository.OwnerRepository;
+import com.allforone.starvestop.domain.owner.service.OwnerFunction;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -22,8 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final OwnerRepository ownerRepository;
+    private final UserFunction userFunction;
+    private final OwnerFunction ownerFunction;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -71,13 +71,9 @@ public class AuthService {
         String userName = request.getUsername();
         String password = request.getPassword();
 
-        if (ownerRepository.existsByEmail(userEmail)) {
-            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
-        }
+        ownerFunction.existsByEmail(userEmail);
 
-        Owner owner = Owner.create(userEmail, passwordEncoder.encode(password), userName);
-
-        Owner savedOwner = ownerRepository.save(owner);
+        Owner savedOwner = ownerFunction.save(userEmail, passwordEncoder.encode(password), userName);
 
         String token = jwtUtil.generateToken(savedOwner.getUsername(), savedOwner.getEmail(), savedOwner.getId(), savedOwner.getRole());
 
@@ -89,9 +85,7 @@ public class AuthService {
         String userEmail = request.getEmail();
         String password = request.getPassword();
 
-        Owner foundOwner = ownerRepository.findByEmailAndIsDeletedIsFalse(userEmail).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
-        );
+        Owner foundOwner = ownerFunction.findByEmail(userEmail);
 
         if (!passwordEncoder.matches(password, foundOwner.getPassword())) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);

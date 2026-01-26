@@ -3,9 +3,9 @@ package com.allforone.starvestop.domain.payment.service;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.entity.Order;
-import com.allforone.starvestop.domain.order.repository.OrderRepository;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
-import com.allforone.starvestop.domain.order.repository.OrderProductRepository;
+import com.allforone.starvestop.domain.order.service.OrderFunction;
+import com.allforone.starvestop.domain.order.service.OrderProductFunction;
 import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
@@ -28,25 +28,19 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    @Value("${spring.payment.secret-key}")
-    private String secretKey;
-
-    @Value("${spring.payment.base-url}")
-    private String baseUrl;
-
+    private final PaymentLogFunction paymentLogFunction;
+    private final ReceiptFunction receiptFunction;
     private final PaymentRepository paymentRepository;
-    private final ProductRepository productRepository;
-    private final OrderRepository orderRepository;
-    private final OrderProductRepository orderProductRepository;
-    private final PaymentLogService paymentLogService;
+    private final ProductFunction productFunction;
+    private final OrderFunction orderFunction;
+    private final OrderProductFunction orderProductFunction;
 
     private final WebClient paymentWebClient;
 
     // 결제 생성
     @Transactional
     public CreatePaymentResponse createPayment(Long userId, Long orderId) {
-        Order order = orderRepository.findByIdAndIsDeletedIsFalse(orderId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+        Order order = orderFunction.getById(orderId);
 
         if (!userId.equals(order.getUser().getId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
@@ -62,10 +56,12 @@ public class PaymentService {
         Payment payment = Payment.create(userId, order, orderKey, amount);
 
         paymentRepository.save(payment);
-        paymentLogService.savePaymentLog(payment.getId(), userId, orderKey, payment.getStatus(), null, null);
+
+        paymentLogFunction.save(payment.getId(), userId, orderKey, payment.getStatus(), null, null);
 
         payment.requestPayment();
-        paymentLogService.savePaymentLog(payment.getId(), order.getUser().getId(), payment.getOrderKey(), payment.getStatus(), null, null);
+
+        paymentLogFunction.save(payment.getId(), order.getUser().getId(), payment.getOrderKey(), payment.getStatus(), null, null);
 
         return CreatePaymentResponse.from(payment);
     }
@@ -94,14 +90,15 @@ public class PaymentService {
                     .block();
 
             payment.success(paymentKey);
-            paymentLogService.savePaymentLog(payment.getId(), payment.getOrder().getUser().getId(),
+            receiptFunction.save(payment.getUserId(), payment);
+            paymentLogFunction.save(payment.getId(), payment.getOrder().getUser().getId(),
                     payment.getOrderKey(), payment.getStatus(), null, null);
 
             return "/success.html?orderId=" + payment.getOrderKey() + "&amount=" + payment.getAmount();
 
         } catch (WebClientResponseException e) {
             failAndReleaseReservedStock(payment);
-            paymentLogService.savePaymentLog(payment.getId(), payment.getOrder().getUser().getId(),
+            paymentLogFunction.save(payment.getId(), payment.getOrder().getUser().getId(),
                     payment.getOrderKey(), payment.getStatus(), String.valueOf(e.getStatusCode()), e.getResponseBodyAsString());
 
             return "/fail.html?orderId=" + payment.getOrderKey() + "&reason=PG_CONFIRM_FAILED";
@@ -129,10 +126,10 @@ public class PaymentService {
             return;
         }
         payment.fail();
-        paymentLogService.savePaymentLog(payment.getId(), payment.getOrder().getUser().getId(),
+        paymentLogFunction.save(payment.getId(), payment.getOrder().getUser().getId(),
                 payment.getOrderKey(), payment.getStatus(), null, null);
 
-        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrderId(payment.getOrder().getId());
+        List<OrderProduct> orderProducts = orderProductFunction.findListByOrderId(payment.getOrder().getId());
         releaseReservedStock(orderProducts);
     }
 

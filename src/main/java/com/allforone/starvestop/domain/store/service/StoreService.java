@@ -127,7 +127,6 @@ public class StoreService {
 
     //매장
     private Point getLocation(Double longitude, Double latitude) {
-        Point point = GeometryUtil.createPoint(longitude, latitude);
-        return point;
+        return GeometryUtil.createPoint(longitude, latitude);
     }
 }

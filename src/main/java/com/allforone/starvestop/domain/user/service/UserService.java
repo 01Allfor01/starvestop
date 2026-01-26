@@ -30,8 +30,6 @@ public class UserService {
 
         foundUser.update(nickname, passwordEncoder.encode(password));
 
-        userRepository.flush();
-
         return new UpdateUserResponse(
                 foundUser.getEmail(),
                 foundUser.getNickname(),

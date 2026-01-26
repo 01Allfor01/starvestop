@@ -2,14 +2,12 @@ package com.allforone.starvestop.domain.payment.service;
 
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
-import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentLogDetailResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentLogResponse;
 import com.allforone.starvestop.domain.payment.entity.PaymentLog;
 import com.allforone.starvestop.domain.payment.repository.PaymentLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -19,19 +17,6 @@ import java.util.List;
 public class PaymentLogService {
 
     private final PaymentLogRepository paymentLogRepository;
-
-    // 로그 저장
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void savePaymentLog(Long userId, Long paymentId, String orderKey, PaymentStatus paymentStatus, String pgStatus, String payload) {
-        PaymentLog paymentLog = PaymentLog.create(paymentId, userId, orderKey, paymentStatus, pgStatus, payload);
-        paymentLogRepository.save(paymentLog);
-    }
-//    // 특정 유저 결제 로그 조회 >> 검색으로 대체 예정
-//    @Transactional(readOnly = true)
-//    public List<GetPaymentLogResponse> getPaymentLogListByUserId(Long userId) {
-//        List<PaymentLog> paymentLogList = paymentLogRepository.findByUserId(userId);
-//        return paymentLogList.stream().map(GetPaymentLogResponse::from).toList();
-//    }
 
     // 결제로그 전체 조회
     @Transactional(readOnly = true)

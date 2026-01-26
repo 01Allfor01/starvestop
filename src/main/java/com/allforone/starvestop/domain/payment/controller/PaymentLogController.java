@@ -21,15 +21,6 @@ import java.util.List;
 public class PaymentLogController {
     private final PaymentLogService paymentLogService;
 
-//    @GetMapping
-//    public ResponseEntity<CommonResponse<List<GetPaymentLogResponse>>> getPaymentLogListByUserId(
-//            @RequestParam long userId
-//    ) {
-//        List<GetPaymentLogResponse> result = paymentLogService.getPaymentLogListByUserId(userId);
-//
-//        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SuccessMessage.PAYMENT_LOG_GET_SUCCESS, result));
-//    }
-
     @GetMapping
     public ResponseEntity<CommonResponse<List<GetPaymentLogResponse>>> getPaymentLogList() {
         List<GetPaymentLogResponse> result = paymentLogService.getPaymentLogResponseList();
