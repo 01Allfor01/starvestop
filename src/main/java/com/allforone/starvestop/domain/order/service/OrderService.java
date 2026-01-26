@@ -22,49 +22,13 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
-    private final StoreRepository storeRepository;
-    private final CartRepository cartRepository;
-    private final OrderProductRepository orderProductRepository;
+    private final OrderProductFunction orderProductFunction;
 
-    public OrderResponse createOrder(Long userId, Long storeId) {
-        User user = userRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        Store store = storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND));
-
+    @Transactional
+    public Order createOrder(User user, Store store, BigDecimal amount) {
         String orderKey = UUID.randomUUID().toString();
 
-        List<Cart> cartList = cartRepository.findAllByUserId(userId);
-
-        List<Cart> cartOrderList = cartList.stream().filter(cart -> cart.getProduct().getStore().getId().equals(storeId)).toList();
-
-        cartOrderList.forEach(cart -> cart.getProduct().decrease(cart.getQuantity()));
-
-        cartRepository.flush();
-
-        BigDecimal amount = cartOrderList.stream()
-                .map(cart -> cart.getProduct().getPrice()
-                        .multiply(BigDecimal.valueOf(cart.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        Order order = orderRepository.save(Order.create(store, orderKey, user, amount));
-
-        List<OrderProduct> orderProductList = cartOrderList.stream()
-                .map(cart -> OrderProduct.create(
-                        order,
-                        cart.getProduct().getId(),
-                        cart.getProduct().getName(),
-                        cart.getQuantity(),
-                        cart.getProduct().getPrice()
-                )).toList();
-
-        orderProductRepository.saveAll(orderProductList);
-
-        cartRepository.deleteAll(cartList);
-
-        return OrderResponse.from(order);
+        return orderRepository.save(Order.create(store, orderKey, user, amount));
     }
 
     @Transactional(readOnly = true)
@@ -99,7 +63,7 @@ public class OrderService {
         Order order = findOrder(orderId);
         userCheck(userId, order);
 
-        List<OrderProduct> orderProductList = orderProductRepository.findAllByOrderId(orderId);
+        List<OrderProduct> orderProductList = orderProductFunction.findListByOrderId(orderId);
 
         orderProductList.forEach(OrderProduct::delete);
 

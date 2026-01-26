@@ -11,7 +11,7 @@ import com.allforone.starvestop.domain.payment.dto.response.GetReceiptResponse;
 import com.allforone.starvestop.domain.payment.entity.Receipt;
 import com.allforone.starvestop.domain.payment.repository.ReceiptRepository;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.repository.UserRepository;
+import com.allforone.starvestop.domain.user.service.UserFunction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,8 +30,7 @@ public class ReceiptService {
     @Transactional
     public void createReceipt(Long userId, Payment payment) {
 
-        User user = userRepository.findByIdAndIsDeletedIsFalse(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = userFunction.getById(userId);
 
         Receipt receipt = Receipt.create(user, payment.getOrder(), payment.getOrderKey(), payment.getPaymentKey(), payment.getAmount());
 

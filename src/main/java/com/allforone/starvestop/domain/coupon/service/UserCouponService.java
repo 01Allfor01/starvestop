@@ -10,6 +10,7 @@ import com.allforone.starvestop.domain.coupon.dto.response.CreateUserCouponRespo
 import com.allforone.starvestop.domain.coupon.dto.response.GetUserCouponResponse;
 import com.allforone.starvestop.domain.coupon.entity.UserCoupon;
 import com.allforone.starvestop.domain.coupon.repository.UserCouponRepository;
+import com.allforone.starvestop.domain.user.service.UserFunction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,18 +22,14 @@ import java.util.List;
 public class UserCouponService {
 
     private final UserCouponRepository userCouponRepository;
-    private final UserRepository userRepository;
-    private final CouponRepository couponRepository;
+    private final UserFunction userFunction;
+    private final CouponFunction couponFunction;
 
     @Transactional
     public CreateUserCouponResponse createUserCoupon(AuthUser authUser, Long couponId, CreateUserCouponRequest request) {
-        User user = userRepository.findByIdAndIsDeletedIsFalse(authUser.getUserId()).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
-        );
+        User user = userFunction.getById(authUser.getUserId());
 
-        Coupon coupon = couponRepository.findByIdAndIsDeletedIsFalse(couponId).orElseThrow(
-                () -> new CustomException(ErrorCode.COUPON_NOT_FOUND)
-        );
+        Coupon coupon = couponFunction.getById(couponId);
 
         UserCoupon userCoupon = UserCoupon.create(user, coupon, request.getStartedAt(), request.getExpiresAt());
         UserCoupon savedUserCoupon = userCouponRepository.save(userCoupon);

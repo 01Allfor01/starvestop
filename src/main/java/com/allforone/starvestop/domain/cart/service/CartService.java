@@ -8,9 +8,9 @@ import com.allforone.starvestop.domain.cart.dto.UpdateCartRequest;
 import com.allforone.starvestop.domain.cart.entity.Cart;
 import com.allforone.starvestop.domain.cart.repository.CartRepository;
 import com.allforone.starvestop.domain.product.entity.Product;
-import com.allforone.starvestop.domain.product.repository.ProductRepository;
+import com.allforone.starvestop.domain.product.service.ProductFunction;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.repository.UserRepository;
+import com.allforone.starvestop.domain.user.service.UserFunction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,17 +22,14 @@ import java.util.List;
 public class CartService {
 
     private final CartRepository cartRepository;
-    private final UserRepository userRepository;
-    private final ProductRepository productRepository;
+    private final UserFunction userFunction;
+    private final ProductFunction productFunction;
 
     @Transactional
     public CartResponse createCart(Long userId, CartRequest request) {
-        User user = userRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
-        );
-        Product product = productRepository.findByIdAndIsDeletedIsFalse(request.getProductId()).orElseThrow(
-                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
-        );
+        User user = userFunction.getById(userId);
+
+        Product product = productFunction.getById(request.getProductId());
 
         Cart cart = Cart.create(user, product, request.getQuantity());
 

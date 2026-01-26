@@ -10,7 +10,7 @@ import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
 import com.allforone.starvestop.domain.store.entity.Store;
-import com.allforone.starvestop.domain.store.repository.StoreRepository;
+import com.allforone.starvestop.domain.store.service.StoreFunction;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,12 +23,12 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final StoreRepository storeRepository;
+    private final StoreFunction storeFunction;
 
     //특정 매장 상품 추가
     @Transactional
     public CreateProductResponse createProduct(AuthUser authUser, CreateProductRequest request) {
-        Store store = getStoreOrThrow(request.getStoreId());
+        Store store = storeFunction.getById(request.getStoreId());
 
         checkPermission(authUser, store.getOwner().getId());
 
@@ -48,7 +48,7 @@ public class ProductService {
     //매장 상품 목록 조회
     @Transactional(readOnly = true)
     public List<GetProductResponse> getProductStoreList(Long storeId) {
-        Store store = getStoreOrThrow(storeId);
+        Store store = storeFunction.getById(storeId);
 
         List<Product> productList = productRepository.findAllByStoreAndIsDeletedIsFalse(store);
 
@@ -124,11 +124,5 @@ public class ProductService {
     private Product getProductOrThrow(Long productId) {
         return productRepository.findByIdAndIsDeletedIsFalse(productId).orElseThrow(
                 () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-    }
-
-    //매장 조회
-    private Store getStoreOrThrow(Long storeId) {
-        return storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND));
     }
 }

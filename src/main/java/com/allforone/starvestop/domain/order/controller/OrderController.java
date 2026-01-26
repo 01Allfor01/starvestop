@@ -6,6 +6,7 @@ import com.allforone.starvestop.domain.order.dto.OrderRequest;
 import com.allforone.starvestop.domain.order.dto.OrderResponse;
 import com.allforone.starvestop.domain.order.dto.UpdateOrderRequest;
 import com.allforone.starvestop.domain.order.service.OrderService;
+import com.allforone.starvestop.domain.order.service.OrderUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +23,11 @@ import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderUseCase orderUseCase;
 
     @PostMapping
     public ResponseEntity<CommonResponse<OrderResponse>> createOrder(@AuthenticationPrincipal AuthUser authuser, @RequestBody OrderRequest request) {
-        OrderResponse response = orderService.createOrder(authuser.getUserId(), request.getStoreId());
+        OrderResponse response = orderUseCase.order(authuser.getUserId(), request.getStoreId());
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(ORDER_CREATE_SUCCESS, response));
     }
 

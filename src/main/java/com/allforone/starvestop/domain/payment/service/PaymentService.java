@@ -12,7 +12,7 @@ import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
-import com.allforone.starvestop.domain.product.repository.ProductRepository;
+import com.allforone.starvestop.domain.product.service.ProductFunction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -36,6 +36,12 @@ public class PaymentService {
     private final OrderProductFunction orderProductFunction;
 
     private final WebClient paymentWebClient;
+
+    @Value("${spring.payment.secret-key}")
+    private String secretKey;
+
+    @Value("${spring.payment.base-url}")
+    private String baseUrl;
 
     // 결제 생성
     @Transactional
@@ -115,9 +121,7 @@ public class PaymentService {
 
     private void releaseReservedStock(List<OrderProduct> orderProducts) {
         for (OrderProduct orderProduct : orderProducts) {
-            productRepository.findByIdAndIsDeletedIsFalse(orderProduct.getProductId())
-                    .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND))
-                    .increase(orderProduct.getQuantity());
+            productFunction.increaseById(orderProduct.getProductId(), orderProduct.getQuantity());
         }
     }
 

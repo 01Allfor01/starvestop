@@ -9,6 +9,7 @@ import com.allforone.starvestop.domain.subscription.dto.response.CreateUserSubsc
 import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.entity.UserSubscription;
 import com.allforone.starvestop.domain.subscription.repository.UserSubscriptionRepository;
+import com.allforone.starvestop.domain.user.service.UserFunction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,19 +21,18 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserSubscriptionService {
 
-    private final UserRepository userRepository;
-    private final SubscriptionRepository subscriptionRepository;
+    private final UserFunction userFunction;
+    private final SubscriptionFunction subscriptionFunction;
     private final UserSubscriptionRepository userSubscriptionRepository;
 
     //사용자 구독 추가
     @Transactional
     public CreateUserSubscriptionResponse createUserSubscription(AuthUser authUser, Long subscriptionId) {
         //1. 사용자 확인
-        User user = getUserOrThrow(authUser.getUserId());
+        User user = userFunction.getById(authUser.getUserId());
 
         //2. 구독 확인
-        Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(subscriptionId).orElseThrow(
-                () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+        Subscription subscription = subscriptionFunction.getById(subscriptionId);
 
         //3. 활성화 중인 구독이 있으면 예외 처리
         boolean exist = userSubscriptionRepository.existsByUserAndSubscriptionAndIsDeletedIsFalse(user, subscription);
@@ -61,7 +61,7 @@ public class UserSubscriptionService {
     //사용자 구독 목록 조회
     @Transactional(readOnly = true)
     public List<GetUserSubscriptionResponse> getUserSubscriptions(AuthUser authUser) {
-        User user = getUserOrThrow(authUser.getUserId());
+        User user = userFunction.getById(authUser.getUserId());
 
         List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAllByUserAndIsDeletedIsFalse(user);
 
@@ -87,7 +87,6 @@ public class UserSubscriptionService {
 
         userSubscription.delete();
 
-        userRepository.flush();
     }
 
     //본인 구독 확인
@@ -95,12 +94,6 @@ public class UserSubscriptionService {
         if (!userSubscription.getUser().getId().equals(authUser.getUserId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
-    }
-
-    //사용자 확인
-    private User getUserOrThrow(Long userId) {
-        return userRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
     //사용자 구독 조회

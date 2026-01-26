@@ -12,7 +12,7 @@ import com.allforone.starvestop.domain.auth.dto.response.SignUpResponse;
 import com.allforone.starvestop.domain.owner.entity.Owner;
 import com.allforone.starvestop.domain.owner.service.OwnerFunction;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.repository.UserRepository;
+import com.allforone.starvestop.domain.user.service.UserFunction;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,13 +34,11 @@ public class AuthService {
         String nickname = request.getNickname();
         String password = request.getPassword();
 
-        if (userRepository.existsByEmail(userEmail)) {
-            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
-        }
+        userFunction.existByEmail(userEmail);
 
         User user = User.create(userEmail, passwordEncoder.encode(password), userName, nickname);
 
-        User savedUser = userRepository.save(user);
+        User savedUser = userFunction.save(user);
 
         String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
 
@@ -52,9 +50,7 @@ public class AuthService {
         String userEmail = request.getEmail();
         String password = request.getPassword();
 
-        User foundUser = userRepository.findByEmailAndIsDeletedIsFalse(userEmail).orElseThrow(
-                () -> new CustomException(ErrorCode.USER_NOT_FOUND)
-        );
+        User foundUser = userFunction.getByEmail(userEmail);
 
         if (!passwordEncoder.matches(password, foundUser.getPassword())) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);

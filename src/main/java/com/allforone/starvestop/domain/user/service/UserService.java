@@ -45,7 +45,5 @@ public class UserService {
         );
 
         foundUser.delete();
-
-        userRepository.flush();
     }
 }

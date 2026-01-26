@@ -4,7 +4,7 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.GeometryUtil;
 import com.allforone.starvestop.domain.owner.entity.Owner;
-import com.allforone.starvestop.domain.owner.repository.OwnerRepository;
+import com.allforone.starvestop.domain.owner.service.OwnerFunction;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.dto.request.CreateStoreRequest;
 import com.allforone.starvestop.domain.store.dto.request.UpdateStoreRequest;
@@ -26,13 +26,12 @@ import java.util.List;
 public class StoreService {
 
     private final StoreRepository storeRepository;
-    private final OwnerRepository ownerRepository;
+    private final OwnerFunction ownerFunction;
 
     //매장 추가
     @Transactional
     public StoreDetailResponse createStore(CreateStoreRequest request) {
-        Owner owner = ownerRepository.findById(request.getOwnerId()).orElseThrow(
-                () -> new CustomException(ErrorCode.OWNER_NOT_FOUND));
+        Owner owner = ownerFunction.getById(request.getOwnerId());
 
         if (!UserRole.OWNER.equals(owner.getRole())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
