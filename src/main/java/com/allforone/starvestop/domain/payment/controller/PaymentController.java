@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -37,20 +38,27 @@ public class PaymentController {
     }
 
     @GetMapping("/success")
-    public String success(
+    public ResponseEntity<Void> success(
+            @RequestParam String paymentType,
             @RequestParam String paymentKey,
             @RequestParam String orderId,
             @RequestParam Long amount
     ) {
-        return paymentService.confirmSuccess(paymentKey, orderId, amount);
+        String redirectPath = paymentService.confirmSuccess(paymentKey, orderId, amount);
+        return ResponseEntity.status(HttpStatus.FOUND) // 302
+                .location(URI.create(redirectPath))
+                .build();
     }
 
     @GetMapping("/fail")
-    public String fail(
+    public ResponseEntity<Void> fail(
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String orderId
     ) {
-        return paymentService.failRedirect(code, orderId);
+        String redirectPath = paymentService.failRedirect(code, orderId);
+        return ResponseEntity.status(HttpStatus.FOUND) // 302
+                .location(URI.create(redirectPath))
+                .build();
     }
 
     @GetMapping

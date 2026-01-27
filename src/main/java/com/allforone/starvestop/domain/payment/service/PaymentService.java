@@ -4,6 +4,7 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
+import com.allforone.starvestop.domain.order.enums.OrderStatus;
 import com.allforone.starvestop.domain.order.service.OrderFunction;
 import com.allforone.starvestop.domain.order.service.OrderProductFunction;
 import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentResponse;
@@ -14,7 +15,7 @@ import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
 import com.allforone.starvestop.domain.product.service.ProductFunction;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -23,6 +24,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,39 +39,55 @@ public class PaymentService {
 
     private final WebClient paymentWebClient;
 
-    @Value("${spring.payment.secret-key}")
-    private String secretKey;
-
-    @Value("${spring.payment.base-url}")
-    private String baseUrl;
+    private final String baseUrl = "http://localhost:8080/";
 
     // 결제 생성
     @Transactional
     public CreatePaymentResponse createPayment(Long userId, Long orderId) {
-        Order order = orderFunction.getById(orderId);
-
+        Order order = orderFunction.getForPayment(orderId);
+        // 1. 같은 유저인지 확인
         if (!userId.equals(order.getUser().getId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
-
+        // 2.
         String orderKey = order.getOrderKey();
         BigDecimal amount = order.getAmount();
 
-        if (paymentRepository.existsByOrderKey(orderKey)) {
-            throw new CustomException(ErrorCode.DUPLICATE_ORDER_ID);
+        Optional<Payment> existing = paymentRepository.findPaymentByOrderKey(orderKey);
+        if (existing.isPresent()) {
+            return CreatePaymentResponse.from(existing.get());
         }
 
-        Payment payment = Payment.create(userId, order, orderKey, amount);
+        try {
+            Payment payment = Payment.create(userId, order, orderKey, amount);
+            paymentRepository.save(payment);
 
-        paymentRepository.save(payment);
+            paymentLogFunction.save(
+                    payment.getId(),
+                    userId,
+                    orderKey,
+                    payment.getStatus(),
+                    null,
+                    null
+            );
 
-        paymentLogFunction.save(payment.getId(), userId, orderKey, payment.getStatus(), null, null);
+            payment.requestPayment();
 
-        payment.requestPayment();
+            paymentLogFunction.save(
+                    payment.getId(),
+                    userId,
+                    orderKey,
+                    payment.getStatus(),
+                    null,
+                    null
+            );
 
-        paymentLogFunction.save(payment.getId(), order.getUser().getId(), payment.getOrderKey(), payment.getStatus(), null, null);
+            return CreatePaymentResponse.from(payment);
 
-        return CreatePaymentResponse.from(payment);
+        } catch (DataIntegrityViolationException e) {
+            Payment found = paymentRepository.getPaymentByOrderKey(orderKey);
+            return CreatePaymentResponse.from(found);
+        }
     }
 
     // 승인 요청
@@ -77,6 +95,11 @@ public class PaymentService {
     public String confirmSuccess(String paymentKey, String orderId, Long amount) {
         Payment payment = paymentRepository.findPaymentByOrderKey(orderId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
+        Order order = orderFunction.getForPayment(payment.getOrder().getId());
+
+        if (order.getStatus().equals(OrderStatus.PAID) || payment.getStatus().equals(PaymentStatus.SUCCEEDED)) {
+            return "/success.html?orderKey=" + payment.getOrderKey() + "&amount=" + payment.getAmount();
+        }
 
         if (payment.getAmount().compareTo(BigDecimal.valueOf(amount)) != 0) {
             failAndReleaseReservedStock(payment);
@@ -97,14 +120,15 @@ public class PaymentService {
 
             payment.success(paymentKey);
             receiptFunction.save(payment.getUserId(), payment);
-            paymentLogFunction.save(payment.getId(), payment.getOrder().getUser().getId(),
+            paymentLogFunction.save(payment.getOrder().getUser().getId(), payment.getId(),
                     payment.getOrderKey(), payment.getStatus(), null, null);
 
-            return "/success.html?orderId=" + payment.getOrderKey() + "&amount=" + payment.getAmount();
+            order.setStatus(OrderStatus.PAID);
+            return "/success.html?orderKey=" + payment.getOrderKey() + "&amount=" + payment.getAmount();
 
         } catch (WebClientResponseException e) {
             failAndReleaseReservedStock(payment);
-            paymentLogFunction.save(payment.getId(), payment.getOrder().getUser().getId(),
+            paymentLogFunction.save(payment.getOrder().getUser().getId(), payment.getId(),
                     payment.getOrderKey(), payment.getStatus(), String.valueOf(e.getStatusCode()), e.getResponseBodyAsString());
 
             return "/fail.html?orderId=" + payment.getOrderKey() + "&reason=PG_CONFIRM_FAILED";

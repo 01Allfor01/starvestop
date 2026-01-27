@@ -11,6 +11,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findPaymentByOrderKey(String orderOrderKey);
 
+    Payment getPaymentByOrderKey(String orderKey);
+
     List<Payment> findAllByOrderUserIdAndIsDeletedIsFalseOrderByCreatedAtDesc(Long userId);
 
     boolean existsByOrderKey(String orderKey);
