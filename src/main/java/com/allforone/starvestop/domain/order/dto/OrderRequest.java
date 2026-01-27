@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 public class OrderRequest {
     @NotNull(message = "매장 아이디를 입력해주세요")
     private Long storeId;
+
     private Long userCouponId;
 }
