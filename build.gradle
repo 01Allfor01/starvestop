@@ -64,11 +64,8 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-tasks.register('concurrencyTest', Test) {
-    group = "verification"
-    description = "동시성 / 분산락 검증 테스트"
-
+test {
     useJUnitPlatform {
-        includeTags 'concurrency'
+        excludeTags 'concurrency'
     }
 }
