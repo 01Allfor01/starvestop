@@ -31,9 +31,9 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(CART_CREATE_SUCCESS, response));
     }
 
-    @GetMapping
-    public ResponseEntity<CommonResponse<List<CartResponse>>> getCartList(@AuthenticationPrincipal AuthUser authUser) {
-        List<CartResponse> response = cartService.getCartList(authUser.getUserId());
+    @GetMapping("/{storeId}")
+    public ResponseEntity<CommonResponse<List<CartResponse>>> getCartList(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long storeId) {
+        List<CartResponse> response = cartService.getCartList(authUser.getUserId(), storeId);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_GET_SUCCESS, response));
     }
 
@@ -49,4 +49,9 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(CART_DELETE_SUCCESS));
     }
 
+    @DeleteMapping
+    public ResponseEntity<CommonResponse<Void>> deleteAllCart(@AuthenticationPrincipal AuthUser authUser) {
+        cartService.deleteAllCart(authUser.getUserId());
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(CART_DELETE_SUCCESS));
+    }
 }

@@ -39,8 +39,8 @@ public class CartService {
     }
 
     @Transactional(readOnly = true)
-    public List<CartResponse> getCartList(Long userId) {
-        List<Cart> cartList = cartRepository.findAllByUserIdAndIsDeletedIsFalse(userId);
+    public List<CartResponse> getCartList(Long userId, Long storeId) {
+        List<Cart> cartList = cartRepository.findAllByUserIdAndIsDeletedIsFalse(userId, storeId);
 
         return cartList.stream().map(CartResponse::new).toList();
     }
@@ -64,5 +64,10 @@ public class CartService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
         cartRepository.delete(cart);
+    }
+
+    @Transactional
+    public void deleteAllCart(Long userId) {
+        cartRepository.deleteAllByUserId(userId);
     }
 }

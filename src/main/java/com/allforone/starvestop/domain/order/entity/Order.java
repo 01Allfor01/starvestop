@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.order.entity;
 
 import com.allforone.starvestop.common.entity.BaseEntity;
+import com.allforone.starvestop.domain.coupon.entity.UserCoupon;
 import com.allforone.starvestop.domain.order.enums.OrderStatus;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.user.entity.User;
@@ -29,6 +30,10 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name= "user_coupon_id")
+    private UserCoupon userCoupon;
+
     @Column(unique = true)
     private String orderKey;
 
@@ -39,19 +44,27 @@ public class Order extends BaseEntity {
     @Column(nullable = false)
     private BigDecimal amount;
 
-    private Order(Store store, String orderKey, User user, BigDecimal amount) {
+    private Order(Store store, String orderKey, User user, UserCoupon userCoupon, BigDecimal amount) {
         this.store = store;
         this.status = OrderStatus.PENDING;
         this.orderKey = orderKey;
         this.user = user;
+        this.userCoupon = userCoupon;
         this.amount = amount;
     }
 
-    public static Order create(Store store, String orderKey, User user, BigDecimal amount) {
-        return new Order(store, orderKey, user, amount);
+    public static Order create(Store store, String orderKey, User user, UserCoupon userCoupon, BigDecimal amount) {
+        return new Order(store, orderKey, user, userCoupon, amount);
     }
 
     public void setStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public void paid() {
+        this.status = OrderStatus.PAID;
+    }
+    public void cancel() {
+        this.status = OrderStatus.CANCELED;
     }
 }

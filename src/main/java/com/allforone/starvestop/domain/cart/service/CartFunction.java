@@ -20,8 +20,8 @@ public class CartFunction {
                 () -> new CustomException(ErrorCode.CART_NOT_FOUND));
     }
 
-    public List<Cart> findAllByUserId(Long userId) {
-        return cartRepository.findAllByUserId(userId);
+    public List<Cart> findAllByUserIdAndStoreId(Long userId, Long storeId) {
+        return cartRepository.findAllByUserIdAndIsDeletedIsFalse(userId, storeId);
     }
 
     public void deleteAll(List<Cart> cartList) {

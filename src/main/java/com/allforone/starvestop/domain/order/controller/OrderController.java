@@ -7,6 +7,7 @@ import com.allforone.starvestop.domain.order.dto.OrderResponse;
 import com.allforone.starvestop.domain.order.dto.UpdateOrderRequest;
 import com.allforone.starvestop.domain.order.service.OrderService;
 import com.allforone.starvestop.domain.order.service.OrderUseCase;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +27,8 @@ public class OrderController {
     private final OrderUseCase orderUseCase;
 
     @PostMapping
-    public ResponseEntity<CommonResponse<OrderResponse>> createOrder(@AuthenticationPrincipal AuthUser authuser, @RequestBody OrderRequest request) {
-        OrderResponse response = orderUseCase.order(authuser.getUserId(), request.getStoreId());
+    public ResponseEntity<CommonResponse<OrderResponse>> createOrder(@AuthenticationPrincipal AuthUser authuser, @Valid @RequestBody OrderRequest request) {
+        OrderResponse response = orderUseCase.order(authuser.getUserId(), request.getStoreId(), request.getUserCouponId());
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(ORDER_CREATE_SUCCESS, response));
     }
 

@@ -1,9 +1,15 @@
 package com.allforone.starvestop.domain.order.service;
 
+import com.allforone.starvestop.common.exception.CustomException;
+import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.cart.entity.Cart;
 import com.allforone.starvestop.domain.cart.service.CartFunction;
+import com.allforone.starvestop.domain.coupon.entity.UserCoupon;
+import com.allforone.starvestop.domain.coupon.service.UserCouponFunction;
 import com.allforone.starvestop.domain.order.dto.OrderResponse;
 import com.allforone.starvestop.domain.order.entity.Order;
+import com.allforone.starvestop.domain.product.entity.Product;
+import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.product.service.ProductFunction;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.service.StoreFunction;
@@ -22,38 +28,66 @@ public class OrderUseCase {
 
     private final CartFunction cartFunction;
     private final OrderProductFunction orderProductFunction;
+    private final UserCouponFunction userCouponFunction;
     private final UserFunction userFunction;
     private final StoreFunction storeFunction;
     private final ProductFunction productFunction;
     private final OrderService orderService;
 
     @Transactional
-    public OrderResponse order(Long userId, Long storeId) {
+    public OrderResponse order(Long userId, Long storeId, Long userCouponId) {
         User user = userFunction.getById(userId);
 
         Store store = storeFunction.getById(storeId);
 
-        List<Cart> cartList = cartFunction.findAllByUserId(userId);
+        UserCoupon userCoupon = getUserCoupon(userCouponId);
 
-        List<Cart> cartOrderList = cartList.stream().filter(cart -> cart.getProduct().getStore().getId().equals(storeId)).toList();
+        List<Cart> cartList = cartFunction.findAllByUserIdAndStoreId(userId, storeId);
 
-        cartOrderList.forEach(cart -> productFunction.decreaseById(cart.getProduct().getId(), cart.getQuantity()));
+        cartListEmptyCheck(cartList);
 
-        BigDecimal amount = calculateAmount(cartList);
+        cartList.forEach(cart -> productFunction.decreaseById(cart.getProduct().getId(), cart.getQuantity()));
 
-        Order order = orderService.createOrder(user, store, amount);
+        BigDecimal amount = calculateAmount(cartList, userCoupon);
 
-        orderProductFunction.saveAll(order, cartOrderList);
+        Order order = orderService.createOrder(user, store, userCoupon, amount);
+
+        orderProductFunction.saveAll(order, cartList);
 
         cartFunction.deleteAll(cartList);
 
         return OrderResponse.from(order);
     }
 
-    private BigDecimal calculateAmount(List<Cart> cartList) {
-        return cartList.stream()
-                .map(cart -> cart.getProduct().getPrice()
-                        .multiply(BigDecimal.valueOf(cart.getQuantity())))
+    private UserCoupon getUserCoupon(Long userCouponId) {
+        if (userCouponId == null) {
+            return null;
+        }
+
+        return userCouponFunction.getByIdAndNotUsed(userCouponId);
+    }
+
+    private void cartListEmptyCheck(List<Cart> cartList) {
+        if (cartList.isEmpty()) {
+            throw new CustomException(ErrorCode.CART_NOT_FOUND);
+        }
+    }
+
+    private BigDecimal calculateAmount(List<Cart> cartList, UserCoupon userCoupon) {
+         BigDecimal amount = cartList.stream()
+                .map(cart -> {
+                    Product product = cart.getProduct();
+                    BigDecimal unitPrice = product.getStatus() == ProductStatus.GENERAL
+                            ? product.getPrice()
+                            : product.getSalePrice();
+
+                    return unitPrice.multiply(BigDecimal.valueOf(cart.getQuantity()));})
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+         if (amount.compareTo(userCoupon.getCoupon().getMinAmount()) <= 0) {
+             userCoupon.use();
+             return amount.subtract(userCoupon.getCoupon().getDiscountAmount());
+         }
+         return amount;
     }
 }
