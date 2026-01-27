@@ -6,9 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface UserCouponRepository extends JpaRepository<UserCoupon, Long> {
-
-    List<UserCoupon> findAllByUserIdAndIsDeletedIsFalseAndUsedAtIsNull(Long id);
+public interface UserCouponRepository extends JpaRepository<UserCoupon, Long>, UserCouponRepositoryCustom {
 
     Optional<UserCoupon> findByIdAndIsDeletedIsFalse(Long id);
 }

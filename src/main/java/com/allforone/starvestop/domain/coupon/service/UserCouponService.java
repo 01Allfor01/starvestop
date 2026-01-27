@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -31,7 +32,26 @@ public class UserCouponService {
 
         Coupon coupon = couponFunction.getById(couponId);
 
-        UserCoupon userCoupon = UserCoupon.create(user, coupon, request.getStartedAt(), request.getExpiresAt());
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiredAt;
+
+        if (coupon.getValidDays() != null && coupon.getExpiresAt() != null) {
+            LocalDateTime calculatedDate = now.plusDays(coupon.getValidDays());
+            expiredAt = coupon.getExpiresAt().isBefore(calculatedDate)
+                    ? coupon.getExpiresAt()
+                    : calculatedDate;
+
+        } else if (coupon.getValidDays() != null) {
+            expiredAt = now.plusDays(coupon.getValidDays());
+
+        } else if (coupon.getExpiresAt() != null) {
+            expiredAt = coupon.getExpiresAt();
+
+        } else {
+            throw new CustomException(ErrorCode.MISSING_COUPON_EXPIRATION);
+        }
+
+        UserCoupon userCoupon = UserCoupon.create(user, coupon, request.getStartedAt(), expiredAt);
         UserCoupon savedUserCoupon = userCouponRepository.save(userCoupon);
 
         return CreateUserCouponResponse.from(savedUserCoupon);
@@ -39,7 +59,7 @@ public class UserCouponService {
 
     @Transactional(readOnly = true)
     public List<GetUserCouponResponse> getUserCouponList(AuthUser authUser) {
-        List<UserCoupon> responseList = userCouponRepository.findAllByUserIdAndIsDeletedIsFalseAndUsedAtIsNull(authUser.getUserId());
+        List<UserCoupon> responseList = userCouponRepository.findActiveCouponList(authUser.getUserId());
 
         return responseList.stream().map(GetUserCouponResponse::from).toList();
     }

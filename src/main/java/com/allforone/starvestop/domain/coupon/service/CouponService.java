@@ -33,6 +33,10 @@ public class CouponService {
                 request.getStock()
         );
 
+        if (coupon.getValidDays() == null && coupon.getExpiresAt() == null) {
+            throw new CustomException(ErrorCode.MISSING_COUPON_EXPIRATION);
+        }
+
         Coupon savedCoupon = couponRepository.save(coupon);
 
         return CreateCouponResponse.from(savedCoupon);
