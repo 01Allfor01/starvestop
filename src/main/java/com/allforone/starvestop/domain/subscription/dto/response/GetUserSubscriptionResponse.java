@@ -17,7 +17,7 @@ public class GetUserSubscriptionResponse {
     private final Long storeId;
     private final String storeName;
     private final BigDecimal price;
-    private final UserSubscriptionStatus userSubscriptionStatus;
+    private final UserSubscriptionStatus status;
     private final LocalDateTime createdAt;
     private final LocalDateTime expiresAt;
 

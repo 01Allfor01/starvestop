@@ -13,14 +13,14 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class CreateSubscriptionResponse {
-    private final Long subscriptionId;
+    private final Long id;
     private final Long storeId;
-    private final String subscriptionName;
-    private final String subscriptionDescription;
+    private final String name;
+    private final String description;
     private final List<Day> dayList;
     private final List<MealTime> mealTimeList;
     private final BigDecimal price;
-    private final Long stock;
+    private final Integer stock;
     private final LocalDateTime createdAt;
 
     public static CreateSubscriptionResponse from(Subscription subscription) {
