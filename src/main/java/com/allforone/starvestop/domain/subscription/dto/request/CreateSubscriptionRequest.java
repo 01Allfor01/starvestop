@@ -32,5 +32,5 @@ public class CreateSubscriptionRequest {
 
     @NotNull(message = "재고를 적어주세요")
     @Max(value = 20000, message = "재고 입력값이 최대값을 초과했습니다")
-    private Long stock;
+    private Integer stock;
 }
