@@ -57,10 +57,6 @@ public class Order extends BaseEntity {
         return new Order(store, orderKey, user, userCoupon, amount);
     }
 
-    public void setStatus(OrderStatus status) {
-        this.status = status;
-    }
-
     public void paid() {
         this.status = OrderStatus.PAID;
     }

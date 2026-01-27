@@ -44,9 +44,9 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(ORDER_GET_SUCCESS, response));
     }
 
-    @PatchMapping
-    public ResponseEntity<CommonResponse<OrderResponse>> updateOrder(@AuthenticationPrincipal AuthUser authUser, @RequestBody UpdateOrderRequest request) {
-        OrderResponse response = orderService.updateOrder(authUser.getUserId(), request);
+    @PatchMapping("/cacel")
+    public ResponseEntity<CommonResponse<OrderResponse>> updateOrderCancel(@AuthenticationPrincipal AuthUser authUser, @Valid @RequestBody UpdateOrderRequest request) {
+        OrderResponse response = orderService.updateOrderCancel(authUser.getUserId(), request);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_UPDATE_SUCCESS, response));
     }
 

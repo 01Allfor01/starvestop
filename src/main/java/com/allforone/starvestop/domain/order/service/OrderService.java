@@ -49,13 +49,10 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse updateOrder(Long userId, UpdateOrderRequest request) {
+    public OrderResponse updateOrderCancel(Long userId, UpdateOrderRequest request) {
         Order order = findOrder(request.getId());
         userCheck(userId, order);
-        order.setStatus(request.getStatus());
-
-        orderRepository.flush();
-
+        order.cancel();
         return OrderResponse.from(order);
     }
 

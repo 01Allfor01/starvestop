@@ -31,14 +31,20 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(CART_CREATE_SUCCESS, response));
     }
 
-    @GetMapping("/{storeId}")
-    public ResponseEntity<CommonResponse<List<CartResponse>>> getCartList(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long storeId) {
-        List<CartResponse> response = cartService.getCartList(authUser.getUserId(), storeId);
+    @GetMapping("/stores/{storeId}")
+    public ResponseEntity<CommonResponse<List<CartResponse>>> getCartListStore(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long storeId) {
+        List<CartResponse> response = cartService.getCartListStore(authUser.getUserId(), storeId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_GET_SUCCESS, response));
+    }
+
+    @GetMapping
+    public ResponseEntity<CommonResponse<List<CartResponse>>> getCartList(@AuthenticationPrincipal AuthUser authUser) {
+        List<CartResponse> response = cartService.getCartList(authUser.getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_GET_SUCCESS, response));
     }
 
     @PatchMapping
-    public ResponseEntity<CommonResponse<CartResponse>> updateCart(@RequestBody UpdateCartRequest request) {
+    public ResponseEntity<CommonResponse<CartResponse>> updateCart(@Valid @RequestBody UpdateCartRequest request) {
         CartResponse response = cartService.updateCart(request);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_UPDATE_SUCCESS, response));
     }
