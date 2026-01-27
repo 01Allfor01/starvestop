@@ -34,7 +34,6 @@ dependencies {
     implementation 'org.hibernate.orm:hibernate-spatial'
     implementation 'org.n52.jackson:jackson-datatype-jts:1.2.10'
     implementation 'org.redisson:redisson-spring-boot-starter:4.1.0'
-    testRuntimeOnly 'com.h2database:h2'
 
     //Webflux
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
