@@ -7,8 +7,10 @@ import com.allforone.starvestop.domain.auth.dto.request.SignUpRequest;
 import com.allforone.starvestop.domain.auth.dto.response.SignInResponse;
 import com.allforone.starvestop.domain.auth.dto.response.SignUpResponse;
 import com.allforone.starvestop.domain.auth.service.AuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +23,12 @@ import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    //    @Value("${kakao.oauth.redirect}")
-//    private String redirect;
-//    @Value("${kakao.oauth.client}")
-//    private String clientId;
+    @Value("${kakao.oauth.redirect}")
+    private String redirect;
+
+    @Value("${kakao.oauth.client}")
+    private String clientId;
+
     private final AuthService authService;
 
     // 회원 가입
@@ -67,10 +71,11 @@ public class AuthController {
         return ResponseEntity.ok(result);
     }
 
-//    @PostMapping("/login/kakao")
-//    public void loginKakao(HttpServletResponse response) throws IOException {
-//        response.sendRedirect("https://kauth.kakao.com/oauth/authorize?client_id=" + clientId + "&redirect_uri=" + redirect);
-//    }
+    @PostMapping("/login/kakao")
+    public ResponseEntity<String> loginKakao(HttpServletResponse response) {
+        String str = "https://kauth.kakao.com/oauth/authorize?client_id=" + clientId + "&redirect_uri=" + redirect;
+        return ResponseEntity.status(HttpStatus.OK).body(str);
+    }
 //
 //    @GetMapping("/login/oauth2/code/kakao")
 //    public ResponseEntity<CommonResponse<SignInResponse>> loginCodeKakao(@RequestParam("code") String accessCode, HttpServletResponse response) {

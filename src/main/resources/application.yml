@@ -18,8 +18,20 @@ spring:
   payment:
     base-url: https://api.tosspayments.com/v1/payments
     secret-key: ${PAYMENT_SECRET_KEY}
-kakao:
-  oauth:
-    client: ${KAKAO_CLIENT_ID}
-    secret: ${KAKAO_CLIENT_SECRET}
-    redirect: ${REDIRECT_URI}
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            redirect-uri: ${REDIRECT_URI}/login/oauth2/code/kakao
+            scope:
+              - profile_nickname
+              - profile_email
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.com/v2/user/me
+            user-name-attribute: id
