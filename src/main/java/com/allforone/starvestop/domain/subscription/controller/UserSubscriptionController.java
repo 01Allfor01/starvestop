@@ -3,6 +3,7 @@ package com.allforone.starvestop.domain.subscription.controller;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateUserSubscriptionResponse;
+import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionDetailResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.service.UserSubscriptionService;
 import lombok.RequiredArgsConstructor;
@@ -45,11 +46,11 @@ public class UserSubscriptionController {
 
     //사용자 구독 상세 조회
     @GetMapping("/{userSubscriptionId}")
-    public ResponseEntity<CommonResponse<GetUserSubscriptionResponse>> getUserSubscription(
+    public ResponseEntity<CommonResponse<GetUserSubscriptionDetailResponse>> getUserSubscription(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long userSubscriptionId
     ) {
-        GetUserSubscriptionResponse response = userSubscriptionService.getUserSubscription(authUser, userSubscriptionId);
+        GetUserSubscriptionDetailResponse response = userSubscriptionService.getUserSubscription(authUser, userSubscriptionId);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(USER_SUBSCRIPTION_GET_DETAIL_SUCCESS, response));
     }

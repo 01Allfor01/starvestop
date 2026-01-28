@@ -3,6 +3,7 @@ package com.allforone.starvestop.domain.subscription.service;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionDetailResponse;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateUserSubscriptionResponse;
@@ -70,12 +71,12 @@ public class UserSubscriptionService {
 
     //사용자 구독 상세 조회
     @Transactional(readOnly = true)
-    public GetUserSubscriptionResponse getUserSubscription(AuthUser authUser, Long userSubscriptionId) {
+    public GetUserSubscriptionDetailResponse getUserSubscription(AuthUser authUser, Long userSubscriptionId) {
         UserSubscription userSubscription = getUserSubscriptionOrThrow(userSubscriptionId);
 
         checkPermission(authUser, userSubscription);
 
-        return GetUserSubscriptionResponse.from(userSubscription);
+        return GetUserSubscriptionDetailResponse.from(userSubscription);
     }
 
     //사용자 구독 취소

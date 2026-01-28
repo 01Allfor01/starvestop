@@ -39,7 +39,7 @@ public class SubscriptionService {
 
         Subscription subscription = Subscription.create(
                 store,
-                request.getSubscriptionName(),
+                request.getName(),
                 request.getDescription(),
                 request.getDay(),
                 request.getMealTime(),
