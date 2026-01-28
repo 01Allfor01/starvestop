@@ -19,5 +19,11 @@ public class CouponFunction {
         );
     }
 
-
+    public void decreaseById(Long id) {
+        Coupon coupon = couponRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
+                () -> new CustomException(ErrorCode.COUPON_NOT_FOUND)
+        );
+        coupon.decrease();
+        couponRepository.flush();
+    }
 }

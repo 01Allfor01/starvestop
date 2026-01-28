@@ -59,4 +59,8 @@ public class Coupon extends BaseEntity {
     public void update(CouponStatus status) {
         this.status = status;
     }
+
+    public void decrease() {
+        this.stock--;
+    }
 }

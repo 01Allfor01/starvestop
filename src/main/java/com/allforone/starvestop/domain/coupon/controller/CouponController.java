@@ -7,6 +7,7 @@ import com.allforone.starvestop.domain.coupon.dto.response.CreateCouponResponse;
 import com.allforone.starvestop.domain.coupon.dto.response.GetCouponDetailResponse;
 import com.allforone.starvestop.domain.coupon.dto.response.GetCouponResponse;
 import com.allforone.starvestop.domain.coupon.dto.response.UpdateCouponResponse;
+import com.allforone.starvestop.domain.coupon.service.CouponFunction;
 import com.allforone.starvestop.domain.coupon.service.CouponService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 public class CouponController {
 
     private final CouponService couponService;
+    private final CouponFunction couponFunction;
 
     @PostMapping
     public ResponseEntity<CommonResponse<CreateCouponResponse>> createCoupon(@RequestBody CreateCouponRequest request) {
@@ -57,6 +59,12 @@ public class CouponController {
     @DeleteMapping("/{couponId}")
     public ResponseEntity<CommonResponse<Void>> deleteCoupon(@PathVariable Long couponId) {
         couponService.deleteCoupon(couponId);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(COUPON_DELETE_SUCCESS));
+    }
+
+    @PatchMapping("/{couponId}/decrease")
+    public ResponseEntity<CommonResponse<Void>> decreaseCoupon(@PathVariable Long couponId) {
+        couponFunction.decreaseById(couponId);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(COUPON_DELETE_SUCCESS));
     }
 }
