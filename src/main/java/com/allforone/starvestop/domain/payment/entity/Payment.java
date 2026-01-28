@@ -40,6 +40,9 @@ public class Payment extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
+    @Column(nullable = false)
+    private boolean stockReleased = false;
+
     @Column
     private LocalDateTime paymentAt;
 

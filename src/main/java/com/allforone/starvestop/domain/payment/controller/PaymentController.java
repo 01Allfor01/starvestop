@@ -7,7 +7,7 @@ import com.allforone.starvestop.domain.payment.dto.request.CreatePaymentRequest;
 import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
-import com.allforone.starvestop.domain.payment.service.PaymentService;
+import com.allforone.starvestop.domain.payment.service.PaymentUsecase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ import java.util.List;
 @RequestMapping("/payments")
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    private final PaymentUsecase paymentUsecase;
 
     @PostMapping
     public ResponseEntity<CommonResponse<CreatePaymentResponse>> create(
@@ -32,7 +32,7 @@ public class PaymentController {
         Long userId = authUser.getUserId();
         Long orderId = request.getOrderId();
 
-        CreatePaymentResponse result = paymentService.createPayment(userId, orderId);
+        CreatePaymentResponse result = paymentUsecase.createPayment(userId, orderId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(SuccessMessage.PAYMENT_REQUIRE_SUCCESS, result));
     }
@@ -44,7 +44,7 @@ public class PaymentController {
             @RequestParam String orderId,
             @RequestParam Long amount
     ) {
-        String redirectPath = paymentService.confirmSuccess(paymentKey, orderId, amount);
+        String redirectPath = paymentUsecase.confirmSuccess(paymentKey, orderId, amount);
         return ResponseEntity.status(HttpStatus.FOUND) // 302
                 .location(URI.create(redirectPath))
                 .build();
@@ -55,7 +55,7 @@ public class PaymentController {
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String orderId
     ) {
-        String redirectPath = paymentService.failRedirect(code, orderId);
+        String redirectPath = paymentUsecase.failRedirect(code, orderId);
         return ResponseEntity.status(HttpStatus.FOUND) // 302
                 .location(URI.create(redirectPath))
                 .build();
@@ -65,7 +65,7 @@ public class PaymentController {
     public ResponseEntity<CommonResponse<List<GetPaymentResponse>>> getMyPaymentList(
             @AuthenticationPrincipal AuthUser authUser
     ) {
-        List<GetPaymentResponse> response = paymentService.getMyPaymentList(authUser.getUserId());
+        List<GetPaymentResponse> response = paymentUsecase.getMyPaymentList(authUser.getUserId());
 
         CommonResponse<List<GetPaymentResponse>> result = CommonResponse.success(SuccessMessage.MY_PAYMENT_LIST_GET_SUCCESS, response);
 
@@ -78,7 +78,7 @@ public class PaymentController {
             @PathVariable Long paymentId
     ) {
         Long userId = authUser.getUserId();
-        GetPaymentDetailsResponse response = paymentService.getPayment(userId, paymentId);
+        GetPaymentDetailsResponse response = paymentUsecase.getPayment(userId, paymentId);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SuccessMessage.PAYMENT_DETAIL_GET_SUCCESS, response));
     }
