@@ -15,9 +15,11 @@ import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.service.UserFunction;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -36,9 +38,7 @@ public class AuthService {
 
         userFunction.existByEmail(userEmail);
 
-        User user = User.create(userEmail, passwordEncoder.encode(password), userName, nickname);
-
-        User savedUser = userFunction.save(user);
+        User savedUser = userFunction.save(userEmail, passwordEncoder.encode(password), userName, nickname);
 
         String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
 
