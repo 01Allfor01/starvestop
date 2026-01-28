@@ -18,3 +18,8 @@ spring:
   payment:
     base-url: https://api.tosspayments.com/v1/payments
     secret-key: ${PAYMENT_SECRET_KEY}
+kakao:
+  oauth:
+    client: ${KAKAO_CLIENT_ID}
+    secret: ${KAKAO_CLIENT_SECRET}
+    redirect: ${REDIRECT_URI}
