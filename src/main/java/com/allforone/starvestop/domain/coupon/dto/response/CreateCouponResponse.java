@@ -11,17 +11,15 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class CreateCouponResponse {
-
     private final Long id;
     private final String name;
     private final BigDecimal discountAmount;
     private final BigDecimal minAmount;
     private final Integer validDays;
     private final LocalDateTime expiresAt;
-    private final CouponStatus couponStatus;
+    private final CouponStatus status;
     private final Integer stock;
     private final LocalDateTime createdAt;
-    private final LocalDateTime updatedAt;
 
     public static CreateCouponResponse from(Coupon coupon) {
         return new CreateCouponResponse(
@@ -33,8 +31,7 @@ public class CreateCouponResponse {
                 coupon.getExpiresAt(),
                 coupon.getStatus(),
                 coupon.getStock(),
-                coupon.getCreatedAt(),
-                coupon.getUpdatedAt()
+                coupon.getCreatedAt()
         );
     }
 }

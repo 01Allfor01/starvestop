@@ -27,7 +27,7 @@ public class Store extends BaseEntity {
     private Owner owner;
 
     @Column(nullable = false)
-    private String storeName;
+    private String name;
 
     @Column(nullable = false)
     private String address;
@@ -57,7 +57,7 @@ public class Store extends BaseEntity {
 
     private Store(
             Owner owner,
-            String storeName,
+            String name,
             String address,
             String description,
             StoreCategory category,
@@ -68,7 +68,7 @@ public class Store extends BaseEntity {
             String businessRegistrationNumber
     ) {
         this.owner = owner;
-        this.storeName = storeName;
+        this.name = name;
         this.address = address;
         this.description = description;
         this.category = category;
@@ -81,7 +81,7 @@ public class Store extends BaseEntity {
 
     public static Store create(
             Owner owner,
-            String storeName,
+            String name,
             String address,
             String description,
             StoreCategory category,
@@ -94,7 +94,7 @@ public class Store extends BaseEntity {
 
         return new Store(
                 owner,
-                storeName,
+                name,
                 address,
                 description,
                 category,
@@ -107,7 +107,7 @@ public class Store extends BaseEntity {
     }
 
     public void update(
-            String storeName,
+            String name,
             String address,
             String description,
             StoreCategory category,
@@ -116,7 +116,7 @@ public class Store extends BaseEntity {
             LocalTime closeTime,
             StoreStatus status
     ) {
-        this.storeName = storeName;
+        this.name = name;
         this.address = address;
         this.description = description;
         this.category = category;

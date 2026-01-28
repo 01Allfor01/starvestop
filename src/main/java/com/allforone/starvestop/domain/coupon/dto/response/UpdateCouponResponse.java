@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class UpdateCouponResponse {
-
     private final Long id;
     private final String name;
     private final CouponStatus status;
