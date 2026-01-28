@@ -14,7 +14,7 @@ public class CreateUserSubscriptionResponse {
     private final Long userId;
     private final Long subscriptionId;
     private final Long storeId;
-    private final UserSubscriptionStatus userSubscriptionStatus;
+    private final UserSubscriptionStatus status;
     private final LocalDateTime createdAt;
     private final LocalDateTime expiresAt;
 

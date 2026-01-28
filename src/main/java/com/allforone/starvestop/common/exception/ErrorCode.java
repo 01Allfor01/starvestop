@@ -65,7 +65,12 @@ public enum ErrorCode {
 
     // 영수증
     INVALID_RECEIPT_STATE(HttpStatus.CONFLICT, "현재 영수증 상태에서는 해당 요청을 처리할 수 없습니다"),
-    RECEIPT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 영수증입니다");
+    RECEIPT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 영수증입니다"),
+
+    //락
+    LOCK_GET_FAILED(HttpStatus.CONFLICT, "현재 처리 중입니다, 잠시후 다시 시도해주세요"),
+
+    ;
 
     private final HttpStatus status;
     private final String message;
