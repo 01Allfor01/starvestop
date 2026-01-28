@@ -23,6 +23,11 @@ public class CouponFunction {
         Coupon coupon = couponRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
                 () -> new CustomException(ErrorCode.COUPON_NOT_FOUND)
         );
+
+        if (coupon.getStock() < 1) {
+            throw new CustomException(ErrorCode.COUPON_OUT_OF_STOCK);
+        }
+
         coupon.decrease();
         couponRepository.flush();
     }
