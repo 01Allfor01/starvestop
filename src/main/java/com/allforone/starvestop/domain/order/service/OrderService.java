@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.order.service;
 
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.domain.coupon.entity.UserCoupon;
 import com.allforone.starvestop.domain.order.dto.OrderResponse;
 import com.allforone.starvestop.domain.order.dto.UpdateOrderRequest;
 import com.allforone.starvestop.domain.order.entity.Order;
@@ -25,10 +26,10 @@ public class OrderService {
     private final OrderProductFunction orderProductFunction;
 
     @Transactional
-    public Order createOrder(User user, Store store, BigDecimal amount) {
+    public Order createOrder(User user, Store store, UserCoupon userCoupon, BigDecimal amount) {
         String orderKey = UUID.randomUUID().toString();
 
-        return orderRepository.save(Order.create(store, orderKey, user, amount));
+        return orderRepository.save(Order.create(store, orderKey, user, userCoupon, amount));
     }
 
     @Transactional(readOnly = true)
@@ -48,13 +49,10 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse updateOrder(Long userId, UpdateOrderRequest request) {
+    public OrderResponse updateOrderCancel(Long userId, UpdateOrderRequest request) {
         Order order = findOrder(request.getId());
         userCheck(userId, order);
-        order.setStatus(request.getStatus());
-
-        orderRepository.flush();
-
+        order.cancel();
         return OrderResponse.from(order);
     }
 
