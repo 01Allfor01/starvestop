@@ -61,10 +61,4 @@ public class CouponController {
         couponService.deleteCoupon(couponId);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(COUPON_DELETE_SUCCESS));
     }
-
-    @PatchMapping("/{couponId}/decrease")
-    public ResponseEntity<CommonResponse<Void>> decreaseCoupon(@PathVariable Long couponId) {
-        couponFunction.decreaseById(couponId);
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(COUPON_DELETE_SUCCESS));
-    }
 }

@@ -19,7 +19,6 @@ public class CouponFunction {
         );
     }
 
-    //    @RedissonLock(key = "coupon", waitTime = 10L, leaseTime = 5L)
     public void decreaseById(Long id) {
         int change = couponRepository.decreaseQuantity(id);
         if (change == 0) {
