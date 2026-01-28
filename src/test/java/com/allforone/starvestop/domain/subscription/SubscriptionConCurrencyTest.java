@@ -26,9 +26,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 @SpringBootTest
-@Tag("concurrency")
 @ActiveProfiles("test")
 public class SubscriptionConCurrencyTest {
 
@@ -103,5 +104,10 @@ public class SubscriptionConCurrencyTest {
         System.out.println("최종 재고 : " + result.getStock());
         System.out.println("차감 성공 횟수 : " + success);
         System.out.println("차감 실패 횟수 : " + fail);
+
+        assertThat(success.get()).isEqualTo(1);
+        assertThat(fail.get()).isEqualTo(4);
+
+        assertThat(result.getStock()).isEqualTo(0);
     }
 }

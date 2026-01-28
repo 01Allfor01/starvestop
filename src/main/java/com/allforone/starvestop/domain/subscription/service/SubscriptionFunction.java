@@ -1,5 +1,7 @@
 package com.allforone.starvestop.domain.subscription.service;
 
+import com.allforone.starvestop.common.exception.CustomException;
+import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,18 +15,21 @@ public class SubscriptionFunction {
     private final SubscriptionRepository subscriptionRepository;
 
     public Subscription getById(Long id) {
-        return subscriptionRepository.getByIdWithoutLock(id);
+        return subscriptionRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
+                () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
     }
 
     @Transactional
     public void decreaseById(Long id, Integer count) {
-        Subscription subscription = subscriptionRepository.getByIdWithLock(id);
+        Subscription subscription = subscriptionRepository.findByIdAndIsDeletedFalse(id).orElseThrow(
+                () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
         subscription.decrease(count);
     }
 
     @Transactional
     public void increaseById(Long id, Integer count) {
-        Subscription subscription = getById(id);
+        Subscription subscription = subscriptionRepository.findByIdAndIsDeletedFalse(id).orElseThrow(
+                () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
         subscription.increase(count);
     }
 }
