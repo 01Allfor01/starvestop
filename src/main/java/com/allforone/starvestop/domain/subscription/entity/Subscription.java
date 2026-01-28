@@ -41,12 +41,12 @@ public class Subscription extends BaseEntity {
     private BigDecimal price;
 
     @Column(nullable = false)
-    private Long stock;
+    private Integer stock;
 
     @Column(nullable = false)
     private boolean isJoinable;
 
-    public Subscription(Store store, String name, String description, int day, int mealTime, BigDecimal price, Long stock) {
+    public Subscription(Store store, String name, String description, int day, int mealTime, BigDecimal price, Integer stock) {
         this.store = store;
         this.name = name;
         this.description = description;
@@ -57,7 +57,7 @@ public class Subscription extends BaseEntity {
         this.isJoinable = true;
     }
 
-    public static Subscription create(Store store, String subscriptionName, String description, int day, int mealTime, BigDecimal price, Long stock) {
+    public static Subscription create(Store store, String subscriptionName, String description, int day, int mealTime, BigDecimal price, Integer stock) {
         return new Subscription(store, subscriptionName, description, day, mealTime, price, stock);
     }
 
@@ -65,14 +65,14 @@ public class Subscription extends BaseEntity {
         this.isJoinable = joinable;
     }
 
-    public void decrease(Long count) {
+    public void decrease(Integer count) {
         if (this.stock == 0) {
             throw new CustomException(ErrorCode.INSUFFICIENT_STOCK);
         }
         this.stock -= count;
     }
 
-    public void increase(Long count) {
+    public void increase(Integer count) {
         this.stock += count;
     }
 }

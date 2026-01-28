@@ -29,7 +29,8 @@ public class UserFunction {
         }
     }
 
-    public User save(User user) {
+    public User save(String userEmail, String password, String userName, String nickname) {
+        User user = User.create(userEmail, password, userName, nickname);
         return userRepository.save(user);
     }
 
