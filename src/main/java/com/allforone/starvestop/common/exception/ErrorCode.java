@@ -55,7 +55,7 @@ public enum ErrorCode {
 
     // 쿠폰
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쿠폰입니다"),
-    MISSING_COUPON_EXPIRATION(HttpStatus.BAD_REQUEST, "쿠폰 유효기간이 존재하지 않습니다"),
+    COUPON_MISSING_EXPIRATION(HttpStatus.BAD_REQUEST, "쿠폰 유효기간이 존재하지 않습니다"),
     COUPON_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "쿠폰 재고가 부족합니다"),
 
     //사용자 쿠폰

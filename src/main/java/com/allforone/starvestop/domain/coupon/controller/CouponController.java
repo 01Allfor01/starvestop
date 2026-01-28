@@ -7,7 +7,6 @@ import com.allforone.starvestop.domain.coupon.dto.response.CreateCouponResponse;
 import com.allforone.starvestop.domain.coupon.dto.response.GetCouponDetailResponse;
 import com.allforone.starvestop.domain.coupon.dto.response.GetCouponResponse;
 import com.allforone.starvestop.domain.coupon.dto.response.UpdateCouponResponse;
-import com.allforone.starvestop.domain.coupon.service.CouponFunction;
 import com.allforone.starvestop.domain.coupon.service.CouponService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,7 +23,6 @@ import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 public class CouponController {
 
     private final CouponService couponService;
-    private final CouponFunction couponFunction;
 
     @PostMapping
     public ResponseEntity<CommonResponse<CreateCouponResponse>> createCoupon(@RequestBody CreateCouponRequest request) {

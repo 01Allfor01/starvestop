@@ -47,7 +47,6 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/coupons/**").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/payments/success").permitAll()
                         .requestMatchers(HttpMethod.GET, "/payments/fail").permitAll()

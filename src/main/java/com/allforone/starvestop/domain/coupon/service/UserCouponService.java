@@ -24,15 +24,15 @@ public class UserCouponService {
 
     private final UserCouponRepository userCouponRepository;
     private final UserFunction userFunction;
-    private final CouponFunction couponFunction;
+    private final CouponService couponService;
 
     @Transactional
     public CreateUserCouponResponse createUserCoupon(AuthUser authUser, Long couponId, CreateUserCouponRequest request) {
         User user = userFunction.getById(authUser.getUserId());
 
-        Coupon coupon = couponFunction.getById(couponId);
+        Coupon coupon = couponService.getById(couponId);
 
-        couponFunction.decreaseById(couponId);
+        couponService.decreaseById(couponId);
 
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiredAt;
@@ -50,7 +50,7 @@ public class UserCouponService {
             expiredAt = coupon.getExpiresAt();
 
         } else {
-            throw new CustomException(ErrorCode.MISSING_COUPON_EXPIRATION);
+            throw new CustomException(ErrorCode.COUPON_MISSING_EXPIRATION);
         }
 
         UserCoupon userCoupon = UserCoupon.create(user, coupon, request.getStartedAt(), expiredAt);
