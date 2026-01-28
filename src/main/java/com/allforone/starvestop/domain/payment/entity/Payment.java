@@ -41,7 +41,7 @@ public class Payment extends BaseEntity {
     private PaymentStatus status;
 
     @Column(nullable = false)
-    private boolean stockReleased = false;
+    private boolean stockReleased;
 
     @Column
     private LocalDateTime paymentAt;
@@ -55,6 +55,7 @@ public class Payment extends BaseEntity {
         this.orderKey = orderKey;
         this.amount = amount;
         this.status = PaymentStatus.CREATED;
+        this.stockReleased = false;
     }
 
     public static Payment create(Long userId, Order order, String orderKey, BigDecimal amount) {

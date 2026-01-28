@@ -28,12 +28,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaymentUsecase {
 
-    private final PaymentLogFunction paymentLogFunction;
-    private final ReceiptFunction receiptFunction;
     private final ProductFunction productFunction;
     private final OrderFunction orderFunction;
     private final OrderProductFunction orderProductFunction;
     private final PaymentService paymentService;
+    private final PaymentLogService paymentLogService;
+    private final ReceiptService receiptService;
 
     // 결제 생성
     @Transactional
@@ -57,7 +57,7 @@ public class PaymentUsecase {
             Payment payment = Payment.create(userId, order, orderKey, amount);
             paymentService.save(payment);
 
-            paymentLogFunction.save(
+            paymentLogService.save(
                     payment.getId(),
                     userId,
                     orderKey,
@@ -68,7 +68,7 @@ public class PaymentUsecase {
 
             payment.requestPayment();
 
-            paymentLogFunction.save(
+            paymentLogService.save(
                     payment.getId(),
                     userId,
                     orderKey,
@@ -105,7 +105,7 @@ public class PaymentUsecase {
         // 4. 가격이 맞지 않을 경우 재고 반환
         if (payment.getAmount().compareTo(BigDecimal.valueOf(amount)) != 0) {
             failAndReleaseReservedStockExactlyOnce(payment);
-            paymentLogFunction.save(
+            paymentLogService.save(
                     payment.getId(),
                     payment.getUserId(),
                     payment.getOrderKey(),
@@ -125,7 +125,7 @@ public class PaymentUsecase {
                 "amount", amount
         );
 
-        paymentLogFunction.save(
+        paymentLogService.save(
                 payment.getId(),
                 payment.getUserId(),
                 payment.getOrderKey(),
@@ -139,11 +139,11 @@ public class PaymentUsecase {
             Map response = paymentService.tossApiConfirm(requestPayload);
 
             payment.success(paymentKey);
-            order.setStatus(OrderStatus.PAID);
+            order.paid();
             // 7. 영수증 생성
-            receiptFunction.save(payment.getUserId(), payment);
+            receiptService.save(payment.getUserId(), payment);
 
-            paymentLogFunction.save(
+            paymentLogService.save(
                     payment.getId(),
                     payment.getUserId(),
                     payment.getOrderKey(),
@@ -159,7 +159,7 @@ public class PaymentUsecase {
         } catch (WebClientResponseException e) {
             // 8. 실패시 재고 반환
             failAndReleaseReservedStockExactlyOnce(payment);
-            paymentLogFunction.save(
+            paymentLogService.save(
                     payment.getId(),
                     payment.getUserId(),
                     payment.getOrderKey(),
