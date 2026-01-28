@@ -5,6 +5,7 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionDetailResponse;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
+import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateUserSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionResponse;
@@ -23,7 +24,7 @@ import java.util.Optional;
 public class UserSubscriptionService {
 
     private final UserFunction userFunction;
-    private final SubscriptionFunction subscriptionFunction;
+    private final SubscriptionRepository subscriptionRepository;
     private final UserSubscriptionRepository userSubscriptionRepository;
 
     //사용자 구독 추가
@@ -33,7 +34,8 @@ public class UserSubscriptionService {
         User user = userFunction.getById(authUser.getUserId());
 
         //2. 구독 확인
-        Subscription subscription = subscriptionFunction.getById(subscriptionId);
+        Subscription subscription = subscriptionRepository.findByIdAndIsDeletedIsFalse(subscriptionId).orElseThrow(
+                () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
 
         //3. 활성화 중인 구독이 있으면 예외 처리
         boolean exist = userSubscriptionRepository.existsByUserAndSubscriptionAndIsDeletedIsFalse(user, subscription);

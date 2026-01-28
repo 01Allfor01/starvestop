@@ -9,7 +9,6 @@ import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
-import com.allforone.starvestop.domain.subscription.service.SubscriptionFunction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -33,9 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Tag("concurrency")
 @ActiveProfiles("test")
 public class SubscriptionConCurrencyTest {
-
-    @Autowired
-    private SubscriptionFunction subscriptionFunction;
 
     @Autowired
     private SubscriptionRepository subscriptionRepository;
@@ -84,8 +80,11 @@ public class SubscriptionConCurrencyTest {
             executor.submit(() -> {
                 try {
                     start.await();
-                    subscriptionFunction.decreaseById(saved.getId(), 1);
-                    success.incrementAndGet();
+                    int update = subscriptionRepository.decreaseStock(saved.getId());
+
+                    if (update == 1) success.incrementAndGet();
+                    else fail.incrementAndGet();
+
                 } catch (Exception e) {
                     fail.incrementAndGet();
                     System.out.println(Thread.currentThread().getName() + " 실패: " + e.getMessage());
