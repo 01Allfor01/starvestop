@@ -19,16 +19,11 @@ public class CouponFunction {
         );
     }
 
+    //    @RedissonLock(key = "coupon", waitTime = 10L, leaseTime = 5L)
     public void decreaseById(Long id) {
-        Coupon coupon = couponRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
-                () -> new CustomException(ErrorCode.COUPON_NOT_FOUND)
-        );
-
-        if (coupon.getStock() < 1) {
+        int change = couponRepository.decreaseQuantity(id);
+        if (change == 0) {
             throw new CustomException(ErrorCode.COUPON_OUT_OF_STOCK);
         }
-
-        coupon.decrease();
-        couponRepository.flush();
     }
 }
