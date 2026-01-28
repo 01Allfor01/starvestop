@@ -39,7 +39,7 @@ public class SubscriptionService {
 
         Subscription subscription = Subscription.create(
                 store,
-                request.getSubscriptionName(),
+                request.getName(),
                 request.getDescription(),
                 request.getDay(),
                 request.getMealTime(),
@@ -72,7 +72,7 @@ public class SubscriptionService {
     // 구독 상세 조회
     @Transactional(readOnly = true)
     public GetSubscriptionResponse getSubscription(Long subscriptionId) {
-        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
+        Subscription subscription = subscriptionRepository.getByIdWithoutLock(subscriptionId);
 
         return GetSubscriptionResponse.from(subscription);
     }
@@ -80,7 +80,7 @@ public class SubscriptionService {
     // 구독 수정
     @Transactional
     public UpdateSubscriptionResponse updateSubscription(UpdateSubscriptionRequest request, Long subscriptionId) {
-        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
+        Subscription subscription = subscriptionRepository.getByIdWithoutLock(subscriptionId);
 
         subscription.changeIsJoinable(request.isJoinable());
 
@@ -92,7 +92,7 @@ public class SubscriptionService {
     // 구독 삭제
     @Transactional
     public void deleteSubscription(AuthUser authUser, Long subscriptionId) {
-        Subscription subscription = getSubscriptionOrThrow(subscriptionId);
+        Subscription subscription = subscriptionRepository.getByIdWithoutLock(subscriptionId);
 
         checkPermission(authUser, subscription);
 
@@ -112,12 +112,6 @@ public class SubscriptionService {
         }
 
         throw new CustomException(ErrorCode.FORBIDDEN);
-    }
-
-    //구독 조회
-    private Subscription getSubscriptionOrThrow(Long subscriptionId) {
-        return subscriptionRepository.findByIdAndIsDeletedIsFalse(subscriptionId).orElseThrow(
-                () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
     }
 }
 
