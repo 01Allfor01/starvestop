@@ -29,7 +29,7 @@ public class ProductDto {
         return new ProductDto(
                 product.getId(),
                 product.getStore().getId(),
-                product.getStore().getStoreName(),
+                product.getStore().getName(),
                 product.getStore().getLocation(),
                 product.getName(),
                 product.getDescription(),

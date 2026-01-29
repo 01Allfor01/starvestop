@@ -104,7 +104,7 @@ public class StoreService {
         return storeDtoPage.map(dto -> {
 
             String imageUrl = s3Service.createPresignedGetUrl(
-                    dto.getStoreId(),
+                    dto.getId(),
                     S3BucketStatus.STORE,
                     dto.getImageUuid());
 
