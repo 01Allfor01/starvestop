@@ -29,7 +29,7 @@ public class GetSubscriptionResponse {
         return new GetSubscriptionResponse(
                 subscription.getId(),
                 subscription.getStore().getId(),
-                subscription.getStore().getStoreName(),
+                subscription.getStore().getName(),
                 subscription.getName(),
                 subscription.getDescription(),
                 dayList,

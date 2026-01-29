@@ -12,8 +12,8 @@ import java.time.LocalTime;
 @Getter
 @AllArgsConstructor
 public class StoreResponse {
-    Long storeId;
-    String storeName;
+    Long id;
+    String name;
     String address;
     StoreCategory category;
     Point location;
@@ -24,8 +24,8 @@ public class StoreResponse {
 
     public static StoreResponse from(StoreDto storeDto, String imageUrl) {
         return new StoreResponse(
-                storeDto.getStoreId(),
-                storeDto.getStoreName(),
+                storeDto.getId(),
+                storeDto.getName(),
                 storeDto.getAddress(),
                 storeDto.getCategory(),
                 storeDto.getLocation(),

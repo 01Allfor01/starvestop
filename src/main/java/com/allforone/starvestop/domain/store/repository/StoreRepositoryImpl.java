@@ -38,7 +38,7 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
         List<StoreDto> list = queryFactory
                 .select(Projections.constructor(StoreDto.class,
                         store.id,
-                        store.storeName,
+                        store.name,
                         store.address,
                         store.category,
                         store.location,
@@ -79,7 +79,7 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
         if (!StringUtils.hasText(keyword)) {
             return null;
         }
-        return store.storeName.contains(keyword).or(product.name.contains(keyword));
+        return store.name.contains(keyword).or(product.name.contains(keyword));
     }
 
     private BooleanExpression eqCategory(String category) {

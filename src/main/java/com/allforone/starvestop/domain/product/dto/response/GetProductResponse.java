@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class GetProductResponse {
-    private final Long productId;
-    private final String productName;
+    private final Long id;
+    private final String name;
     private final String description;
     private final Integer stock;
     private final BigDecimal price;
