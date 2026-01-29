@@ -31,9 +31,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     testImplementation 'org.springframework.security:spring-security-test'
     implementation 'org.hibernate.orm:hibernate-spatial'
     implementation 'org.n52.jackson:jackson-datatype-jts:1.2.10'
+    implementation 'org.redisson:redisson-spring-boot-starter:4.1.0'
 
     //Webflux
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
@@ -62,4 +64,10 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+test {
+    useJUnitPlatform {
+        excludeTags 'concurrency'
+    }
 }

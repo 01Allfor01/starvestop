@@ -18,6 +18,10 @@ spring:
   payment:
     base-url: https://api.tosspayments.com/v1/payments
     secret-key: ${PAYMENT_SECRET_KEY}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   security:
     oauth2:
       client:

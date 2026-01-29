@@ -2,7 +2,6 @@ package com.allforone.starvestop.domain.owner.service;
 
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
-import com.allforone.starvestop.common.utils.PasswordEncoder;
 import com.allforone.starvestop.domain.owner.entity.Owner;
 import com.allforone.starvestop.domain.owner.repository.OwnerRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 public class OwnerFunction {
 
     private final OwnerRepository ownerRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public Owner getById(Long userId) {
         return ownerRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
@@ -27,7 +25,7 @@ public class OwnerFunction {
     }
 
     public Owner save(String userEmail, String password, String userName) {
-        Owner owner = Owner.create(userEmail, passwordEncoder.encode(password), userName);
+        Owner owner = Owner.create(userEmail, password, userName);
         return ownerRepository.save(owner);
     }
 
