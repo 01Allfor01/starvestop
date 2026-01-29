@@ -1,7 +1,7 @@
 package com.allforone.starvestop.domain.payment.dto.response;
 
 import com.allforone.starvestop.domain.payment.entity.Receipt;
-import com.allforone.starvestop.domain.payment.entity.ReceiptStatus;
+import com.allforone.starvestop.domain.payment.enums.ReceiptStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

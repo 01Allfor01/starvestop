@@ -17,4 +17,12 @@ public class OrderFunction {
         return orderRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
                 () -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
     }
+
+    public Order getForPayment(Long orderId) {
+        return orderRepository.getByIdForUpdate(orderId);
+    }
+
+    public Order getForPayment(String orderKey) {
+        return orderRepository.getByIdForUpdate(orderKey);
+    }
 }
