@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor

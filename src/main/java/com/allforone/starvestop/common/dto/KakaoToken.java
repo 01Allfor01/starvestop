@@ -1,8 +1,10 @@
 package com.allforone.starvestop.common.dto;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@Data
+@Getter
+@AllArgsConstructor
 public class KakaoToken {
     private String access_token;
     private String token_type;

@@ -79,11 +79,6 @@ public class CartService {
         cartRepository.deleteAllByUserId(userId);
     }
 
-    public Cart getById(Long userId) {
-        return cartRepository.findById(userId).orElseThrow(
-                () -> new CustomException(ErrorCode.CART_NOT_FOUND));
-    }
-
     public List<Cart> findAllByUserIdAndStoreId(Long userId, Long storeId) {
         return cartRepository.findAllByUserIdAndStoreId(userId, storeId);
     }

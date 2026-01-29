@@ -9,7 +9,6 @@ import com.allforone.starvestop.domain.auth.dto.response.SignUpResponse;
 import com.allforone.starvestop.domain.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 
-@Slf4j
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
