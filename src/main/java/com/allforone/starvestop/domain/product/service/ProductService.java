@@ -71,10 +71,10 @@ public class ProductService {
 
         return productSlice.map(product -> {
 
-                    String imageUrl = s3Service.createPresignedGetUrl(product.getId(), S3BucketStatus.PRODUCT, product.getImageUuid());
+            String imageUrl = s3Service.createPresignedGetUrl(product.getId(), S3BucketStatus.PRODUCT, product.getImageUuid());
 
-                    return GetProductSaleResponse.from(product,imageUrl);
-                });
+            return GetProductSaleResponse.from(product, imageUrl);
+        });
     }
 
     //상품 상세 조회

@@ -53,6 +53,7 @@ public class S3Service {
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofDays(1))
                 .getObjectRequest(objectRequest)
                 .build();
 
