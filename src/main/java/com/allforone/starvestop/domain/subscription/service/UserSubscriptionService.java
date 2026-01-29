@@ -93,14 +93,16 @@ public class UserSubscriptionService {
     }
 
     //본인 구독 확인
-    private static void checkPermission(AuthUser authUser, UserSubscription userSubscription) {
+    @Transactional
+    public void checkPermission(AuthUser authUser, UserSubscription userSubscription) {
         if (!userSubscription.getUser().getId().equals(authUser.getUserId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
     }
 
     //사용자 구독 조회
-    private UserSubscription getUserSubscriptionOrThrow(Long userSubscriptionId) {
+    @Transactional
+    public UserSubscription getUserSubscriptionOrThrow(Long userSubscriptionId) {
         return userSubscriptionRepository.findByIdAndIsDeletedIsFalse(userSubscriptionId).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_SUBSCRIPTION_NOT_FOUND));
     }
