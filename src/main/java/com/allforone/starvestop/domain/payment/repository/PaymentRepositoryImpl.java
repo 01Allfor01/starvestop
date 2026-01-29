@@ -19,7 +19,7 @@ public class PaymentRepositoryImpl implements PaymentRepositoryCustom {
 
     @Transactional
     @Override
-    public int markFailedAndClaimStockRelease(//결제 상태 실패로 만들어줌
+    public int markFailedAndClaimStockRelease(//결제 상태 실패로 만들고, stockRelease true변경
             Long paymentId,
             PaymentStatus failedStatus,
             List<PaymentStatus> releasableStatuses
