@@ -21,6 +21,7 @@ public class OrderFunction {
     public Order getForPayment(Long orderId) {
         return orderRepository.getByIdForUpdate(orderId);
     }
+
     public Order getForPayment(String orderKey) {
         return orderRepository.getByIdForUpdate(orderKey);
     }

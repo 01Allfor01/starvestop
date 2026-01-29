@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface PaymentRepositoryCustom {
-    @Transactional
     int markFailedAndClaimStockRelease(
             Long paymentId,
             PaymentStatus failedStatus,
