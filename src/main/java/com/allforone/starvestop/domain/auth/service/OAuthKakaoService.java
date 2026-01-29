@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.auth.service;
 
 import com.allforone.starvestop.common.dto.KakaoToken;
+import com.allforone.starvestop.common.utils.JwtUtil;
 import com.allforone.starvestop.common.utils.PasswordEncoder;
 import com.allforone.starvestop.domain.auth.dto.response.SignInResponse;
 import com.allforone.starvestop.domain.user.entity.User;
@@ -33,7 +34,7 @@ public class OAuthKakaoService {
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String redirect;
 
-    private final AuthService authService;
+    private final JwtUtil jwtUtil;
     private final UserService userService;
     private final WebClient kakaoAuthWebClient;
     private final WebClient kakaoApiWebClient;
@@ -78,11 +79,11 @@ public class OAuthKakaoService {
             String nickname = accountJson.get("profile").get("nickname").asText();
             String password = passwordEncoder.encode(UUID.randomUUID().toString());
             User savedUser = userService.saveKakao(providerId, email, password, nickname, nickname);
-            String token = authService.makeToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
+            String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
             return new SignInResponse(token);
         }
 
-        String token = authService.makeToken(foundUser.getUsername(), foundUser.getEmail(), foundUser.getId(), foundUser.getRole());
+        String token = jwtUtil.generateToken(foundUser.getUsername(), foundUser.getEmail(), foundUser.getId(), foundUser.getRole());
         return new SignInResponse(token);
     }
 }

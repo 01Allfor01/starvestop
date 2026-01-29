@@ -12,7 +12,7 @@ import com.allforone.starvestop.domain.auth.dto.response.SignUpResponse;
 import com.allforone.starvestop.domain.owner.entity.Owner;
 import com.allforone.starvestop.domain.owner.service.OwnerService;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.enums.UserRole;
+import com.allforone.starvestop.domain.user.enums.AuthProvider;
 import com.allforone.starvestop.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +43,7 @@ public class AuthService {
 
         User savedUser = userService.save(userEmail, passwordEncoder.encode(password), userName, nickname);
 
-        String token = makeToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
+        String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
 
         return new SignUpResponse(token);
     }
@@ -54,12 +54,15 @@ public class AuthService {
         String password = request.getPassword();
 
         User foundUser = userService.getByEmail(userEmail);
+        if (foundUser.getProvider().equals(AuthProvider.KAKAO)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
 
         if (!passwordEncoder.matches(password, foundUser.getPassword())) {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
         }
 
-        String token = makeToken(foundUser.getUsername(), foundUser.getEmail(), foundUser.getId(), foundUser.getRole());
+        String token = jwtUtil.generateToken(foundUser.getUsername(), foundUser.getEmail(), foundUser.getId(), foundUser.getRole());
 
         return new SignInResponse(token);
     }
@@ -74,7 +77,7 @@ public class AuthService {
 
         Owner savedOwner = ownerService.save(userEmail, passwordEncoder.encode(password), userName);
 
-        String token = makeToken(savedOwner.getUsername(), savedOwner.getEmail(), savedOwner.getId(), savedOwner.getRole());
+        String token = jwtUtil.generateToken(savedOwner.getUsername(), savedOwner.getEmail(), savedOwner.getId(), savedOwner.getRole());
 
         return new SignUpResponse(token);
     }
@@ -90,13 +93,8 @@ public class AuthService {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
         }
 
-        String token = makeToken(foundOwner.getUsername(), foundOwner.getEmail(), foundOwner.getId(), foundOwner.getRole());
+        String token = jwtUtil.generateToken(foundOwner.getUsername(), foundOwner.getEmail(), foundOwner.getId(), foundOwner.getRole());
 
         return new SignInResponse(token);
     }
-
-    public String makeToken(String name, String email, Long id, UserRole role) {
-        return jwtUtil.generateToken(name, email, id, role);
-    }
-
 }
