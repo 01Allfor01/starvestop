@@ -16,7 +16,7 @@ spring:
         format_sql: false
     show-sql: true
   payment:
-    base-url: https://api.tosspayments.com/v1/payments
+    base-url: https://api.tosspayments.com
     secret-key: ${PAYMENT_SECRET_KEY}
   data:
     redis:
