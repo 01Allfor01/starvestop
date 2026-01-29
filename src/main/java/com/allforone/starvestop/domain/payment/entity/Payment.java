@@ -5,6 +5,8 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
+import com.allforone.starvestop.domain.payment.event.DomainEvent;
+import com.allforone.starvestop.domain.payment.event.PaymentStatusChangedEvent;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,6 +14,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -49,16 +53,34 @@ public class Payment extends BaseEntity {
     @Column
     private LocalDateTime canceledAt;
 
+    @Transient
+    private final List<DomainEvent> domainEvents = new ArrayList<>();
+
+    public List<DomainEvent> pullDomainEvents() {
+        List<DomainEvent> events = new ArrayList<>(domainEvents);
+        domainEvents.clear();
+        return events;
+    }
+
     private Payment(Long userId, Order order, String orderKey, BigDecimal amount) {
         this.userId = userId;
         this.order = order;
         this.orderKey = orderKey;
         this.amount = amount;
-        this.status = PaymentStatus.CREATED;
+        this.status = PaymentStatus.REQUESTED;
         this.stockReleased = false;
     }
 
-    public static Payment create(Long userId, Order order, String orderKey, BigDecimal amount) {
+    public void markRequestedEvent() {
+        if (this.status != PaymentStatus.REQUESTED) return;
+
+        domainEvents.add(PaymentStatusChangedEvent.of(
+                this.id, this.orderKey, this.userId,
+                PaymentStatus.REQUESTED, null, null
+        ));
+    }
+
+    public static Payment request(Long userId, Order order, String orderKey, BigDecimal amount) {
         return new Payment(userId, order, orderKey, amount);
     }
 
@@ -69,25 +91,35 @@ public class Payment extends BaseEntity {
         throw new CustomException(ErrorCode.INVALID_PAYMENT_STATE);
     }
 
-    public void requestPayment() {
-        requireStatus(PaymentStatus.CREATED);
-        this.status = PaymentStatus.REQUESTED;
-    }
-
     public void pending() {
         requireStatus(PaymentStatus.REQUESTED);
         this.status = PaymentStatus.PENDING;
+
+        domainEvents.add(PaymentStatusChangedEvent.of(
+                this.id, this.orderKey, this.userId,
+                PaymentStatus.PENDING, null, null
+        ));
     }
 
     public void fail() {
         requireStatus(PaymentStatus.REQUESTED, PaymentStatus.PENDING);
         this.status = PaymentStatus.FAILED;
+
+        domainEvents.add(PaymentStatusChangedEvent.of(
+                this.id, this.orderKey, this.userId,
+                PaymentStatus.FAILED, null, null
+        ));
     }
 
     public void cancel() {
-        requireStatus(PaymentStatus.CREATED, PaymentStatus.REQUESTED, PaymentStatus.PENDING);
+        requireStatus(PaymentStatus.REQUESTED, PaymentStatus.PENDING);
         this.canceledAt = LocalDateTime.now();
         this.status = PaymentStatus.CANCELED;
+
+        domainEvents.add(PaymentStatusChangedEvent.of(
+                this.id, this.orderKey, this.userId,
+                PaymentStatus.CANCELED, null, null
+        ));
     }
 
     public void success(String paymentKey) {
@@ -95,5 +127,10 @@ public class Payment extends BaseEntity {
         this.paymentAt = LocalDateTime.now();
         this.paymentKey = paymentKey;
         this.status = PaymentStatus.SUCCEEDED;
+
+        domainEvents.add(PaymentStatusChangedEvent.of(
+                this.id, this.orderKey, this.userId,
+                PaymentStatus.SUCCEEDED, null, null
+        ));
     }
 }

@@ -12,6 +12,7 @@ import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsRes
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
+import com.allforone.starvestop.domain.payment.event.PaymentEventRelay;
 import com.allforone.starvestop.domain.product.service.ProductFunction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -34,6 +35,7 @@ public class PaymentUsecase {
     private final PaymentService paymentService;
     private final PaymentLogService paymentLogService;
     private final ReceiptService receiptService;
+    private final PaymentEventRelay paymentEventRelay;
 
     // 결제 생성
     @Transactional
@@ -54,28 +56,11 @@ public class PaymentUsecase {
         }
 
         try {
-            Payment payment = Payment.create(userId, order, orderKey, amount);
+            Payment payment = Payment.request(userId, order, orderKey, amount);
             paymentService.save(payment);
+            payment.markRequestedEvent();
+            paymentEventRelay.relayFrom(payment);
 
-            paymentLogService.save(
-                    payment.getId(),
-                    userId,
-                    orderKey,
-                    payment.getStatus(),
-                    null,
-                    null
-            );
-
-            payment.requestPayment();
-
-            paymentLogService.save(
-                    payment.getId(),
-                    userId,
-                    orderKey,
-                    payment.getStatus(),
-                    null,
-                    null
-            );
 
             return CreatePaymentResponse.from(payment);
 
@@ -104,14 +89,14 @@ public class PaymentUsecase {
 
         // 4. 가격이 맞지 않을 경우 재고 반환
         if (payment.getAmount().compareTo(BigDecimal.valueOf(amount)) != 0) {
-            failAndReleaseReservedStockExactlyOnce(payment);
-            paymentLogService.save(
-                    payment.getId(),
-                    payment.getUserId(),
-                    payment.getOrderKey(),
-                    PaymentStatus.FAILED,
-                    null,
-                    null
+            failAndReleaseReservedStockExactlyOnce(payment,
+                    "PAYMENT_AMOUNT_MISMATCH",  // pgStatus에 넣을 "code"
+                    paymentService.toJson(Map.of(
+                            "code", "PAYMENT_AMOUNT_MISMATCH",
+                            "message", "결제 금액이 올바르지 않습니다.",
+                            "orderId", orderId,
+                            "paymentKey", paymentKey
+                    ))
             );
 
             return "/fail.html?orderId=" + payment.getOrderKey()
@@ -125,49 +110,23 @@ public class PaymentUsecase {
                 "amount", amount
         );
 
-        paymentLogService.save(
-                payment.getId(),
-                payment.getUserId(),
-                payment.getOrderKey(),
-                payment.getStatus(),
-                null,
-                paymentService.toJson(requestPayload)
-        );
-
         try {
             // 6. 결제 승인 api 호출
             Map response = paymentService.tossApiConfirm(requestPayload);
 
             payment.success(paymentKey);
             order.paid();
+            paymentEventRelay.relayFrom(payment);
             // 7. 영수증 생성
             receiptService.save(payment.getUserId(), payment);
 
-            paymentLogService.save(
-                    payment.getId(),
-                    payment.getUserId(),
-                    payment.getOrderKey(),
-                    payment.getStatus(),
-                    response.get("status").toString(),
-                    paymentService.toJson(requestPayload)
-
-            );
 
             return "/success.html?orderKey=" + payment.getOrderKey()
                     + "&amount=" + payment.getAmount();
 
         } catch (WebClientResponseException e) {
             // 8. 실패시 재고 반환
-            failAndReleaseReservedStockExactlyOnce(payment);
-            paymentLogService.save(
-                    payment.getId(),
-                    payment.getUserId(),
-                    payment.getOrderKey(),
-                    PaymentStatus.FAILED,
-                    e.getResponseBodyAsString(),
-                    paymentService.toJson(requestPayload)
-
-            );
+            failAndReleaseReservedStockExactlyOnce(payment,null,paymentService.toJson(e));
 
             return "/fail.html?orderId=" + payment.getOrderKey()
                     + "&reason=PG_CONFIRM_FAILED";
@@ -202,7 +161,7 @@ public class PaymentUsecase {
         return GetPaymentDetailsResponse.from(payment);
     }
 
-    private void failAndReleaseReservedStockExactlyOnce(Payment payment) {
+    private void failAndReleaseReservedStockExactlyOnce(Payment payment, String pgStatus, String payload) {
 
         int claimed = paymentService.checkClaimed(payment);
 
@@ -215,6 +174,15 @@ public class PaymentUsecase {
         for (OrderProduct op : orderProducts) {
             productFunction.increaseById(op.getProductId(), op.getQuantity());
         }
+
+        paymentLogService.save(
+                payment.getId(),
+                payment.getUserId(),
+                payment.getOrderKey(),
+                PaymentStatus.FAILED,
+                pgStatus,
+                payload
+        );
     }
 
 }
