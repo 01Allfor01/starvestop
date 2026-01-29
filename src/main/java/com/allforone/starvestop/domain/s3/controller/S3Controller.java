@@ -26,7 +26,7 @@ public class S3Controller {
     public ResponseEntity<CommonResponse<CreateS3PresignedUrlResponse>> createUserPresignedUrl(
             @Valid @RequestBody CreateS3PresignedUrlRequest request) {
         CreateS3PresignedUrlResponse createS3PresignedUrlResponse =
-                s3Service.createPresignedUrl(S3BucketStatus.user, request);
+                s3Service.createPresignedUrl(S3BucketStatus.USER, request);
 
         CommonResponse<CreateS3PresignedUrlResponse> response =
                 CommonResponse.success(PRESIGNED_URL_CREATE_SUCCESS, createS3PresignedUrlResponse);
@@ -39,7 +39,7 @@ public class S3Controller {
     public ResponseEntity<CommonResponse<CreateS3PresignedUrlResponse>> createStorePresignedUrl(
             @Valid @RequestBody CreateS3PresignedUrlRequest request) {
         CreateS3PresignedUrlResponse createS3PresignedUrlResponse =
-                s3Service.createPresignedUrl(S3BucketStatus.store, request);
+                s3Service.createPresignedUrl(S3BucketStatus.STORE, request);
 
         CommonResponse<CreateS3PresignedUrlResponse> response =
                 CommonResponse.success(PRESIGNED_URL_CREATE_SUCCESS, createS3PresignedUrlResponse);
@@ -52,7 +52,7 @@ public class S3Controller {
     public ResponseEntity<CommonResponse<CreateS3PresignedUrlResponse>> createProductPresignedUrl(
             @Valid @RequestBody CreateS3PresignedUrlRequest request) {
         CreateS3PresignedUrlResponse createS3PresignedUrlResponse =
-                s3Service.createPresignedUrl(S3BucketStatus.product, request);
+                s3Service.createPresignedUrl(S3BucketStatus.PRODUCT, request);
 
         CommonResponse<CreateS3PresignedUrlResponse> response =
                 CommonResponse.success(PRESIGNED_URL_CREATE_SUCCESS, createS3PresignedUrlResponse);

@@ -22,10 +22,11 @@ public class GetProductDetailResponse {
     private final BigDecimal price;
     private final BigDecimal salePrice;
     private final ProductStatus status;
+    private final String imageUrl;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
-    public static GetProductDetailResponse from(Product product) {
+    public static GetProductDetailResponse from(Product product, String imageUrl) {
         return new GetProductDetailResponse(
                 product.getId(),
                 product.getStore().getId(),
@@ -37,6 +38,7 @@ public class GetProductDetailResponse {
                 product.getPrice(),
                 product.getSalePrice(),
                 product.getStatus(),
+                imageUrl,
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         );

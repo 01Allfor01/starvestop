@@ -6,6 +6,7 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import com.allforone.starvestop.domain.s3.dto.request.UploadImageRequest;
+import com.allforone.starvestop.domain.s3.enums.S3BucketStatus;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.service.StoreService;
 import com.allforone.starvestop.domain.user.entity.User;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ImageService {
 
+    private final S3Service s3Service;
     private final UserService userService;
     private final StoreService storeService;
     private final ProductService productService;
@@ -31,6 +33,8 @@ public class ImageService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
+        s3Service.deleteImage(userId, S3BucketStatus.USER, user.getImageUuid());
+
         user.uploadImageUrl(request.getUuid());
     }
 
@@ -40,6 +44,8 @@ public class ImageService {
         Store store = storeService.getStore(request.getId());
 
         storeService.idMismatchCheck(authUser.getUserId(), store);
+
+        s3Service.deleteImage(store.getId(), S3BucketStatus.USER, store.getImageUuid());
 
         store.uploadImageUrl(request.getUuid());
     }
@@ -51,8 +57,8 @@ public class ImageService {
 
         productService.checkPermission(authUser, product.getStore().getOwner().getId());
 
+        s3Service.deleteImage(product.getId(), S3BucketStatus.USER, product.getImageUuid());
+
         product.uploadImageUrl(request.getUuid());
     }
-
-
 }

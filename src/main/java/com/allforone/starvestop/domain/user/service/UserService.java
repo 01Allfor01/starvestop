@@ -27,7 +27,7 @@ public class UserService {
     public GetUserResponse getUser(Long userId) {
         User user = getUserOrThrow(userId);
 
-        String imageUrl = s3Service.createPresignedGetUrl(user.getId(), S3BucketStatus.user, user.getImageUuid());
+        String imageUrl = s3Service.createPresignedGetUrl(user.getId(), S3BucketStatus.USER, user.getImageUuid());
 
         return GetUserResponse.from(user, imageUrl);
     }

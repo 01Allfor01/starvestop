@@ -105,7 +105,7 @@ public class StoreService {
 
             String imageUrl = s3Service.createPresignedGetUrl(
                     dto.getStoreId(),
-                    S3BucketStatus.store,
+                    S3BucketStatus.STORE,
                     dto.getImageUuid());
 
             return StoreResponse.from(dto, imageUrl);
@@ -117,7 +117,7 @@ public class StoreService {
     public GetStoreDetailResponse getStoreDetail(Long storeId) {
         Store store = getStore(storeId);
 
-        String imageUrl = s3Service.createPresignedGetUrl(store.getId(), S3BucketStatus.store, store.getImageUuid());
+        String imageUrl = s3Service.createPresignedGetUrl(store.getId(), S3BucketStatus.STORE, store.getImageUuid());
 
         return GetStoreDetailResponse.from(store, imageUrl);
     }
