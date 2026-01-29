@@ -39,17 +39,21 @@ public class CartService {
     }
 
     @Transactional(readOnly = true)
-    public List<CartResponse> getCartList(Long userId) {
-        List<Cart> cartList = cartRepository.findAllByUserIdAndIsDeletedIsFalse(userId);
+    public List<CartResponse> getCartListStore(Long userId, Long storeId) {
+        List<Cart> cartList = cartRepository.findAllByUserIdAndStoreId(userId, storeId);
 
+        return cartList.stream().map(CartResponse::new).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CartResponse> getCartList(Long userId) {
+        List<Cart> cartList = cartRepository.findAllByUserIdAndLastVisitStore(userId);
         return cartList.stream().map(CartResponse::new).toList();
     }
 
     @Transactional
     public CartResponse updateCart(UpdateCartRequest request) {
-        Cart cart = cartRepository.findByIdAndIsDeletedIsFalse(request.getId()).orElseThrow(
-                () -> new CustomException(ErrorCode.CART_NOT_FOUND)
-        );
+        Cart cart = getCart(request.getId());
         cart.update(request.getQuantity());
         cartRepository.flush();
         return new CartResponse(cart);
@@ -57,12 +61,21 @@ public class CartService {
 
     @Transactional
     public void deleteCart(Long userId, Long cartId) {
-        Cart cart = cartRepository.findByIdAndIsDeletedIsFalse(cartId).orElseThrow(
-                () -> new CustomException(ErrorCode.CART_NOT_FOUND)
-        );
+        Cart cart = getCart(cartId);
         if (!cart.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
         cartRepository.delete(cart);
+    }
+
+    private Cart getCart(Long cartId) {
+        return cartRepository.findById(cartId).orElseThrow(
+                () -> new CustomException(ErrorCode.CART_NOT_FOUND)
+        );
+    }
+
+    @Transactional
+    public void deleteAllCart(Long userId) {
+        cartRepository.deleteAllByUserId(userId);
     }
 }
