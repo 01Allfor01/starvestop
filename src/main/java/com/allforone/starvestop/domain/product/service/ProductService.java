@@ -33,7 +33,7 @@ public class ProductService {
         checkPermission(authUser, store.getOwner().getId());
 
         Product product = Product.create(store,
-                request.getProductName(),
+                request.getName(),
                 request.getDescription(),
                 request.getPrice(),
                 request.getSalePrice(),
@@ -85,7 +85,7 @@ public class ProductService {
         checkPermission(authUser, product.getStore().getOwner().getId());
 
         product.update(
-                request.getProductName(),
+                request.getName(),
                 request.getDescription(),
                 request.getStock(),
                 request.getPrice(),

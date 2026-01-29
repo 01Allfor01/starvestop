@@ -13,8 +13,8 @@ import java.time.LocalTime;
 @Getter
 @AllArgsConstructor
 public class StoreDetailResponse {
-    private final Long storeId;
-    private final String storeName;
+    private final Long id;
+    private final String name;
     private final String address;
     private final String description;
     private final StoreCategory category;
@@ -29,7 +29,7 @@ public class StoreDetailResponse {
     public static StoreDetailResponse from(Store store) {
         return new StoreDetailResponse(
                 store.getId(),
-                store.getStoreName(),
+                store.getName(),
                 store.getAddress(),
                 store.getDescription(),
                 store.getCategory(),

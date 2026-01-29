@@ -42,7 +42,7 @@ public class StoreService {
 
         Store store = Store.create(
                 owner,
-                request.getStoreName(),
+                request.getName(),
                 request.getAddress(),
                 request.getDescription(),
                 request.getCategory(),
@@ -68,7 +68,7 @@ public class StoreService {
         Point location = getLocation(request.getLongitude(), request.getLatitude());
 
         store.update(
-                request.getStoreName(),
+                request.getName(),
                 request.getAddress(),
                 request.getDescription(),
                 request.getCategory(),
