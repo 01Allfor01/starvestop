@@ -20,17 +20,19 @@ public class StoreResponse {
     LocalTime openTime;
     LocalTime closeTime;
     StoreStatus status;
+    String ImageUrl;
 
-    public static StoreResponse from(Store store) {
+    public static StoreResponse from(StoreDto storeDto, String imageUrl) {
         return new StoreResponse(
-                store.getId(),
-                store.getStoreName(),
-                store.getAddress(),
-                store.getCategory(),
-                store.getLocation(),
-                store.getOpenTime(),
-                store.getCloseTime(),
-                store.getStatus()
+                storeDto.getStoreId(),
+                storeDto.getStoreName(),
+                storeDto.getAddress(),
+                storeDto.getCategory(),
+                storeDto.getLocation(),
+                storeDto.getOpenTime(),
+                storeDto.getCloseTime(),
+                storeDto.getStatus(),
+                imageUrl
         );
     }
 }

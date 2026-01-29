@@ -12,7 +12,7 @@ import java.time.LocalTime;
 
 @Getter
 @AllArgsConstructor
-public class StoreDetailResponse {
+public class GetStoreDetailResponse {
     private final Long storeId;
     private final String storeName;
     private final String address;
@@ -23,11 +23,12 @@ public class StoreDetailResponse {
     private final LocalTime openTime;
     private final LocalTime closeTime;
     private final String businessRegistrationNumber;
+    private final String imageUrl;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
-    public static StoreDetailResponse from(Store store) {
-        return new StoreDetailResponse(
+    public static GetStoreDetailResponse from(Store store, String imageUrl) {
+        return new GetStoreDetailResponse(
                 store.getId(),
                 store.getStoreName(),
                 store.getAddress(),
@@ -38,8 +39,10 @@ public class StoreDetailResponse {
                 store.getOpenTime(),
                 store.getCloseTime(),
                 store.getBusinessRegistrationNumber(),
+                imageUrl,
                 store.getCreatedAt(),
                 store.getUpdatedAt()
         );
     }
+
 }

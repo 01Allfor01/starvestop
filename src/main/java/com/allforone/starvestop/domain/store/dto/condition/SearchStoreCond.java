@@ -19,4 +19,7 @@ public class SearchStoreCond {
     @DecimalMin(value = "-180.0", message = "경도는 -180 이상이어야 합니다")
     @DecimalMax(value = "180.0", message = "경도는 180 이하여야 합니다")
     private Double nowLongitude;
+
+    private int page;
+    private int size;
 }
