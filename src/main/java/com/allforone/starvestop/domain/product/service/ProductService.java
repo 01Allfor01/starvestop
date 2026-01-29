@@ -121,7 +121,8 @@ public class ProductService {
     }
 
     //상품 조회
-    private Product getProductOrThrow(Long productId) {
+    @Transactional
+    public Product getProductOrThrow(Long productId) {
         return productRepository.findByIdAndIsDeletedIsFalse(productId).orElseThrow(
                 () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
     }

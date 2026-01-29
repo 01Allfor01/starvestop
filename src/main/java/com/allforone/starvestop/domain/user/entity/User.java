@@ -40,6 +40,8 @@ public class User extends BaseEntity {
 
     private String providerId;
 
+    private String imageUuid;
+
     private User(String email, String password, String nickname, String username, AuthProvider provider, String providerId) {
         this.email = email;
         this.password = password;
@@ -65,5 +67,9 @@ public class User extends BaseEntity {
 
     public void updateOAuth(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void uploadImageUrl(String uuid) {
+        this.imageUuid = uuid;
     }
 }

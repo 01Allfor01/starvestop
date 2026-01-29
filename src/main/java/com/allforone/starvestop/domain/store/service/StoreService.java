@@ -107,13 +107,14 @@ public class StoreService {
     }
 
     //매장 확인
-    private Store getStore(Long storeId) {
+    @Transactional
+    public Store getStore(Long storeId) {
         return storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND));
     }
 
     //판매자 아이디 주인 확인
-    private static void idMismatchCheck(Long ownerId, Store store) {
+    public void idMismatchCheck(Long ownerId, Store store) {
         if (!store.getOwner().getId().equals(ownerId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }

@@ -55,6 +55,8 @@ public class Store extends BaseEntity {
     @Column(nullable = false)
     private String businessRegistrationNumber;
 
+    private String imageUuid;
+
     private Store(
             Owner owner,
             String storeName,
@@ -124,5 +126,9 @@ public class Store extends BaseEntity {
         this.openTime = openTime;
         this.closeTime = closeTime;
         this.status = status;
+    }
+
+    public void uploadImageUrl(String uuid) {
+        this.imageUuid = uuid;
     }
 }
