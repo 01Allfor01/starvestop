@@ -12,7 +12,4 @@ public class CreateUserCouponRequest {
 
     @NotNull(message = "쿠폰 사용 가능 시간을 적어주세요")
     private LocalDateTime startedAt;
-
-    @NotNull(message = "쿠폰 만료 시간을 적어주세요")
-    private LocalDateTime expiresAt;
 }
