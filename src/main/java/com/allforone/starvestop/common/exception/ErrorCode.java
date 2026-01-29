@@ -72,6 +72,10 @@ public enum ErrorCode {
     //락
     LOCK_GET_FAILED(HttpStatus.CONFLICT, "현재 처리 중입니다, 잠시후 다시 시도해주세요"),
 
+    //s3
+    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 업로드에 실패했습니다"),
+    IMAGE_EXTENSION_BAD_REQUEST(HttpStatus.BAD_REQUEST, "지원하지 않는 확장자입니다"),
+
     ;
 
     private final HttpStatus status;
