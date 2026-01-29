@@ -3,14 +3,14 @@ package com.allforone.starvestop.domain.subscription.service;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
-import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionDetailResponse;
-import com.allforone.starvestop.domain.subscription.entity.Subscription;
-import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateUserSubscriptionResponse;
+import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionDetailResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionResponse;
+import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.subscription.entity.UserSubscription;
 import com.allforone.starvestop.domain.subscription.repository.UserSubscriptionRepository;
-import com.allforone.starvestop.domain.user.service.UserFunction;
+import com.allforone.starvestop.domain.user.entity.User;
+import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserSubscriptionService {
 
-    private final UserFunction userFunction;
+    private final UserService userService;
     private final SubscriptionFunction subscriptionFunction;
     private final UserSubscriptionRepository userSubscriptionRepository;
 
@@ -30,7 +30,7 @@ public class UserSubscriptionService {
     @Transactional
     public CreateUserSubscriptionResponse createUserSubscription(AuthUser authUser, Long subscriptionId) {
         //1. 사용자 확인
-        User user = userFunction.getById(authUser.getUserId());
+        User user = userService.getById(authUser.getUserId());
 
         //2. 구독 확인
         Subscription subscription = subscriptionFunction.getById(subscriptionId);
@@ -62,7 +62,7 @@ public class UserSubscriptionService {
     //사용자 구독 목록 조회
     @Transactional(readOnly = true)
     public List<GetUserSubscriptionResponse> getUserSubscriptions(AuthUser authUser) {
-        User user = userFunction.getById(authUser.getUserId());
+        User user = userService.getById(authUser.getUserId());
 
         List<UserSubscription> userSubscriptionList = userSubscriptionRepository.findAllByUserAndIsDeletedIsFalse(user);
 

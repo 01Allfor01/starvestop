@@ -8,9 +8,9 @@ import com.allforone.starvestop.domain.cart.dto.UpdateCartRequest;
 import com.allforone.starvestop.domain.cart.entity.Cart;
 import com.allforone.starvestop.domain.cart.repository.CartRepository;
 import com.allforone.starvestop.domain.product.entity.Product;
-import com.allforone.starvestop.domain.product.service.ProductFunction;
+import com.allforone.starvestop.domain.product.service.ProductService;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.service.UserFunction;
+import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +22,14 @@ import java.util.List;
 public class CartService {
 
     private final CartRepository cartRepository;
-    private final UserFunction userFunction;
-    private final ProductFunction productFunction;
+    private final UserService userService;
+    private final ProductService productService;
 
     @Transactional
     public CartResponse createCart(Long userId, CartRequest request) {
-        User user = userFunction.getById(userId);
+        User user = userService.getById(userId);
 
-        Product product = productFunction.getById(request.getProductId());
+        Product product = productService.getById(request.getProductId());
 
         Cart cart = Cart.create(user, product, request.getQuantity());
 
@@ -77,5 +77,18 @@ public class CartService {
     @Transactional
     public void deleteAllCart(Long userId) {
         cartRepository.deleteAllByUserId(userId);
+    }
+
+    public Cart getById(Long userId) {
+        return cartRepository.findById(userId).orElseThrow(
+                () -> new CustomException(ErrorCode.CART_NOT_FOUND));
+    }
+
+    public List<Cart> findAllByUserIdAndStoreId(Long userId, Long storeId) {
+        return cartRepository.findAllByUserIdAndStoreId(userId, storeId);
+    }
+
+    public void deleteAll(List<Cart> cartList) {
+        cartRepository.deleteAll(cartList);
     }
 }

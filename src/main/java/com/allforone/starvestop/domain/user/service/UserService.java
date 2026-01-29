@@ -46,4 +46,34 @@ public class UserService {
 
         foundUser.delete();
     }
+
+    public User getKakaoUserOrElseSignUp(Long providerId) {
+        return userRepository.findByProviderIdAndIsDeletedIsFalse(providerId);
+    }
+
+    public User getById(Long id) {
+        return userRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public User getByEmail(String email) {
+        return userRepository.findByEmailAndIsDeletedIsFalse(email).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    public void existByEmail(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+    }
+
+    public User save(String userEmail, String password, String userName, String nickname) {
+        User user = User.create(userEmail, password, userName, nickname);
+        return userRepository.save(user);
+    }
+
+    public User saveKakao(Long providerId, String userEmail, String password, String userName, String nickname) {
+        User user = User.createKakao(userEmail, password, userName, nickname, providerId);
+        return userRepository.save(user);
+    }
 }

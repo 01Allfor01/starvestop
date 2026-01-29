@@ -4,15 +4,15 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
-import com.allforone.starvestop.domain.order.service.OrderFunction;
-import com.allforone.starvestop.domain.order.service.OrderProductFunction;
+import com.allforone.starvestop.domain.order.service.OrderProductService;
+import com.allforone.starvestop.domain.order.service.OrderService;
 import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
-import com.allforone.starvestop.domain.product.service.ProductFunction;
+import com.allforone.starvestop.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -31,9 +31,9 @@ public class PaymentService {
     private final PaymentLogFunction paymentLogFunction;
     private final ReceiptFunction receiptFunction;
     private final PaymentRepository paymentRepository;
-    private final ProductFunction productFunction;
-    private final OrderFunction orderFunction;
-    private final OrderProductFunction orderProductFunction;
+    private final ProductService productService;
+    private final OrderService orderService;
+    private final OrderProductService orderProductService;
 
     private final WebClient paymentWebClient;
 
@@ -46,7 +46,7 @@ public class PaymentService {
     // 결제 생성
     @Transactional
     public CreatePaymentResponse createPayment(Long userId, Long orderId) {
-        Order order = orderFunction.getById(orderId);
+        Order order = orderService.getById(orderId);
 
         if (!userId.equals(order.getUser().getId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
@@ -121,7 +121,7 @@ public class PaymentService {
 
     private void releaseReservedStock(List<OrderProduct> orderProducts) {
         for (OrderProduct orderProduct : orderProducts) {
-            productFunction.increaseById(orderProduct.getProductId(), orderProduct.getQuantity());
+            productService.increaseById(orderProduct.getProductId(), orderProduct.getQuantity());
         }
     }
 
@@ -133,7 +133,7 @@ public class PaymentService {
         paymentLogFunction.save(payment.getId(), payment.getOrder().getUser().getId(),
                 payment.getOrderKey(), payment.getStatus(), null, null);
 
-        List<OrderProduct> orderProducts = orderProductFunction.findListByOrderId(payment.getOrder().getId());
+        List<OrderProduct> orderProducts = orderProductService.findListByOrderId(payment.getOrder().getId());
         releaseReservedStock(orderProducts);
     }
 

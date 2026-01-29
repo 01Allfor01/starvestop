@@ -4,7 +4,7 @@ import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.entity.Receipt;
 import com.allforone.starvestop.domain.payment.repository.ReceiptRepository;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.service.UserFunction;
+import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReceiptFunction {
 
     private final ReceiptRepository receiptRepository;
-    private final UserFunction userFunction;
+    private final UserService userService;
 
     @Transactional
     public void save(Long userId, Payment payment) {
 
-        User user = userFunction.getById(userId);
+        User user = userService.getById(userId);
 
         Receipt receipt = Receipt.create(user, payment.getOrder(), payment.getOrderKey(), payment.getPaymentKey(), payment.getAmount());
 

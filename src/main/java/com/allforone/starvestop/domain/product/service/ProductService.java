@@ -10,7 +10,7 @@ import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.product.repository.ProductRepository;
 import com.allforone.starvestop.domain.store.entity.Store;
-import com.allforone.starvestop.domain.store.service.StoreFunction;
+import com.allforone.starvestop.domain.store.service.StoreService;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,12 +23,12 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final StoreFunction storeFunction;
+    private final StoreService storeService;
 
     //특정 매장 상품 추가
     @Transactional
     public CreateProductResponse createProduct(AuthUser authUser, CreateProductRequest request) {
-        Store store = storeFunction.getById(request.getStoreId());
+        Store store = storeService.getById(request.getStoreId());
 
         checkPermission(authUser, store.getOwner().getId());
 
@@ -48,7 +48,7 @@ public class ProductService {
     //매장 상품 목록 조회
     @Transactional(readOnly = true)
     public List<GetProductResponse> getProductStoreList(Long storeId) {
-        Store store = storeFunction.getById(storeId);
+        Store store = storeService.getById(storeId);
 
         List<Product> productList = productRepository.findAllByStoreAndIsDeletedIsFalse(store);
 
@@ -124,5 +124,21 @@ public class ProductService {
     private Product getProductOrThrow(Long productId) {
         return productRepository.findByIdAndIsDeletedIsFalse(productId).orElseThrow(
                 () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+    }
+
+    public Product getById(Long id) {
+        return productRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
+                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
+        );
+    }
+
+    public void decreaseById(Long id, Integer count) {
+        Product product = getById(id);
+        product.decrease(count);
+    }
+
+    public void increaseById(Long id, Integer count) {
+        Product product = getById(id);
+        product.increase(count);
     }
 }

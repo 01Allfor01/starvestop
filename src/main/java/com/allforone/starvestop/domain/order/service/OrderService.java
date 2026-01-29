@@ -23,7 +23,7 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderProductFunction orderProductFunction;
+    private final OrderProductService orderProductService;
 
     @Transactional
     public Order createOrder(User user, Store store, UserCoupon userCoupon, BigDecimal amount) {
@@ -61,7 +61,7 @@ public class OrderService {
         Order order = findOrder(orderId);
         userCheck(userId, order);
 
-        List<OrderProduct> orderProductList = orderProductFunction.findListByOrderId(orderId);
+        List<OrderProduct> orderProductList = orderProductService.findListByOrderId(orderId);
 
         orderProductList.forEach(OrderProduct::delete);
 
@@ -78,5 +78,10 @@ public class OrderService {
         return orderRepository.findByIdAndIsDeletedIsFalse(orderId).orElseThrow(
                 () -> new CustomException(ErrorCode.ORDER_NOT_FOUND)
         );
+    }
+
+    public Order getById(Long userId) {
+        return orderRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
+                () -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
     }
 }

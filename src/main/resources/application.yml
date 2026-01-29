@@ -29,7 +29,7 @@ spring:
           kakao:
             client-id: ${KAKAO_CLIENT_ID}
             client-secret: ${KAKAO_CLIENT_SECRET}
-            redirect-uri: ${KAKAO_REDIRECT_URI}/auth/oauth/kakao/callback
+            redirect-uri: ${KAKAO_REDIRECT_URI}/login/oauth/kakao/callback
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             scope:

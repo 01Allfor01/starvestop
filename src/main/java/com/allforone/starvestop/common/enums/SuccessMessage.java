@@ -8,6 +8,7 @@ public enum SuccessMessage {
     SIGN_UP_SUCCESS("회원가입 성공"),
     SIGN_UP_OWNER_SUCCESS("판매자 회원가입 성공"),
     SIGN_IN_SUCCESS("로그인 성공"),
+    URL_RETURN_SUCCESS("로그인 URL 반환 성공"),
 
     //사용자
     USER_UPDATE_SUCCESS("회원 정보 수정 성공"),

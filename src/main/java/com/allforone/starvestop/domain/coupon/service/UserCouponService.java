@@ -3,14 +3,14 @@ package com.allforone.starvestop.domain.coupon.service;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
-import com.allforone.starvestop.domain.coupon.entity.Coupon;
-import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.coupon.dto.request.CreateUserCouponRequest;
 import com.allforone.starvestop.domain.coupon.dto.response.CreateUserCouponResponse;
 import com.allforone.starvestop.domain.coupon.dto.response.GetUserCouponResponse;
+import com.allforone.starvestop.domain.coupon.entity.Coupon;
 import com.allforone.starvestop.domain.coupon.entity.UserCoupon;
 import com.allforone.starvestop.domain.coupon.repository.UserCouponRepository;
-import com.allforone.starvestop.domain.user.service.UserFunction;
+import com.allforone.starvestop.domain.user.entity.User;
+import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,12 +22,12 @@ import java.util.List;
 public class UserCouponService {
 
     private final UserCouponRepository userCouponRepository;
-    private final UserFunction userFunction;
+    private final UserService userService;
     private final CouponFunction couponFunction;
 
     @Transactional
     public CreateUserCouponResponse createUserCoupon(AuthUser authUser, Long couponId, CreateUserCouponRequest request) {
-        User user = userFunction.getById(authUser.getUserId());
+        User user = userService.getById(authUser.getUserId());
 
         Coupon coupon = couponFunction.getById(couponId);
 
