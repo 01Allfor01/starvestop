@@ -11,10 +11,10 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class CreateProductResponse {
-    private final Long productId;
+    private final Long id;
     private final Long storeId;
     private final String storeName;
-    private final String productName;
+    private final String name;
     private final String description;
     private final Integer stock;
     private final BigDecimal price;
@@ -26,7 +26,7 @@ public class CreateProductResponse {
         return new CreateProductResponse(
                 product.getId(),
                 product.getStore().getId(),
-                product.getStore().getStoreName(),
+                product.getStore().getName(),
                 product.getName(),
                 product.getDescription(),
                 product.getStock(),
