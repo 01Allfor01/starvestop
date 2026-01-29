@@ -85,7 +85,7 @@ public class OrderUseCase {
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        if (userCoupon != null && amount.compareTo(userCoupon.getCoupon().getMinAmount()) <= 0) {
+        if (userCoupon != null && amount.compareTo(userCoupon.getCoupon().getMinAmount()) >= 0) {
             userCoupon.use();
             return amount.subtract(userCoupon.getCoupon().getDiscountAmount());
         }
