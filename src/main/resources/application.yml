@@ -29,15 +29,16 @@ spring:
           kakao:
             client-id: ${KAKAO_CLIENT_ID}
             client-secret: ${KAKAO_CLIENT_SECRET}
-            redirect-uri: ${KAKAO_REDIRECT_URI}/login/oauth2/code/kakao
+            redirect-uri: ${KAKAO_REDIRECT_URI}/auth/oauth/kakao/callback
             client-authentication-method: client_secret_post
             authorization-grant-type: authorization_code
             scope:
               - profile_nickname
-              - profile_email
+              - account_email
+              - profile_image
         provider:
           kakao:
             authorization-uri: https://kauth.kakao.com/oauth/authorize
-            token-uri: https://kauth.kakao.com/oauth/token
-            user-info-uri: https://kapi.kakao.com/v2/user/me
+            token-uri: https://kauth.kakao.com
+            user-info-uri: https://kapi.kakao.com
             user-name-attribute: id
