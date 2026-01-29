@@ -16,12 +16,12 @@ public class CartFunction {
     private final CartRepository cartRepository;
 
     public Cart getById(Long userId) {
-        return cartRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
+        return cartRepository.findById(userId).orElseThrow(
                 () -> new CustomException(ErrorCode.CART_NOT_FOUND));
     }
 
-    public List<Cart> findAllByUserId(Long userId) {
-        return cartRepository.findAllByUserId(userId);
+    public List<Cart> findAllByUserIdAndStoreId(Long userId, Long storeId) {
+        return cartRepository.findAllByUserIdAndStoreId(userId, storeId);
     }
 
     public void deleteAll(List<Cart> cartList) {
