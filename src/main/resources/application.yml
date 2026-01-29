@@ -16,12 +16,13 @@ spring:
         format_sql: false
     show-sql: true
   payment:
-    base-url: https://api.tosspayments.com/v1/payments
+    base-url: https://api.tosspayments.com
     secret-key: ${PAYMENT_SECRET_KEY}
   data:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+
   security:
     oauth2:
       client:
@@ -42,3 +43,9 @@ spring:
             token-uri: https://kauth.kakao.com
             user-info-uri: https://kapi.kakao.com
             user-name-attribute: id
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    bucket-name: ${AWS_BUCKET_NAME}

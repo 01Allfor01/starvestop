@@ -4,6 +4,7 @@ import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.entity.Order;
+import com.allforone.starvestop.domain.payment.enums.ReceiptStatus;
 import com.allforone.starvestop.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

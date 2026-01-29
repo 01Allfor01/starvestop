@@ -66,6 +66,16 @@ public class ReceiptService {
         return GetReceiptDetailResponse.from(receipt, orderProductDtoList);
 
     }
+
+    @Transactional
+    public void save(Long userId, Payment payment) {
+
+        User user = userFunction.getById(userId);
+
+        Receipt receipt = Receipt.create(user, payment.getOrder(), payment.getOrderKey(), payment.getPaymentKey(), payment.getAmount());
+
+        receiptRepository.save(receipt);
+    }
     // 환불 요청
 
 }

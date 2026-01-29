@@ -4,10 +4,13 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentLogDetailResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentLogResponse;
+import com.allforone.starvestop.domain.payment.dto.response.SearchPaymentLogResponse;
 import com.allforone.starvestop.domain.payment.entity.PaymentLog;
+import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.repository.PaymentLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -32,5 +35,17 @@ public class PaymentLogService {
                 () -> new CustomException(ErrorCode.PAYMENT_LOG_NOT_FOUND)
         );
         return GetPaymentLogDetailResponse.from(paymentLog);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void save(Long paymentId, Long userId, String orderKey, PaymentStatus paymentStatus, String pgStatus, String payload) {
+        PaymentLog paymentLog = PaymentLog.create(paymentId, userId, orderKey, paymentStatus, pgStatus, payload);
+        paymentLogRepository.save(paymentLog);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SearchPaymentLogResponse> searchPaymentLog(String orderKey, Long userId) {
+
+        return paymentLogRepository.search(orderKey, userId);
     }
 }

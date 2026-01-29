@@ -18,9 +18,10 @@ public class GetProductSaleResponse {
     private final Integer stock;
     private final BigDecimal price;
     private final BigDecimal salePrice;
+    private final String imageUrl;
     private final LocalDateTime updatedAt;
 
-    public static GetProductSaleResponse from(Product product) {
+    public static GetProductSaleResponse from(Product product, String imageUrl) {
         return new GetProductSaleResponse(
                 product.getId(),
                 product.getStore().getId(),
@@ -30,6 +31,7 @@ public class GetProductSaleResponse {
                 product.getStock(),
                 product.getPrice(),
                 product.getSalePrice(),
+                imageUrl,
                 product.getUpdatedAt()
         );
     }

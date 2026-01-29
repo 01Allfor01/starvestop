@@ -11,6 +11,7 @@ public enum SuccessMessage {
     URL_RETURN_SUCCESS("로그인 URL 반환 성공"),
 
     //사용자
+    USER_GET_SUCCESS("회원 조회 성공"),
     USER_UPDATE_SUCCESS("회원 정보 수정 성공"),
     USER_DELETE_SUCCESS("회원 탈퇴 성공"),
 
@@ -82,9 +83,18 @@ public enum SuccessMessage {
 
     //결제 로그
     PAYMENT_LOG_GET_SUCCESS("결제 로그 조회 성공"),
+    PAYMENT_LOG_SEARCH_SUCCESS("결제 로그 검색 성공"),
 
     // 영수증
-    RECEIPT_GET_SUCCESS("영수증 조회 성공");
+    RECEIPT_GET_SUCCESS("영수증 조회 성공"),
+
+    //s3
+    PRESIGNED_URL_CREATE_SUCCESS("이미지 업로드 URL 생성 성공"),
+    IMAGE_UPLOAD_SUCCESS("이미지 업로드 성공"),
+
+
+    ;
+
     private final String message;
 
     SuccessMessage(String message) {

@@ -27,7 +27,7 @@
                 "Authorization": token
             },
             body: JSON.stringify({
-                orderId: 1 // <- 주문 PK를 서버에 전달(서버가 orderKey를 만들어서 내려줌)
+                orderId: 5 // <- 주문 PK를 서버에 전달
             })
         });
 
@@ -41,6 +41,7 @@
         const orderKey = data.orderKey;
         const amount = Number(data.amount);
         const customerKey = String(data.customerKey || "guest");
+        const orderName = "올 포 원";
 
         // 2) 토스 위젯 초기화
         const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
@@ -60,6 +61,7 @@
             try {
                 await widgets.requestPayment({
                     orderId: orderKey,
+                    orderName: orderName,
                     successUrl: window.location.origin + "/payments/success",
                     failUrl: window.location.origin + "/payments/fail",
                 });
