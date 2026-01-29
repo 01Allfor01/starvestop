@@ -100,7 +100,8 @@ public class SubscriptionService {
     }
 
     //권한 확인
-    private static void checkPermission(AuthUser authUser, Subscription subscription) {
+    @Transactional
+    public void checkPermission(AuthUser authUser, Subscription subscription) {
         Long ownerId = subscription.getStore().getOwner().getId();
 
         if (UserRole.ADMIN == authUser.getUserRole()) {
@@ -115,9 +116,26 @@ public class SubscriptionService {
     }
 
     //구독 조회
-    private Subscription getSubscriptionOrThrow(Long subscriptionId) {
-        return subscriptionRepository.findByIdAndIsDeletedIsFalse(subscriptionId).orElseThrow(
+    @Transactional
+    public Subscription getSubscriptionOrThrow(Long id) {
+        return subscriptionRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
                 () -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+    }
+
+    //구독 재고 차감
+    @Transactional
+    public void decreaseById(Long id) {
+        int change = subscriptionRepository.decreaseStock(id);
+
+        if (change == 0) {
+            throw new CustomException(ErrorCode.SUBSCRIPTION_OUT_OF_STOCK);
+        }
+    }
+
+    //구독 재고 증가
+    @Transactional
+    public void increaseById(Long id, Integer count) {
+        int change = subscriptionRepository.increaseStock(id);
     }
 }
 

@@ -7,9 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-public interface UserCouponRepository extends JpaRepository<UserCoupon, Long> {
-
-    List<UserCoupon> findAllByUserIdAndIsDeletedIsFalseAndUsedAtIsNull(Long id);
+public interface UserCouponRepository extends JpaRepository<UserCoupon, Long>, UserCouponRepositoryCustom {
 
     @Query("""
 SELECT uc FROM UserCoupon uc

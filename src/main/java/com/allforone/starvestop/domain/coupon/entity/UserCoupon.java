@@ -38,12 +38,12 @@ public class UserCoupon extends BaseEntity {
             User user,
             Coupon coupon,
             LocalDateTime startedAt,
-            LocalDateTime expiredAt
+            LocalDateTime expiresAt
     ) {
         this.user = user;
         this.coupon = coupon;
         this.startedAt = startedAt;
-        this.expiresAt = expiredAt;
+        this.expiresAt = expiresAt;
     }
 
     public static UserCoupon create(
