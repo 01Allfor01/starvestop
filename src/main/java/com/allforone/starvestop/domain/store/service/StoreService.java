@@ -5,7 +5,6 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.GeometryUtil;
 import com.allforone.starvestop.domain.owner.entity.Owner;
 import com.allforone.starvestop.domain.owner.service.OwnerService;
-import com.allforone.starvestop.domain.owner.service.OwnerFunction;
 import com.allforone.starvestop.domain.s3.enums.S3BucketStatus;
 import com.allforone.starvestop.domain.s3.service.S3Service;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;

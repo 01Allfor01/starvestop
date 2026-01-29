@@ -70,7 +70,7 @@ public class ReceiptService {
     @Transactional
     public void save(Long userId, Payment payment) {
 
-        User user = userFunction.getById(userId);
+        User user = userService.getById(userId);
 
         Receipt receipt = Receipt.create(user, payment.getOrder(), payment.getOrderKey(), payment.getPaymentKey(), payment.getAmount());
 

@@ -94,4 +94,10 @@ public class UserCouponService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
     }
+
+    public UserCoupon getByIdAndNotUsed(Long userCouponId) {
+        return userCouponRepository.findByIdAndUsable(userCouponId).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_COUPON_NOT_FOUND)
+        );
+    }
 }

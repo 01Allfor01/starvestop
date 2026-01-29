@@ -5,7 +5,7 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.cart.entity.Cart;
 import com.allforone.starvestop.domain.cart.service.CartService;
 import com.allforone.starvestop.domain.coupon.entity.UserCoupon;
-import com.allforone.starvestop.domain.coupon.service.UserCouponFunction;
+import com.allforone.starvestop.domain.coupon.service.UserCouponService;
 import com.allforone.starvestop.domain.order.dto.OrderResponse;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.product.entity.Product;
@@ -28,7 +28,7 @@ public class OrderUseCase {
 
     private final CartService cartService;
     private final OrderService orderService;
-    private final UserCouponFunction userCouponFunction;
+    private final UserCouponService userCouponService;
     private final UserService userService;
     private final StoreService storeService;
     private final ProductService productService;
@@ -64,7 +64,7 @@ public class OrderUseCase {
             return null;
         }
 
-        return userCouponFunction.getByIdAndNotUsed(userCouponId);
+        return userCouponService.getByIdAndNotUsed(userCouponId);
     }
 
     private void cartListEmptyCheck(List<Cart> cartList) {
