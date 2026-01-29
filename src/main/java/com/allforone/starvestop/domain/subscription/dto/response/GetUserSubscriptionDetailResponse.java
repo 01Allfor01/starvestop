@@ -36,7 +36,7 @@ public class GetUserSubscriptionDetailResponse {
                 userSubscription.getSubscription().getId(),
                 userSubscription.getSubscription().getName(),
                 userSubscription.getSubscription().getStore().getId(),
-                userSubscription.getSubscription().getStore().getStoreName(),
+                userSubscription.getSubscription().getStore().getName(),
                 userSubscription.getStatus(),
                 dayList,
                 mealTimeList,

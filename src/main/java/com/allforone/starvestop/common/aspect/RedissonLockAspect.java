@@ -41,7 +41,7 @@ public class RedissonLockAspect {
         try {
             boolean locked = lock.tryLock(
                     redissonLock.waitTime(),
-                    redissonLock.waitTime(),
+                    redissonLock.leaseTime(),
                     TimeUnit.SECONDS);
 
             if (!locked) {

@@ -35,6 +35,7 @@ public enum ErrorCode {
 
     // 구독
     SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구독입니다"),
+    SUBSCRIPTION_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "구독 재고가 부족합니다"),
 
     // 주문
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다"),
@@ -46,7 +47,6 @@ public enum ErrorCode {
     INVALID_PAYMENT_STATE(HttpStatus.CONFLICT, "잘못된 결제 상태입니다"),
     DUPLICATE_ORDER_ID(HttpStatus.CONFLICT, "이미 존재하는 주문 번호입니다"),
 
-
     // 구매
     PURCHASE_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품 유형입니다"),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "상품의 재고가 부족합니다"),
@@ -55,6 +55,8 @@ public enum ErrorCode {
 
     // 쿠폰
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 쿠폰입니다"),
+    COUPON_MISSING_EXPIRATION(HttpStatus.BAD_REQUEST, "쿠폰 유효기간이 존재하지 않습니다"),
+    COUPON_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "쿠폰 재고가 부족합니다"),
 
     //사용자 쿠폰
     USER_COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 쿠폰입니다"),

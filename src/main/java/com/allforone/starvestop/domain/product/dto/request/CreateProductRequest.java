@@ -15,7 +15,7 @@ public class CreateProductRequest {
 
     @Size(max = 255, message = "상품 이름을 255자 이하로 입력해주세요")
     @NotBlank(message = "상품 이름을 적어주세요")
-    private String productName;
+    private String name;
 
     @Size(max = 255, message = "상품 설명을 255자 이하로 입력해주세요")
     @NotBlank(message = "상품 설명을 적어주세요")

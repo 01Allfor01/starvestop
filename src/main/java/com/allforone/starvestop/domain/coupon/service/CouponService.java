@@ -33,6 +33,10 @@ public class CouponService {
                 request.getStock()
         );
 
+        if (coupon.getValidDays() == null && coupon.getExpiresAt() == null) {
+            throw new CustomException(ErrorCode.COUPON_MISSING_EXPIRATION);
+        }
+
         Coupon savedCoupon = couponRepository.save(coupon);
 
         return CreateCouponResponse.from(savedCoupon);
@@ -47,14 +51,14 @@ public class CouponService {
 
     @Transactional(readOnly = true)
     public GetCouponDetailResponse getCoupon(Long couponId) {
-        Coupon coupon = getCouponOrThrow(couponId);
+        Coupon coupon = getById(couponId);
 
         return GetCouponDetailResponse.from(coupon);
     }
 
     @Transactional
     public UpdateCouponResponse updateCoupon(Long couponId, UpdateCouponRequest request) {
-        Coupon coupon = getCouponOrThrow(couponId);
+        Coupon coupon = getById(couponId);
         coupon.update(request.getStatus());
         couponRepository.flush();
         return UpdateCouponResponse.from(coupon);
@@ -62,14 +66,21 @@ public class CouponService {
 
     @Transactional
     public void deleteCoupon(Long couponId) {
-        Coupon coupon = getCouponOrThrow(couponId);
+        Coupon coupon = getById(couponId);
         coupon.delete();
         couponRepository.flush();
     }
 
-    private Coupon getCouponOrThrow(Long couponId) {
-        return couponRepository.findByIdAndIsDeletedIsFalse(couponId).orElseThrow(
+    public Coupon getById(Long id) {
+        return couponRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
                 () -> new CustomException(ErrorCode.COUPON_NOT_FOUND)
         );
+    }
+
+    public void decreaseById(Long id) {
+        int change = couponRepository.decreaseQuantity(id);
+        if (change == 0) {
+            throw new CustomException(ErrorCode.COUPON_OUT_OF_STOCK);
+        }
     }
 }
