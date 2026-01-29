@@ -23,10 +23,10 @@ import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    @Value("${kakao.oauth.redirect}")
+    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String redirect;
 
-    @Value("${kakao.oauth.client}")
+    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String clientId;
 
     private final AuthService authService;
@@ -76,9 +76,4 @@ public class AuthController {
         String str = "https://kauth.kakao.com/oauth/authorize?client_id=" + clientId + "&redirect_uri=" + redirect;
         return ResponseEntity.status(HttpStatus.OK).body(str);
     }
-//
-//    @GetMapping("/login/oauth2/code/kakao")
-//    public ResponseEntity<CommonResponse<SignInResponse>> loginCodeKakao(@RequestParam("code") String accessCode, HttpServletResponse response) {
-//        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SIGN_IN_SUCCESS, new SignInResponse(accessCode)));
-//    }
 }
