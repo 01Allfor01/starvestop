@@ -3,7 +3,7 @@ package com.allforone.starvestop.domain.user.service;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.PasswordEncoder;
-import com.allforone.starvestop.domain.s3.dto.response.GetUserResponse;
+import com.allforone.starvestop.domain.user.dto.response.GetUserResponse;
 import com.allforone.starvestop.domain.s3.enums.S3BucketStatus;
 import com.allforone.starvestop.domain.s3.service.S3Service;
 import com.allforone.starvestop.domain.user.dto.request.UpdateUserRequest;
