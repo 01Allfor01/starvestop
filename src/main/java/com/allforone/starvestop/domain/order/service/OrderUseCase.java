@@ -3,7 +3,7 @@ package com.allforone.starvestop.domain.order.service;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.cart.entity.Cart;
-import com.allforone.starvestop.domain.cart.service.CartFunction;
+import com.allforone.starvestop.domain.cart.service.CartService;
 import com.allforone.starvestop.domain.coupon.entity.UserCoupon;
 import com.allforone.starvestop.domain.coupon.service.UserCouponFunction;
 import com.allforone.starvestop.domain.order.dto.OrderResponse;
@@ -26,7 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderUseCase {
 
-    private final CartFunction cartFunction;
+    private final CartService cartService;
     private final OrderProductFunction orderProductFunction;
     private final UserCouponFunction userCouponFunction;
     private final UserFunction userFunction;
@@ -42,7 +42,7 @@ public class OrderUseCase {
 
         UserCoupon userCoupon = getUserCoupon(userCouponId);
 
-        List<Cart> cartList = cartFunction.findAllByUserIdAndStoreId(userId, storeId);
+        List<Cart> cartList = cartService.findAllByUserIdAndStoreId(userId, storeId);
 
         cartListEmptyCheck(cartList);
 
@@ -54,7 +54,7 @@ public class OrderUseCase {
 
         orderProductFunction.saveAll(order, cartList);
 
-        cartFunction.deleteAll(cartList);
+        cartService.deleteAll(cartList);
 
         return OrderResponse.from(order);
     }

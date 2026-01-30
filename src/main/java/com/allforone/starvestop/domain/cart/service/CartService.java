@@ -68,14 +68,27 @@ public class CartService {
         cartRepository.delete(cart);
     }
 
+    @Transactional
+    public void deleteAllCart(Long userId) {
+        cartRepository.deleteAllByUserId(userId);
+    }
+
     private Cart getCart(Long cartId) {
         return cartRepository.findById(cartId).orElseThrow(
                 () -> new CustomException(ErrorCode.CART_NOT_FOUND)
         );
     }
 
-    @Transactional
-    public void deleteAllCart(Long userId) {
-        cartRepository.deleteAllByUserId(userId);
+    public Cart getById(Long userId) {
+        return cartRepository.findById(userId).orElseThrow(
+                () -> new CustomException(ErrorCode.CART_NOT_FOUND));
+    }
+
+    public List<Cart> findAllByUserIdAndStoreId(Long userId, Long storeId) {
+        return cartRepository.findAllByUserIdAndStoreId(userId, storeId);
+    }
+
+    public void deleteAll(List<Cart> cartList) {
+        cartRepository.deleteAll(cartList);
     }
 }
