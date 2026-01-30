@@ -105,7 +105,7 @@ class ProductServiceConcurrencyTest {
 
         long totalTime = System.nanoTime() - startTime;
         //then
-        Product result = productService.getById(savedProduct.getId());
+        Product result = productService.getProduct(savedProduct.getId());
 
         System.out.printf("남은 재고 : %d\n", result.getStock());
         System.out.printf("차감 성공 횟수 : %d\n", success.get());
