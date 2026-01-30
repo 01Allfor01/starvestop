@@ -6,15 +6,17 @@ import lombok.Getter;
 public class ApiLogSearchCond {
 
     private final String userId;
-    private final String userName;
+    private final String userEmail;
     private final String userRole;
+    private final Long execTime;
     private final String httpMethod;
     private final Boolean isSuccess;
 
-    public ApiLogSearchCond(String userId, String userName, String userRole, String httpMethod, Boolean isSuccess) {
+    public ApiLogSearchCond(String userId, String userEmail, String userRole, Long execTime, String httpMethod, Boolean isSuccess) {
         this.userId = userId;
-        this.userName = userName;
+        this.userEmail = userEmail;
         this.userRole = userRole;
+        this.execTime = execTime;
         this.httpMethod = httpMethod;
         this.isSuccess = isSuccess;
     }

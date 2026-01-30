@@ -12,7 +12,7 @@ public class GetApiLogResponse {
 
     private final Long id;
     private final String userId;
-    private final String userName;
+    private final String userEmail;
     private final String userRole;
     private final String httpMethod;
     private final String requestUri;
@@ -24,7 +24,7 @@ public class GetApiLogResponse {
         return new GetApiLogResponse(
                 apiLog.getId(),
                 apiLog.getUserId(),
-                apiLog.getUserName(),
+                apiLog.getUserEmail(),
                 apiLog.getUserRole(),
                 apiLog.getHttpMethod(),
                 apiLog.getRequestUri(),

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -17,16 +18,16 @@ public class ApiLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column
     private String userId;
 
-    @Column(name = "user_name")
-    private String userName;
+    @Column
+    private String userEmail;
 
-    @Column(name = "user_role")
+    @Column
     private String userRole;
 
-    @Column(name = "client_ip")
+    @Column
     private String clientIp;
 
     @Column(nullable = false)
@@ -37,11 +38,11 @@ public class ApiLog {
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")
-    private String requestBody;
+    private String params;
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")
-    private String responseBody;
+    private String payload;
 
     @Column(nullable = false)
     private boolean isSuccess;
@@ -52,30 +53,31 @@ public class ApiLog {
     @Column(nullable = false)
     private Long execTime;
 
-    @Column(nullable = false, updatable = false)
+    @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     public ApiLog(
             String userId,
-            String userName,
+            String userEmail,
             String userRole,
             String clientIp,
             String httpMethod,
             String requestUri,
-            String requestBody,
-            String responseBody,
+            String params,
+            String payload,
             boolean isSuccess,
             String errorMessage,
             Long execTime
     ) {
         this.userId = userId;
-        this.userName = userName;
+        this.userEmail = userEmail;
         this.userRole = userRole;
         this.clientIp = clientIp;
         this.httpMethod = httpMethod;
         this.requestUri = requestUri;
-        this.requestBody = requestBody;
-        this.responseBody = responseBody;
+        this.params = params;
+        this.payload = payload;
         this.isSuccess = isSuccess;
         this.errorMessage = errorMessage;
         this.execTime = execTime;
@@ -84,26 +86,26 @@ public class ApiLog {
 
     public static ApiLog create(
             String userId,
-            String userName,
+            String userEmail,
             String userRole,
             String clientIp,
             String httpMethod,
             String requestUri,
-            String requestBody,
-            String responseBody,
+            String params,
+            String payload,
             boolean isSuccess,
             String errorMessage,
             Long execTime
     ) {
         return new ApiLog(
                 userId,
-                userName,
+                userEmail,
                 userRole,
                 clientIp,
                 httpMethod,
                 requestUri,
-                requestBody,
-                responseBody,
+                params,
+                payload,
                 isSuccess,
                 errorMessage,
                 execTime

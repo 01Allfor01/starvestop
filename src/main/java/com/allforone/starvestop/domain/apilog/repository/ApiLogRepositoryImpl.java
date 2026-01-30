@@ -28,8 +28,9 @@ public class ApiLogRepositoryImpl implements ApiLogRepositoryCustom {
                 .selectFrom(apiLog)
                 .where(
                         userIdEq(cond.getUserId()),
-                        userNameEq(cond.getUserName()),
+                        userEmailEq(cond.getUserEmail()),
                         userRoleEq(cond.getUserRole()),
+                        execTimeGt(cond.getExecTime()),
                         httpMethodEq(cond.getHttpMethod()),
                         isSuccessEq(cond.getIsSuccess())
                 )
@@ -43,8 +44,9 @@ public class ApiLogRepositoryImpl implements ApiLogRepositoryCustom {
                 .from(apiLog)
                 .where(
                         userIdEq(cond.getUserId()),
-                        userNameEq(cond.getUserName()),
+                        userEmailEq(cond.getUserEmail()),
                         userRoleEq(cond.getUserRole()),
+                        execTimeGt(cond.getExecTime()),
                         httpMethodEq(cond.getHttpMethod()),
                         isSuccessEq(cond.getIsSuccess())
                 );
@@ -56,12 +58,16 @@ public class ApiLogRepositoryImpl implements ApiLogRepositoryCustom {
         return StringUtils.hasText(userId) ? apiLog.userId.eq(userId) : null;
     }
 
-    private BooleanExpression userNameEq(String userName) {
-        return StringUtils.hasText(userName) ? apiLog.userName.eq(userName) : null;
+    private BooleanExpression userEmailEq(String userEmail) {
+        return StringUtils.hasText(userEmail) ? apiLog.userEmail.eq(userEmail) : null;
     }
 
     private BooleanExpression userRoleEq(String userRole) {
         return StringUtils.hasText(userRole) ? apiLog.userRole.eq(userRole) : null;
+    }
+
+    private BooleanExpression execTimeGt(Long execTime) {
+        return execTime != null ? apiLog.execTime.goe(execTime) : null;
     }
 
     private BooleanExpression httpMethodEq(String httpMethod) {

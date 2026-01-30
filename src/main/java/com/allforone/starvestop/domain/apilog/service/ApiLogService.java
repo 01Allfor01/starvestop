@@ -28,6 +28,7 @@ public class ApiLogService {
         apiLogRepository.save(apiLog);
     }
 
+    @Transactional(readOnly = true)
     public GetApiLogDetailResponse getApiLog(Long apiLogId) {
         ApiLog apiLog = apiLogRepository.findById(apiLogId).orElseThrow(
                 () -> new CustomException(ErrorCode.API_LOG_NOT_FOUND)
@@ -36,6 +37,7 @@ public class ApiLogService {
         return GetApiLogDetailResponse.from(apiLog);
     }
 
+    @Transactional(readOnly = true)
     public Page<GetApiLogResponse> getApiLogPage(ApiLogSearchCond cond, Pageable pageable) {
         Page<ApiLog> apiLogPage = apiLogRepository.search(cond, pageable);
         return apiLogPage.map(GetApiLogResponse::from);

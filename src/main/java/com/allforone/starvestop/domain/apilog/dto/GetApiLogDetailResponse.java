@@ -12,13 +12,13 @@ public class GetApiLogDetailResponse {
 
     private final Long id;
     private final String userId;
-    private final String userName;
+    private final String userEmail;
     private final String userRole;
     private final String clientIp;
     private final String httpMethod;
     private final String requestUri;
-    private final String requestBody;
-    private final String responseBody;
+    private final String params;
+    private final String payload;
     private final boolean isSuccess;
     private final String errorMessage;
     private final Long execTime;
@@ -28,13 +28,13 @@ public class GetApiLogDetailResponse {
         return new GetApiLogDetailResponse(
                 apiLog.getId(),
                 apiLog.getUserId(),
-                apiLog.getUserName(),
+                apiLog.getUserEmail(),
                 apiLog.getUserRole(),
                 apiLog.getClientIp(),
                 apiLog.getHttpMethod(),
                 apiLog.getRequestUri(),
-                apiLog.getRequestBody(),
-                apiLog.getResponseBody(),
+                apiLog.getParams(),
+                apiLog.getPayload(),
                 apiLog.isSuccess(),
                 apiLog.getErrorMessage(),
                 apiLog.getExecTime(),
