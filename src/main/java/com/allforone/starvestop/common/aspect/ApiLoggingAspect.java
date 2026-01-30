@@ -1,9 +1,12 @@
 package com.allforone.starvestop.common.aspect;
 
+import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.apilog.entity.ApiLog;
 import com.allforone.starvestop.domain.apilog.service.ApiLogService;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +33,10 @@ public class ApiLoggingAspect {
     private final ApiLogService apiLogService;
     private final ObjectMapper objectMapper;
 
-    @Pointcut("within(@org.springframework.web.bind.annotation.RestController *)")
+    private record UserInfo(String userId, String userName, String userRole) {
+    }
+
+    @Pointcut("within(@org.springframework.web.bind.annotation.RestController *) || within(@org.springframework.web.bind.annotation.RestControllerAdvice *)")
     public void restControllerPointcut() {
     }
 
@@ -71,15 +77,19 @@ public class ApiLoggingAspect {
         try {
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
 
-            String userId = getUserId();
+            UserInfo userInfo = extractUserInfo();
+
             String clientIp = getClientIp(request);
             String httpMethod = request.getMethod();
             String requestUri = request.getRequestURI();
-            String requestBody = getRequestBody(request);
-            String responseBody = (result != null) ? objectMapper.writeValueAsString(result) : null;
+            String rawRequestBody = getRequestBody(request);
+            String requestBody = maskPassword(rawRequestBody);
+            String responseBody = (isSuccess && result != null) ? objectMapper.writeValueAsString(result) : null;
 
             ApiLog apiLog = ApiLog.create(
-                    userId,
+                    userInfo.userId(),
+                    userInfo.userName(),
+                    userInfo.userRole(),
                     clientIp,
                     httpMethod,
                     requestUri,
@@ -97,12 +107,27 @@ public class ApiLoggingAspect {
         }
     }
 
-    private String getUserId() {
+    private UserInfo extractUserInfo() {
+        String userId = null;
+        String userName = null;
+        String userRole = null;
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         if (authentication != null && authentication.isAuthenticated()) {
-            return authentication.getName();
+            Object principal = authentication.getPrincipal();
+
+            if (principal instanceof AuthUser authUser) {
+                userId = String.valueOf(authUser.getUserId());
+                userName = authUser.getUsername();
+
+                if (authUser.getUserRole() != null) {
+                    userRole = authUser.getUserRole().name();
+                }
+            }
         }
-        return null;
+
+        return new UserInfo(userId, userName, userRole);
     }
 
     private String getClientIp(HttpServletRequest request) {
@@ -136,5 +161,24 @@ public class ApiLoggingAspect {
             }
         }
         return null;
+    }
+
+    private String maskPassword(String jsonString) {
+        if (jsonString == null || jsonString.isEmpty()) {
+            return jsonString;
+        }
+        try {
+            JsonNode node = objectMapper.readTree(jsonString);
+            if (node.isObject()) {
+                ObjectNode objectNode = (ObjectNode) node;
+                if (objectNode.has("password")) {
+                    objectNode.put("password", "*****");
+                    return objectMapper.writeValueAsString(objectNode);
+                }
+            }
+        } catch (Exception e) {
+            return jsonString;
+        }
+        return jsonString;
     }
 }

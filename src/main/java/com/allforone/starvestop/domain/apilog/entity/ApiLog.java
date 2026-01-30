@@ -20,6 +20,12 @@ public class ApiLog {
     @Column(name = "user_id")
     private String userId;
 
+    @Column(name = "user_name")
+    private String userName;
+
+    @Column(name = "user_role")
+    private String userRole;
+
     @Column(name = "client_ip")
     private String clientIp;
 
@@ -51,6 +57,8 @@ public class ApiLog {
 
     public ApiLog(
             String userId,
+            String userName,
+            String userRole,
             String clientIp,
             String httpMethod,
             String requestUri,
@@ -61,6 +69,8 @@ public class ApiLog {
             Long execTime
     ) {
         this.userId = userId;
+        this.userName = userName;
+        this.userRole = userRole;
         this.clientIp = clientIp;
         this.httpMethod = httpMethod;
         this.requestUri = requestUri;
@@ -74,6 +84,8 @@ public class ApiLog {
 
     public static ApiLog create(
             String userId,
+            String userName,
+            String userRole,
             String clientIp,
             String httpMethod,
             String requestUri,
@@ -85,6 +97,8 @@ public class ApiLog {
     ) {
         return new ApiLog(
                 userId,
+                userName,
+                userRole,
                 clientIp,
                 httpMethod,
                 requestUri,
