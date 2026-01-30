@@ -8,7 +8,7 @@ import com.allforone.starvestop.domain.cart.dto.UpdateCartRequest;
 import com.allforone.starvestop.domain.cart.entity.Cart;
 import com.allforone.starvestop.domain.cart.repository.CartRepository;
 import com.allforone.starvestop.domain.product.entity.Product;
-import com.allforone.starvestop.domain.product.service.ProductFunction;
+import com.allforone.starvestop.domain.product.service.ProductService;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.service.UserFunction;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +23,13 @@ public class CartService {
 
     private final CartRepository cartRepository;
     private final UserFunction userFunction;
-    private final ProductFunction productFunction;
+    private final ProductService productService;
 
     @Transactional
     public CartResponse createCart(Long userId, CartRequest request) {
         User user = userFunction.getById(userId);
 
-        Product product = productFunction.getById(request.getProductId());
+        Product product = productService.getById(request.getProductId());
 
         Cart cart = Cart.create(user, product, request.getQuantity());
 

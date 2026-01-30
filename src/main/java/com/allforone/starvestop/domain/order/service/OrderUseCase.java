@@ -10,9 +10,9 @@ import com.allforone.starvestop.domain.order.dto.OrderResponse;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
-import com.allforone.starvestop.domain.product.service.ProductFunction;
+import com.allforone.starvestop.domain.product.service.ProductService;
 import com.allforone.starvestop.domain.store.entity.Store;
-import com.allforone.starvestop.domain.store.service.StoreFunction;
+import com.allforone.starvestop.domain.store.service.StoreService;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.service.UserFunction;
 import lombok.RequiredArgsConstructor;
@@ -30,15 +30,15 @@ public class OrderUseCase {
     private final OrderProductFunction orderProductFunction;
     private final UserCouponFunction userCouponFunction;
     private final UserFunction userFunction;
-    private final StoreFunction storeFunction;
-    private final ProductFunction productFunction;
+    private final StoreService storeService;
+    private final ProductService productService;
     private final OrderService orderService;
 
     @Transactional
     public OrderResponse order(Long userId, Long storeId, Long userCouponId) {
         User user = userFunction.getById(userId);
 
-        Store store = storeFunction.getById(storeId);
+        Store store = storeService.getById(storeId);
 
         UserCoupon userCoupon = getUserCoupon(userCouponId);
 
@@ -46,7 +46,7 @@ public class OrderUseCase {
 
         cartListEmptyCheck(cartList);
 
-        cartList.forEach(cart -> productFunction.decreaseById(cart.getProduct().getId(), cart.getQuantity()));
+        cartList.forEach(cart -> productService.decreaseById(cart.getProduct().getId(), cart.getQuantity()));
 
         BigDecimal amount = calculateAmount(cartList, userCoupon);
 

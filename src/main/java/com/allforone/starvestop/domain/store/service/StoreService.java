@@ -145,4 +145,10 @@ public class StoreService {
     private Point getLocation(Double longitude, Double latitude) {
         return GeometryUtil.createPoint(longitude, latitude);
     }
+
+    public Store getById(Long id) {
+        return storeRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
+                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
+    }
 }

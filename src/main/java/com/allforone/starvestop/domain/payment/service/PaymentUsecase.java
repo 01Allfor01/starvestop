@@ -13,7 +13,7 @@ import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.event.PaymentEventRelay;
-import com.allforone.starvestop.domain.product.service.ProductFunction;
+import com.allforone.starvestop.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaymentUsecase {
 
-    private final ProductFunction productFunction;
+    private final ProductService productService;
     private final OrderFunction orderFunction;
     private final OrderProductFunction orderProductFunction;
     private final PaymentService paymentService;
@@ -172,7 +172,7 @@ public class PaymentUsecase {
                 orderProductFunction.findListByOrderId(payment.getOrder().getId());
 
         for (OrderProduct op : orderProducts) {
-            productFunction.increaseById(op.getProductId(), op.getQuantity());
+            productService.increaseById(op.getProductId(), op.getQuantity());
         }
 
         paymentLogService.save(
