@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface ReceiptRepository extends JpaRepository<Receipt, Long> {
     List<Receipt> findReceiptsByUserId(Long userId);
+
+    boolean existsByPaymentKey(String paymentKey);
 }

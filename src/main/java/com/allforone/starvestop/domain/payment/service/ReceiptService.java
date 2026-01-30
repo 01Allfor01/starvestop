@@ -3,11 +3,12 @@ package com.allforone.starvestop.domain.payment.service;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.dto.OrderProductDto;
+import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
 import com.allforone.starvestop.domain.order.service.OrderProductFunction;
-import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.dto.response.GetReceiptDetailResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetReceiptResponse;
+import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.entity.Receipt;
 import com.allforone.starvestop.domain.payment.repository.ReceiptRepository;
 import com.allforone.starvestop.domain.user.entity.User;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -30,9 +32,8 @@ public class ReceiptService {
     @Transactional
     public void createReceipt(Long userId, Payment payment) {
 
-        User user = userFunction.getById(userId);
 
-        Receipt receipt = Receipt.create(user, payment.getOrder(), payment.getOrderKey(), payment.getPaymentKey(), payment.getAmount());
+        Receipt receipt = Receipt.create(userId, payment.getOrder(), payment.getOrderKey(), payment.getPaymentKey(), payment.getAmount());
 
         receiptRepository.save(receipt);
     }
@@ -53,9 +54,8 @@ public class ReceiptService {
         );
 
         Long orderId = receipt.getOrder().getId();
-        Long receiptOwnerId = receipt.getUser().getId();
 
-        if (userId.equals(receiptOwnerId)) {
+        if (userId.equals(receipt.getUserId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
@@ -70,11 +70,17 @@ public class ReceiptService {
     @Transactional
     public void save(Long userId, Payment payment) {
 
-        User user = userFunction.getById(userId);
-
-        Receipt receipt = Receipt.create(user, payment.getOrder(), payment.getOrderKey(), payment.getPaymentKey(), payment.getAmount());
+        Receipt receipt = Receipt.create(userId, payment.getOrder(), payment.getOrderKey(), payment.getPaymentKey(), payment.getAmount());
 
         receiptRepository.save(receipt);
+    }
+
+    @Transactional
+    public void issueIfNotExists(Long userId, Order order, String orderKey, String paymentKey, BigDecimal amount) {
+        if (receiptRepository.existsByPaymentKey(paymentKey)) {
+            return;
+        }
+        receiptRepository.save(Receipt.create(userId, order, orderKey, paymentKey, amount));
     }
     // 환불 요청
 
