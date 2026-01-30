@@ -5,14 +5,12 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.dto.OrderProductDto;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
-import com.allforone.starvestop.domain.order.service.OrderProductFunction;
+import com.allforone.starvestop.domain.order.service.OrderProductService;
 import com.allforone.starvestop.domain.payment.dto.response.GetReceiptDetailResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetReceiptResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.entity.Receipt;
 import com.allforone.starvestop.domain.payment.repository.ReceiptRepository;
-import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.service.UserFunction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +23,7 @@ import java.util.List;
 public class ReceiptService {
 
     private final ReceiptRepository receiptRepository;
-    private final UserFunction userFunction;
-    private final OrderProductFunction orderProductFunction;
+    private final OrderProductService orderProductService;
 
     // 영수증 생성
     @Transactional
@@ -59,7 +56,7 @@ public class ReceiptService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
-        List<OrderProduct> orderList = orderProductFunction.findListByOrderId(orderId);
+        List<OrderProduct> orderList = orderProductService.findListByOrderId(orderId);
 
         List<OrderProductDto> orderProductDtoList = orderList.stream().map(OrderProductDto::from).toList();
 
