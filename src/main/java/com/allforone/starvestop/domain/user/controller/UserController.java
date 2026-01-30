@@ -24,6 +24,7 @@ public class UserController {
     private final UserService userService;
 
     // 회원 조회
+    @GetMapping
     public ResponseEntity<CommonResponse<GetUserResponse>> getUser(@AuthenticationPrincipal AuthUser authUser) {
         Long userId = authUser.getUserId();
         GetUserResponse response = userService.getUser(userId);
