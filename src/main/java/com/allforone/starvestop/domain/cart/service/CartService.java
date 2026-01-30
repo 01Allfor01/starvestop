@@ -29,7 +29,7 @@ public class CartService {
     public CartResponse createCart(Long userId, CartRequest request) {
         User user = userService.getById(userId);
 
-        Product product = productService.getById(request.getProductId());
+        Product product = productService.getProduct(request.getProductId());
 
         Cart cart = Cart.create(user, product, request.getQuantity());
 

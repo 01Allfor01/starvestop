@@ -19,7 +19,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -33,7 +32,7 @@ public class ProductService {
     public CreateProductResponse createProduct(AuthUser authUser, CreateProductRequest request) {
         Store store = storeService.getById(request.getStoreId());
 
-        checkPermission(authUser, store.getOwner().getId());
+        storeService.idMismatchCheck(authUser, store);
 
         Product product = Product.create(store,
                 request.getName(),
@@ -78,8 +77,8 @@ public class ProductService {
 
     //상품 상세 조회
     @Transactional(readOnly = true)
-    public GetProductDetailResponse getProduct(Long productId) {
-        Product product = getProductOrThrow(productId);
+    public GetProductDetailResponse getProductDetail(Long productId) {
+        Product product = getProduct(productId);
 
         String imageUrl = s3Service.createPresignedGetUrl(product.getId(), S3BucketStatus.PRODUCT, product.getImageUuid());
 
@@ -89,9 +88,9 @@ public class ProductService {
     //특정 매장 상품 수정
     @Transactional
     public UpdateProductResponse updateProduct(AuthUser authUser, Long productId, UpdateProductRequest request) {
-        Product product = getProductOrThrow(productId);
+        Product product = getProduct(productId);
 
-        checkPermission(authUser, product.getStore().getOwner().getId());
+        idMismatchCheck(authUser, product);
 
         product.update(
                 request.getName(),
@@ -109,44 +108,42 @@ public class ProductService {
     //상품 삭제
     @Transactional
     public void delete(AuthUser authUser, Long productId) {
-        Product product = getProductOrThrow(productId);
+        Product product = getProduct(productId);
 
-        checkPermission(authUser, product.getStore().getOwner().getId());
+        idMismatchCheck(authUser, product);
 
         product.delete();
     }
 
-    //권한 확인
-    public void checkPermission(AuthUser authUser, Long ownerId) {
+    //상품 확인
+    @Transactional
+    public Product getProduct(Long productId) {
+        return productRepository.findByIdAndIsDeletedIsFalse(productId).orElseThrow(
+                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+    }
+
+    //판매자 아이디 주인 확인
+    public void idMismatchCheck(AuthUser authUser, Product product) {
         if (UserRole.ADMIN == authUser.getUserRole()) {
             return;
         }
 
-        if (UserRole.OWNER == authUser.getUserRole() && ownerId.equals(authUser.getUserId())) {
+        Long ownerId = product.getStore().getOwner().getId();
+        if (ownerId.equals(authUser.getUserId())) {
             return;
         }
 
         throw new CustomException(ErrorCode.FORBIDDEN);
     }
 
-    //상품 조회
-    @Transactional
-    public Product getProductOrThrow(Long productId) {
-        return productRepository.findByIdAndIsDeletedIsFalse(productId).orElseThrow(
-                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-    }
-
-    public Product getById(Long id) {
-        return productRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
-                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND)
-        );
-    }
-
+    //상품 재고 차감(-)
     @Transactional
     public void decreaseById(Long id, Integer count) {
         productRepository.findByIdAndDecreaseStock(id, count);
     }
 
+    //상품 재고 가산(+)
+    @Transactional
     public void increaseById(Long id, Integer count) {
         productRepository.findByIdAndIncreaseStock(id, count);
     }

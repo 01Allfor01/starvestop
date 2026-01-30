@@ -1,9 +1,15 @@
 package com.allforone.starvestop.domain.s3.service;
 
+import com.allforone.starvestop.common.dto.AuthUser;
+import com.allforone.starvestop.domain.product.entity.Product;
+import com.allforone.starvestop.domain.product.service.ProductService;
 import com.allforone.starvestop.domain.s3.dto.request.CreateS3PresignedUrlRequest;
 import com.allforone.starvestop.domain.s3.dto.response.CreateS3PresignedUrlResponse;
 import com.allforone.starvestop.domain.s3.enums.ImageExtension;
 import com.allforone.starvestop.domain.s3.enums.S3BucketStatus;
+import com.allforone.starvestop.domain.store.entity.Store;
+import com.allforone.starvestop.domain.store.service.StoreService;
+import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,20 +31,27 @@ public class S3Service {
     @Value("${cloud.aws.bucket-name}")
     private String bucket;
 
-    private final S3Presigner s3Presigner;
     private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
-    //PresignedUrl 생성
-    public CreateS3PresignedUrlResponse createPresignedUrl(S3BucketStatus status, CreateS3PresignedUrlRequest request) {
-        UUID uuid = UUID.randomUUID();
+    //PresignedUrl 발급
+    public CreateS3PresignedUrlResponse getCreateS3PresignedUrlResponse(String key, String contentType, UUID uuid) {
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentType(contentType)
+                .build();
 
-        String fileExtension = request.getName().substring(request.getName().lastIndexOf('.') + 1);
+        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10))
+                .putObjectRequest(putObjectRequest)
+                .build();
 
-        String contentType = ImageExtension.from(fileExtension);
-
-        String key = getKey(request.getId(), status, uuid);
-
-        return getCreateS3PresignedUrlResponse(key, contentType, uuid);
+        String url = s3Presigner
+                .presignPutObject(presignRequest)
+                .url()
+                .toExternalForm();
+        return new CreateS3PresignedUrlResponse(uuid.toString(), url);
     }
 
     //S3 이미지 링크 얻기
@@ -77,28 +90,8 @@ public class S3Service {
         s3Client.deleteObject(deleteObjectRequest);
     }
 
-    //PresignedUrl 발급
-    private CreateS3PresignedUrlResponse getCreateS3PresignedUrlResponse(String key, String contentType, UUID uuid) {
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .contentType(contentType)
-                .build();
-
-        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
-                .putObjectRequest(putObjectRequest)
-                .build();
-
-        String url = s3Presigner
-                .presignPutObject(presignRequest)
-                .url()
-                .toExternalForm();
-        return new CreateS3PresignedUrlResponse(uuid.toString(), url);
-    }
-
     //S3 경로 생성
-    private String getKey(Long id, S3BucketStatus status, UUID uuid) {
+    public String getKey(Long id, S3BucketStatus status, UUID uuid) {
         return status.name() + "/id:" + id + "/" + uuid;
     }
 }

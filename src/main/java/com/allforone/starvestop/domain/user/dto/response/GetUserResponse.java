@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.s3.dto.response;
+package com.allforone.starvestop.domain.user.dto.response;
 
 import com.allforone.starvestop.domain.user.entity.User;
 import lombok.AllArgsConstructor;
