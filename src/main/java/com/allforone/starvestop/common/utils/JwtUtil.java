@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
-@Slf4j
 @Component
 public class JwtUtil {
 
@@ -64,7 +63,6 @@ public class JwtUtil {
             parser.parseSignedClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            log.debug("Invalid JWT: {}", e.toString());
             return false;
         }
     }

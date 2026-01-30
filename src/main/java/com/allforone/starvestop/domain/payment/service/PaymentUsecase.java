@@ -5,15 +5,15 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
 import com.allforone.starvestop.domain.order.enums.OrderStatus;
-import com.allforone.starvestop.domain.order.service.OrderFunction;
-import com.allforone.starvestop.domain.order.service.OrderProductFunction;
+import com.allforone.starvestop.domain.order.service.OrderProductService;
+import com.allforone.starvestop.domain.order.service.OrderService;
 import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.event.PaymentEventRelay;
-import com.allforone.starvestop.domain.product.service.ProductFunction;
+import com.allforone.starvestop.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -29,9 +29,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaymentUsecase {
 
-    private final ProductFunction productFunction;
-    private final OrderFunction orderFunction;
-    private final OrderProductFunction orderProductFunction;
+    private final ProductService productService;
+    private final OrderService orderService;
+    private final OrderProductService orderProductService;
     private final PaymentService paymentService;
     private final PaymentLogService paymentLogService;
     private final ReceiptService receiptService;
@@ -40,7 +40,7 @@ public class PaymentUsecase {
     // 결제 생성
     @Transactional
     public CreatePaymentResponse createPayment(Long userId, Long orderId) {
-        Order order = orderFunction.getForPayment(orderId);
+        Order order = orderService.getForPayment(orderId);
         // 1. 같은 유저인지 확인
         if (!userId.equals(order.getUser().getId())) { //< n+1?
             throw new CustomException(ErrorCode.FORBIDDEN);
@@ -74,7 +74,7 @@ public class PaymentUsecase {
     public String confirmSuccess(String paymentKey, String orderId, Long amount) {
         // 1. 비관적락 걸고 payment 조회
         Payment payment = paymentService.findByOrderKeyForUpdate(orderId);
-        Order order = orderFunction.getForPayment(payment.getOrder().getId());
+        Order order = orderService.getForPayment(payment.getOrder().getId());
 
         // 2. 이미 성공한 요청에 대해서 바로 반환
         if (order.getStatus() == OrderStatus.PAID ||
@@ -126,7 +126,7 @@ public class PaymentUsecase {
 
         } catch (WebClientResponseException e) {
             // 8. 실패시 재고 반환
-            failAndReleaseReservedStockExactlyOnce(payment,null,paymentService.toJson(e));
+            failAndReleaseReservedStockExactlyOnce(payment, null, paymentService.toJson(e));
 
             return "/fail.html?orderId=" + payment.getOrderKey()
                     + "&reason=PG_CONFIRM_FAILED";
@@ -169,10 +169,10 @@ public class PaymentUsecase {
             return;
         }
         List<OrderProduct> orderProducts =
-                orderProductFunction.findListByOrderId(payment.getOrder().getId());
+                orderProductService.findListByOrderId(payment.getOrder().getId());
 
         for (OrderProduct op : orderProducts) {
-            productFunction.increaseById(op.getProductId(), op.getQuantity());
+            productService.increaseById(op.getProductId(), op.getQuantity());
         }
 
         paymentLogService.save(
