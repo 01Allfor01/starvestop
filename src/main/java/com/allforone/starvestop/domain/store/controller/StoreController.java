@@ -39,7 +39,7 @@ public class StoreController {
     public ResponseEntity<CommonResponse<CreateStoreResponse>> updateStore(@AuthenticationPrincipal AuthUser authUser,
                                                                            @PathVariable Long storeId,
                                                                            @Valid @RequestBody UpdateStoreRequest request) {
-        CreateStoreResponse response = storeService.updateStore(authUser.getUserId(), storeId, request);
+        CreateStoreResponse response = storeService.updateStore(authUser, storeId, request);
 
         return ResponseEntity.ok(CommonResponse.success(STORE_UPDATE_SUCCESS, response));
     }
@@ -48,7 +48,7 @@ public class StoreController {
     @DeleteMapping("/{storeId}")
     public ResponseEntity<CommonResponse<Void>> deleteStore(@AuthenticationPrincipal AuthUser authUser,
                                                             @PathVariable Long storeId) {
-        storeService.deleteStore(authUser.getUserId(), storeId);
+        storeService.deleteStore(authUser, storeId);
 
         return ResponseEntity.ok(CommonResponse.successNoData(STORE_DELETE_SUCCESS));
     }

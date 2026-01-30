@@ -12,15 +12,15 @@ import java.time.LocalTime;
 @Getter
 @AllArgsConstructor
 public class StoreDto {
-    Long id;
-    String name;
-    String address;
-    StoreCategory category;
-    Point location;
-    LocalTime openTime;
-    LocalTime closeTime;
-    StoreStatus status;
-    String imageUuid;
+    private final Long id;
+    private final String name;
+    private final String address;
+    private final StoreCategory category;
+    private final Point location;
+    private final LocalTime openTime;
+    private final LocalTime closeTime;
+    private final StoreStatus status;
+    private final String imageUuid;
 
     public static StoreDto from(Store store) {
         return new StoreDto(
