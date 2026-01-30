@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class GetCouponResponse {
-
     private final Long id;
     private final String name;
     private final BigDecimal discountAmount;

@@ -11,26 +11,28 @@ import java.time.LocalTime;
 
 @Getter
 @AllArgsConstructor
-public class StoreListResponse {
-    Long storeId;
-    String storeName;
+public class StoreDto {
+    Long id;
+    String name;
     String address;
     StoreCategory category;
     Point location;
     LocalTime openTime;
     LocalTime closeTime;
     StoreStatus status;
+    String imageUuid;
 
-    public static StoreResponse from(Store store) {
-        return new StoreResponse(
+    public static StoreDto from(Store store) {
+        return new StoreDto(
                 store.getId(),
-                store.getStoreName(),
+                store.getName(),
                 store.getAddress(),
                 store.getCategory(),
                 store.getLocation(),
                 store.getOpenTime(),
                 store.getCloseTime(),
-                store.getStatus()
+                store.getStatus(),
+                store.getImageUuid()
         );
     }
 }

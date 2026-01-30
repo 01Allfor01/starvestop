@@ -45,6 +45,8 @@ public class Product extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
+    private String imageUuid;
+
     private Product(Store store, String name, String description, BigDecimal price, BigDecimal salePrice, Integer stock, ProductStatus status) {
         this.store = store;
         this.name = name;
@@ -77,5 +79,9 @@ public class Product extends BaseEntity {
 
     public void increase(Integer count) {
         this.stock += count;
+    }
+
+    public void uploadImageUrl(String uuid) {
+        this.imageUuid = uuid;
     }
 }

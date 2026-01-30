@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
@@ -16,6 +17,8 @@ public class OrderResponse {
     private final String orderKey;
     private final OrderStatus status;
     private final BigDecimal amount;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
 
     public static OrderResponse from(Order order) {
         return new OrderResponse(
@@ -24,7 +27,9 @@ public class OrderResponse {
                 order.getUser().getId(),
                 order.getOrderKey(),
                 order.getStatus(),
-                order.getAmount()
+                order.getAmount(),
+                order.getCreatedAt(),
+                order.getUpdatedAt()
         );
     }
 }

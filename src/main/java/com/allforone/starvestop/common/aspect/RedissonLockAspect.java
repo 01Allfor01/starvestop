@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
@@ -41,7 +40,7 @@ public class RedissonLockAspect {
         try {
             boolean locked = lock.tryLock(
                     redissonLock.waitTime(),
-                    redissonLock.waitTime(),
+                    redissonLock.leaseTime(),
                     TimeUnit.SECONDS);
 
             if (!locked) {

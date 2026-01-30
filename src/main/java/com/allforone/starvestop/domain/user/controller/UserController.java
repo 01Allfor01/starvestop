@@ -3,14 +3,17 @@ package com.allforone.starvestop.domain.user.controller;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.common.enums.SuccessMessage;
+import com.allforone.starvestop.domain.s3.dto.response.GetUserResponse;
 import com.allforone.starvestop.domain.user.dto.request.UpdateUserRequest;
 import com.allforone.starvestop.domain.user.dto.response.UpdateUserResponse;
 import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import static com.allforone.starvestop.common.enums.SuccessMessage.USER_GET_SUCCESS;
 import static com.allforone.starvestop.common.enums.SuccessMessage.USER_UPDATE_SUCCESS;
 
 @RestController
@@ -19,6 +22,15 @@ import static com.allforone.starvestop.common.enums.SuccessMessage.USER_UPDATE_S
 public class UserController {
 
     private final UserService userService;
+
+    // 회원 조회
+    public ResponseEntity<CommonResponse<GetUserResponse>> getUser(@AuthenticationPrincipal AuthUser authUser) {
+        Long userId = authUser.getUserId();
+        GetUserResponse response = userService.getUser(userId);
+
+        CommonResponse<GetUserResponse> result = CommonResponse.success(USER_GET_SUCCESS, response);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
 
     // 회원 정보 수정
     @PatchMapping

@@ -12,9 +12,9 @@ import java.time.LocalTime;
 
 @Getter
 @AllArgsConstructor
-public class StoreDetailResponse {
-    private final Long storeId;
-    private final String storeName;
+public class CreateStoreResponse {
+    private final Long id;
+    private final String name;
     private final String address;
     private final String description;
     private final StoreCategory category;
@@ -26,10 +26,10 @@ public class StoreDetailResponse {
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
-    public static StoreDetailResponse from(Store store) {
-        return new StoreDetailResponse(
+    public static CreateStoreResponse from(Store store) {
+        return new CreateStoreResponse(
                 store.getId(),
-                store.getStoreName(),
+                store.getName(),
                 store.getAddress(),
                 store.getDescription(),
                 store.getCategory(),

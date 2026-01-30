@@ -11,16 +11,17 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class GetProductResponse {
-    private final Long productId;
-    private final String productName;
+    private final Long id;
+    private final String name;
     private final String description;
     private final Integer stock;
     private final BigDecimal price;
     private final BigDecimal salePrice;
     private final ProductStatus status;
+    private final String imageUrl;
     private final LocalDateTime updatedAt;
 
-    public static GetProductResponse from(Product product) {
+    public static GetProductResponse from(Product product, String imageUrl) {
         return new GetProductResponse(
                 product.getId(),
                 product.getName(),
@@ -29,6 +30,7 @@ public class GetProductResponse {
                 product.getPrice(),
                 product.getSalePrice(),
                 product.getStatus(),
+                imageUrl,
                 product.getUpdatedAt()
         );
     }
