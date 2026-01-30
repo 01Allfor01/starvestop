@@ -142,13 +142,12 @@ public class ProductService {
         );
     }
 
+    @Transactional
     public void decreaseById(Long id, Integer count) {
-        Product product = getById(id);
-        product.decrease(count);
+        productRepository.findByIdAndDecreaseStock(id, count);
     }
 
     public void increaseById(Long id, Integer count) {
-        Product product = getById(id);
-        product.increase(count);
+        productRepository.findByIdAndIncreaseStock(id, count);
     }
 }
