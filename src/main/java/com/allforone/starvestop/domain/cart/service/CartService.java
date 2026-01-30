@@ -10,7 +10,7 @@ import com.allforone.starvestop.domain.cart.repository.CartRepository;
 import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.service.UserFunction;
+import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,12 +22,12 @@ import java.util.List;
 public class CartService {
 
     private final CartRepository cartRepository;
-    private final UserFunction userFunction;
+    private final UserService userService;
     private final ProductService productService;
 
     @Transactional
     public CartResponse createCart(Long userId, CartRequest request) {
-        User user = userFunction.getById(userId);
+        User user = userService.getById(userId);
 
         Product product = productService.getById(request.getProductId());
 
@@ -67,6 +67,7 @@ public class CartService {
         }
         cartRepository.delete(cart);
     }
+
 
     @Transactional
     public void deleteAllCart(Long userId) {

@@ -31,7 +31,7 @@ public class AuthController {
         SignUpResponse response = authService.signUp(request);
 
         CommonResponse<SignUpResponse> result = CommonResponse.success(SIGN_UP_SUCCESS, response);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 

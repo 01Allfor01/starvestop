@@ -45,4 +45,25 @@ public class OwnerService {
 
         ownerRepository.flush();
     }
+
+    public Owner getById(Long userId) {
+        return ownerRepository.findByIdAndIsDeletedIsFalse(userId).orElseThrow(
+                () -> new CustomException(ErrorCode.OWNER_NOT_FOUND));
+    }
+
+    public void existsByEmail(String email) {
+        if (ownerRepository.existsByEmail(email)) {
+            throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+    }
+
+    public Owner save(String userEmail, String password, String userName) {
+        Owner owner = Owner.create(userEmail, password, userName);
+        return ownerRepository.save(owner);
+    }
+
+    public Owner findByEmail(String email) {
+        return ownerRepository.findByEmailAndIsDeletedIsFalse(email).orElseThrow(
+                () -> new CustomException(ErrorCode.OWNER_NOT_FOUND));
+    }
 }

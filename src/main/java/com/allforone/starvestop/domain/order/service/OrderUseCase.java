@@ -5,7 +5,7 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.cart.entity.Cart;
 import com.allforone.starvestop.domain.cart.service.CartService;
 import com.allforone.starvestop.domain.coupon.entity.UserCoupon;
-import com.allforone.starvestop.domain.coupon.service.UserCouponFunction;
+import com.allforone.starvestop.domain.coupon.service.UserCouponService;
 import com.allforone.starvestop.domain.order.dto.OrderResponse;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.product.entity.Product;
@@ -14,7 +14,7 @@ import com.allforone.starvestop.domain.product.service.ProductService;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.service.StoreService;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.service.UserFunction;
+import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,16 +27,16 @@ import java.util.List;
 public class OrderUseCase {
 
     private final CartService cartService;
-    private final OrderProductFunction orderProductFunction;
-    private final UserCouponFunction userCouponFunction;
-    private final UserFunction userFunction;
+    private final OrderService orderService;
+    private final UserCouponService userCouponService;
+    private final UserService userService;
     private final StoreService storeService;
     private final ProductService productService;
-    private final OrderService orderService;
+    private final OrderProductService orderProductService;
 
     @Transactional
     public OrderResponse order(Long userId, Long storeId, Long userCouponId) {
-        User user = userFunction.getById(userId);
+        User user = userService.getById(userId);
 
         Store store = storeService.getById(storeId);
 
@@ -52,7 +52,7 @@ public class OrderUseCase {
 
         Order order = orderService.createOrder(user, store, userCoupon, amount);
 
-        orderProductFunction.saveAll(order, cartList);
+        orderProductService.saveAll(order, cartList);
 
         cartService.deleteAll(cartList);
 
@@ -64,7 +64,7 @@ public class OrderUseCase {
             return null;
         }
 
-        return userCouponFunction.getByIdAndNotUsed(userCouponId);
+        return userCouponService.getByIdAndNotUsed(userCouponId);
     }
 
     private void cartListEmptyCheck(List<Cart> cartList) {
@@ -74,20 +74,21 @@ public class OrderUseCase {
     }
 
     private BigDecimal calculateAmount(List<Cart> cartList, UserCoupon userCoupon) {
-         BigDecimal amount = cartList.stream()
+        BigDecimal amount = cartList.stream()
                 .map(cart -> {
                     Product product = cart.getProduct();
                     BigDecimal unitPrice = product.getStatus() == ProductStatus.GENERAL
                             ? product.getPrice()
                             : product.getSalePrice();
 
-                    return unitPrice.multiply(BigDecimal.valueOf(cart.getQuantity()));})
+                    return unitPrice.multiply(BigDecimal.valueOf(cart.getQuantity()));
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-         if (userCoupon!=null && amount.compareTo(userCoupon.getCoupon().getMinAmount()) <= 0) {
-             userCoupon.use();
-             return amount.subtract(userCoupon.getCoupon().getDiscountAmount());
-         }
-         return amount;
+        if (userCoupon != null && amount.compareTo(userCoupon.getCoupon().getMinAmount()) >= 0) {
+            userCoupon.use();
+            return amount.subtract(userCoupon.getCoupon().getDiscountAmount());
+        }
+        return amount;
     }
 }

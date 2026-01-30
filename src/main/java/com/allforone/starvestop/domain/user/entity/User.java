@@ -38,11 +38,11 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private AuthProvider provider;
 
-    private String providerId;
+    private Long providerId;
 
     private String imageUuid;
 
-    private User(String email, String password, String nickname, String username, AuthProvider provider, String providerId) {
+    private User(String email, String password, String nickname, String username, AuthProvider provider, Long providerId) {
         this.email = email;
         this.password = password;
         this.role = UserRole.USER;
@@ -56,7 +56,7 @@ public class User extends BaseEntity {
         return new User(email, password, nickname, username, AuthProvider.LOCAL, null);
     }
 
-    public static User createKakao(String email, String password, String nickname, String username, String providerId) {
+    public static User createKakao(String email, String password, String nickname, String username, Long providerId) {
         return new User(email, password, nickname, username, AuthProvider.KAKAO, providerId);
     }
 
