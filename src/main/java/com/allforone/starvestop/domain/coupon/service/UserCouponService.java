@@ -10,7 +10,7 @@ import com.allforone.starvestop.domain.coupon.entity.Coupon;
 import com.allforone.starvestop.domain.coupon.entity.UserCoupon;
 import com.allforone.starvestop.domain.coupon.repository.UserCouponRepository;
 import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.user.service.UserFunction;
+import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,12 +23,12 @@ import java.util.List;
 public class UserCouponService {
 
     private final UserCouponRepository userCouponRepository;
-    private final UserFunction userFunction;
+    private final UserService userService;
     private final CouponService couponService;
 
     @Transactional
     public CreateUserCouponResponse createUserCoupon(AuthUser authUser, Long couponId, CreateUserCouponRequest request) {
-        User user = userFunction.getById(authUser.getUserId());
+        User user = userService.getById(authUser.getUserId());
 
         Coupon coupon = couponService.getById(couponId);
 
@@ -93,5 +93,11 @@ public class UserCouponService {
         if (!userCoupon.getUser().getId().equals(authUser.getUserId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
+    }
+
+    public UserCoupon getByIdAndNotUsed(Long userCouponId) {
+        return userCouponRepository.findByIdAndUsable(userCouponId).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_COUPON_NOT_FOUND)
+        );
     }
 }

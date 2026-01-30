@@ -9,6 +9,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
@@ -47,14 +48,14 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
                         store.status,
                         store.imageUuid
                 ))
+                .distinct()
                 .from(store)
                 .leftJoin(product).on(product.store.eq(store).and(product.isDeleted.isFalse()))
                 .where(
                         store.isDeleted.isFalse(),
-                        containsKeyword(cond.getKeyword()),
+                        containsKeywordStore(cond.getKeyword()),
                         eqCategory(cond.getCategory())
                 )
-                .groupBy(store.id)
                 .orderBy(createDistanceSort(cond.getNowLatitude(), cond.getNowLongitude()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -64,10 +65,9 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
                 .from(store)
                 .where(
                         store.isDeleted.isFalse(),
-                        containsKeyword(cond.getKeyword()),
+                        containsKeywordStore(cond.getKeyword()),
                         eqCategory(cond.getCategory())
                 )
-                .groupBy(store.id)
                 .fetchOne();
 
         long total = count != null ? count : 0L;
@@ -75,11 +75,26 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
         return new PageImpl<>(list, pageable, total);
     }
 
-    private BooleanExpression containsKeyword(String keyword) {
+    private BooleanExpression containsKeywordStore(String keyword) {
         if (!StringUtils.hasText(keyword)) {
             return null;
         }
-        return store.name.contains(keyword).or(product.name.contains(keyword));
+        return store.name.contains(keyword).or(containsKeywordProduct(keyword));
+    }
+
+    private BooleanExpression containsKeywordProduct(String keyword) {
+        if (!StringUtils.hasText(keyword)) {
+            return null;
+        }
+        return JPAExpressions
+                .selectOne()
+                .from(product)
+                .where(
+                        product.store.eq(store),
+                        product.isDeleted.isFalse(),
+                        product.name.contains(keyword)
+                )
+                .exists();
     }
 
     private BooleanExpression eqCategory(String category) {

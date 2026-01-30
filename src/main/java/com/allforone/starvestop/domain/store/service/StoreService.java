@@ -1,10 +1,11 @@
 package com.allforone.starvestop.domain.store.service;
 
+import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.GeometryUtil;
 import com.allforone.starvestop.domain.owner.entity.Owner;
-import com.allforone.starvestop.domain.owner.service.OwnerFunction;
+import com.allforone.starvestop.domain.owner.service.OwnerService;
 import com.allforone.starvestop.domain.s3.enums.S3BucketStatus;
 import com.allforone.starvestop.domain.s3.service.S3Service;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
@@ -30,12 +31,12 @@ public class StoreService {
 
     private final S3Service s3Service;
     private final StoreRepository storeRepository;
-    private final OwnerFunction ownerFunction;
+    private final OwnerService ownerService;
 
     //매장 추가
     @Transactional
     public CreateStoreResponse createStore(CreateStoreRequest request) {
-        Owner owner = ownerFunction.getById(request.getOwnerId());
+        Owner owner = ownerService.getById(request.getOwnerId());
 
         if (!UserRole.OWNER.equals(owner.getRole())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
@@ -63,10 +64,10 @@ public class StoreService {
 
     //매장 정보 수정
     @Transactional
-    public CreateStoreResponse updateStore(Long userId, Long storeId, UpdateStoreRequest request) {
+    public CreateStoreResponse updateStore(AuthUser authUser, Long storeId, UpdateStoreRequest request) {
         Store store = getStore(storeId);
 
-        idMismatchCheck(userId, store);
+        idMismatchCheck(authUser, store);
 
         StoreStatus status = getStatus(request.getStatus());
         Point location = getLocation(request.getLongitude(), request.getLatitude());
@@ -88,10 +89,10 @@ public class StoreService {
     }
 
     @Transactional
-    public void deleteStore(Long userId, Long storeId) {
+    public void deleteStore(AuthUser authUser, Long storeId) {
         Store store = getStore(storeId);
 
-        idMismatchCheck(userId, store);
+        idMismatchCheck(authUser, store);
 
         store.delete();
     }
@@ -130,10 +131,16 @@ public class StoreService {
     }
 
     //판매자 아이디 주인 확인
-    public void idMismatchCheck(Long ownerId, Store store) {
-        if (!store.getOwner().getId().equals(ownerId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
+    public void idMismatchCheck(AuthUser authUser, Store store) {
+        if (UserRole.ADMIN == authUser.getUserRole()) {
+            return;
         }
+
+        if (store.getOwner().getId().equals(authUser.getUserId())) {
+            return;
+        }
+
+        throw new CustomException(ErrorCode.FORBIDDEN);
     }
 
     //매장 상태
@@ -144,5 +151,11 @@ public class StoreService {
     //매장
     private Point getLocation(Double longitude, Double latitude) {
         return GeometryUtil.createPoint(longitude, latitude);
+    }
+
+    public Store getById(Long id) {
+        return storeRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
+                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
     }
 }

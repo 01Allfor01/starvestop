@@ -12,14 +12,12 @@ import com.allforone.starvestop.domain.product.repository.ProductRepository;
 import com.allforone.starvestop.domain.s3.enums.S3BucketStatus;
 import com.allforone.starvestop.domain.s3.service.S3Service;
 import com.allforone.starvestop.domain.store.entity.Store;
-import com.allforone.starvestop.domain.store.service.StoreFunction;
+import com.allforone.starvestop.domain.store.service.StoreService;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -27,14 +25,14 @@ public class ProductService {
 
     private final S3Service s3Service;
     private final ProductRepository productRepository;
-    private final StoreFunction storeFunction;
+    private final StoreService storeService;
 
     //특정 매장 상품 추가
     @Transactional
     public CreateProductResponse createProduct(AuthUser authUser, CreateProductRequest request) {
-        Store store = storeFunction.getById(request.getStoreId());
+        Store store = storeService.getById(request.getStoreId());
 
-        checkPermission(authUser, store.getOwner().getId());
+        storeService.idMismatchCheck(authUser, store);
 
         Product product = Product.create(store,
                 request.getName(),
@@ -52,7 +50,7 @@ public class ProductService {
     //매장 상품 목록 조회
     @Transactional(readOnly = true)
     public Slice<GetProductResponse> getProductStoreSlice(Long storeId) {
-        Store store = storeFunction.getById(storeId);
+        Store store = storeService.getById(storeId);
 
         Slice<Product> productSlice = productRepository.findAllByStoreIdAndIsDeletedIsFalseOrderById(store.getId());
 
@@ -79,8 +77,8 @@ public class ProductService {
 
     //상품 상세 조회
     @Transactional(readOnly = true)
-    public GetProductDetailResponse getProduct(Long productId) {
-        Product product = getProductOrThrow(productId);
+    public GetProductDetailResponse getProductDetail(Long productId) {
+        Product product = getProduct(productId);
 
         String imageUrl = s3Service.createPresignedGetUrl(product.getId(), S3BucketStatus.PRODUCT, product.getImageUuid());
 
@@ -90,9 +88,9 @@ public class ProductService {
     //특정 매장 상품 수정
     @Transactional
     public UpdateProductResponse updateProduct(AuthUser authUser, Long productId, UpdateProductRequest request) {
-        Product product = getProductOrThrow(productId);
+        Product product = getProduct(productId);
 
-        checkPermission(authUser, product.getStore().getOwner().getId());
+        idMismatchCheck(authUser, product);
 
         product.update(
                 request.getName(),
@@ -110,30 +108,45 @@ public class ProductService {
     //상품 삭제
     @Transactional
     public void delete(AuthUser authUser, Long productId) {
-        Product product = getProductOrThrow(productId);
+        Product product = getProduct(productId);
 
-        checkPermission(authUser, product.getStore().getOwner().getId());
+        idMismatchCheck(authUser, product);
 
         product.delete();
     }
 
-    //권한 확인
-    public void checkPermission(AuthUser authUser, Long ownerId) {
+    //상품 확인
+    @Transactional
+    public Product getProduct(Long productId) {
+        return productRepository.findByIdAndIsDeletedIsFalse(productId).orElseThrow(
+                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+    }
+
+    //판매자 아이디 주인 확인
+    public void idMismatchCheck(AuthUser authUser, Product product) {
         if (UserRole.ADMIN == authUser.getUserRole()) {
             return;
         }
 
-        if (UserRole.OWNER == authUser.getUserRole() && ownerId.equals(authUser.getUserId())) {
+        Long ownerId = product.getStore().getOwner().getId();
+        if (ownerId.equals(authUser.getUserId())) {
             return;
         }
 
         throw new CustomException(ErrorCode.FORBIDDEN);
     }
 
-    //상품 조회
+    //상품 재고 차감(-)
     @Transactional
-    public Product getProductOrThrow(Long productId) {
-        return productRepository.findByIdAndIsDeletedIsFalse(productId).orElseThrow(
-                () -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+    public void decreaseById(Long id, Integer count) {
+        Product product = getProduct(id);
+        product.decrease(count);
+    }
+
+    //상품 재고 가산(+)
+    @Transactional
+    public void increaseById(Long id, Integer count) {
+        Product product = getProduct(id);
+        product.increase(count);
     }
 }

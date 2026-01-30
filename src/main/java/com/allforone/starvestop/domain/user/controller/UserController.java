@@ -3,7 +3,7 @@ package com.allforone.starvestop.domain.user.controller;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.common.enums.SuccessMessage;
-import com.allforone.starvestop.domain.s3.dto.response.GetUserResponse;
+import com.allforone.starvestop.domain.user.dto.response.GetUserResponse;
 import com.allforone.starvestop.domain.user.dto.request.UpdateUserRequest;
 import com.allforone.starvestop.domain.user.dto.response.UpdateUserResponse;
 import com.allforone.starvestop.domain.user.service.UserService;
@@ -24,6 +24,7 @@ public class UserController {
     private final UserService userService;
 
     // 회원 조회
+    @GetMapping
     public ResponseEntity<CommonResponse<GetUserResponse>> getUser(@AuthenticationPrincipal AuthUser authUser) {
         Long userId = authUser.getUserId();
         GetUserResponse response = userService.getUser(userId);

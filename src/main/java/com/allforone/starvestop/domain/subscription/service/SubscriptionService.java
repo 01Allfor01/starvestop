@@ -4,7 +4,7 @@ import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.store.entity.Store;
-import com.allforone.starvestop.domain.store.service.StoreFunction;
+import com.allforone.starvestop.domain.store.service.StoreService;
 import com.allforone.starvestop.domain.subscription.dto.request.CreateSubscriptionRequest;
 import com.allforone.starvestop.domain.subscription.dto.request.UpdateSubscriptionRequest;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateSubscriptionResponse;
@@ -25,12 +25,12 @@ import java.util.List;
 public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final StoreFunction storeFunction;
+    private final StoreService storeService;
 
     // 구독 생성
     @Transactional
     public CreateSubscriptionResponse createSubscription(AuthUser authUser, Long storeId, @Valid CreateSubscriptionRequest request) {
-        Store store = storeFunction.getById(storeId);
+        Store store = storeService.getById(storeId);
 
         Long ownerId = authUser.getUserId();
         if (!ownerId.equals(store.getOwner().getId())) {

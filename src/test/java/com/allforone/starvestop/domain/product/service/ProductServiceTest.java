@@ -1,6 +1,7 @@
 //package com.allforone.starvestop.domain.product.service;
 //
 //import com.allforone.starvestop.common.dto.AuthUser;
+//import com.allforone.starvestop.domain.owner.entity.Owner;
 //import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 //import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
 //import com.allforone.starvestop.domain.product.entity.Product;
@@ -10,16 +11,16 @@
 //import com.allforone.starvestop.domain.store.enums.StoreCategory;
 //import com.allforone.starvestop.domain.store.enums.StoreStatus;
 //import com.allforone.starvestop.domain.store.repository.StoreRepository;
-//import com.allforone.starvestop.domain.user.entity.User;
 //import com.allforone.starvestop.domain.user.enums.UserRole;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.DisplayName;
 //import org.junit.jupiter.api.Test;
 //import org.junit.jupiter.api.extension.ExtendWith;
+//import org.locationtech.jts.geom.Coordinate;
+//import org.locationtech.jts.geom.Point;
 //import org.mockito.InjectMocks;
 //import org.mockito.Mock;
 //import org.mockito.junit.jupiter.MockitoExtension;
-//import org.springframework.data.geo.Point;
 //import org.springframework.test.util.ReflectionTestUtils;
 //
 //import java.math.BigDecimal;
@@ -47,11 +48,12 @@
 //
 //    @BeforeEach
 //    void setUp() {
-//        authUser = AuthUser.of(1L, "lee@seo.jun", "leeseojun", UserRole.ADMIN);
-//        User user = User.create("lee@seo.jun", "password", UserRole.ADMIN, "lsj", "leeseojun");
-//        ReflectionTestUtils.setField(user, "id", 1L);
-//        store = Store.create(user, "올포원 가게", "내배캠", "이곳은 내배캠", StoreCategory.KOREAN_FOOD,
-//                new Point(127.0016985, 37.5642135), LocalTime.now(), LocalTime.now().plusHours(9), StoreStatus.OPENED, "사업자 등록 번호");
+//        authUser = AuthUser.of(1L, "lee@seo.jun", "leeseojun", UserRole.OWNER);
+//        Owner owner = Owner.create("lee@seo.jun", "password", "leeseojun");
+//        ReflectionTestUtils.setField(owner, "id", 1L);
+//        Point point = new Point(new Coordinate(127.0016985,37.5642135)).setSRID(4326);
+//        store = Store.create(owner, "올포원 가게", "내배캠", "이곳은 내배캠", StoreCategory.KOREAN_FOOD,
+//                point, LocalTime.now(), LocalTime.now().plusHours(9), StoreStatus.OPENED, "사업자 등록 번호");
 //        ReflectionTestUtils.setField(store, "id", 1L);
 //    }
 //
@@ -70,10 +72,11 @@
 //
 //        Product product = Product.create(
 //                store,
-//                request.getProductName(),
+//                request.getName(),
 //                request.getDescription(),
-//                request.getPrice(), request.getStock(),
+//                request.getPrice(),
 //                request.getSalePrice(),
+//                request.getStock(),
 //                request.getStatus());
 //        ReflectionTestUtils.setField(product, "id", 3L);
 //
@@ -84,7 +87,7 @@
 //        CreateProductResponse response = productService.createProduct(authUser, request);
 //
 //        //then
-//        assertThat(response.getProductId()).isEqualTo(3L);
-//        assertThat(response.getProductName()).isEqualTo("두바이 쫀득 쿠키");
+//        assertThat(response.getId()).isEqualTo(3L);
+//        assertThat(response.getName()).isEqualTo("두바이 쫀득 쿠키");
 //    }
 //}

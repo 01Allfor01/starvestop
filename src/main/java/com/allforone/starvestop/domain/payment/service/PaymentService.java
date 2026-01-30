@@ -2,11 +2,19 @@ package com.allforone.starvestop.domain.payment.service;
 
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.domain.order.entity.Order;
+import com.allforone.starvestop.domain.order.entity.OrderProduct;
+import com.allforone.starvestop.domain.order.service.OrderProductService;
+import com.allforone.starvestop.domain.order.service.OrderService;
+import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentResponse;
+import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
+import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.repository.PaymentRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.allforone.starvestop.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -21,6 +29,10 @@ import java.util.Optional;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final ProductService productService;
+    private final OrderService orderService;
+    private final OrderProductService orderProductService;
+
     private final ObjectMapper objectMapper;
     private final WebClient paymentWebClient;
 
