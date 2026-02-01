@@ -1,6 +1,5 @@
 package com.allforone.starvestop.domain.product.service;
 
-import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.utils.GeometryUtil;
 import com.allforone.starvestop.domain.owner.entity.Owner;
 import com.allforone.starvestop.domain.owner.repository.OwnerRepository;
@@ -11,7 +10,6 @@ import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
-import com.allforone.starvestop.domain.user.enums.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -103,7 +101,6 @@ class ProductServiceConcurrencyTest {
         long endTime = System.nanoTime();
         executorService.shutdown();
 
-        long totalTime = System.nanoTime() - startTime;
         //then
         Product result = productService.getProduct(savedProduct.getId());
 
