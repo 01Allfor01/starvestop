@@ -18,7 +18,8 @@ public class GetStoreDetailResponse {
     private final String address;
     private final String description;
     private final StoreCategory category;
-    private final Point location;
+    private final Double latitude;
+    private final Double longitude;
     private final StoreStatus status;
     private final LocalTime openTime;
     private final LocalTime closeTime;
@@ -28,13 +29,15 @@ public class GetStoreDetailResponse {
     private final LocalDateTime updatedAt;
 
     public static GetStoreDetailResponse from(Store store, String imageUrl) {
+        Point point = store.getLocation();
         return new GetStoreDetailResponse(
                 store.getId(),
                 store.getName(),
                 store.getAddress(),
                 store.getDescription(),
                 store.getCategory(),
-                store.getLocation(),
+                point.getY(),
+                point.getX(),
                 store.getStatus(),
                 store.getOpenTime(),
                 store.getCloseTime(),

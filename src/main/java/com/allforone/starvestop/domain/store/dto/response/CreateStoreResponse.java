@@ -18,7 +18,8 @@ public class CreateStoreResponse {
     private final String address;
     private final String description;
     private final StoreCategory category;
-    private final Point location;
+    private final Double latitude;
+    private final Double longitude;
     private final StoreStatus status;
     private final LocalTime openTime;
     private final LocalTime closeTime;
@@ -27,13 +28,15 @@ public class CreateStoreResponse {
     private final LocalDateTime updatedAt;
 
     public static CreateStoreResponse from(Store store) {
+        Point point = store.getLocation();
         return new CreateStoreResponse(
                 store.getId(),
                 store.getName(),
                 store.getAddress(),
                 store.getDescription(),
                 store.getCategory(),
-                store.getLocation(),
+                point.getY(),
+                point.getX(),
                 store.getStatus(),
                 store.getOpenTime(),
                 store.getCloseTime(),

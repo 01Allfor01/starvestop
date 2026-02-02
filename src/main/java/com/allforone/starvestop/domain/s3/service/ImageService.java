@@ -35,7 +35,7 @@ public class ImageService {
 
         s3Service.deleteImage(userId, S3BucketStatus.USER, user.getImageUuid());
 
-        user.uploadImageUrl(request.getUuid());
+        user.uploadImageUrl(request.getImageUuid());
     }
 
     //매장 이미지 업로드 완료
@@ -43,22 +43,22 @@ public class ImageService {
     public void uploadStoreImage(AuthUser authUser, UploadImageRequest request) {
         Store store = storeService.getStore(request.getId());
 
-        storeService.idMismatchCheck(authUser.getUserId(), store);
+        storeService.idMismatchCheck(authUser, store);
 
-        s3Service.deleteImage(store.getId(), S3BucketStatus.USER, store.getImageUuid());
+        s3Service.deleteImage(store.getId(), S3BucketStatus.STORE, store.getImageUuid());
 
-        store.uploadImageUrl(request.getUuid());
+        store.uploadImageUrl(request.getImageUuid());
     }
 
     //상품 이미지 업로드 완료
     @Transactional
     public void uploadProductImage(AuthUser authUser, UploadImageRequest request) {
-        Product product = productService.getProductOrThrow(request.getId());
+        Product product = productService.getProduct(request.getId());
 
-        productService.checkPermission(authUser, product.getStore().getOwner().getId());
+        productService.idMismatchCheck(authUser, product);
 
-        s3Service.deleteImage(product.getId(), S3BucketStatus.USER, product.getImageUuid());
+        s3Service.deleteImage(product.getId(), S3BucketStatus.PRODUCT, product.getImageUuid());
 
-        product.uploadImageUrl(request.getUuid());
+        product.uploadImageUrl(request.getImageUuid());
     }
 }
