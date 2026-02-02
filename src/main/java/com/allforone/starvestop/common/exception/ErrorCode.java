@@ -36,7 +36,10 @@ public enum ErrorCode {
     // 구독
     SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구독입니다"),
     SUBSCRIPTION_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "구독 재고가 부족합니다"),
-
+    SUBSCRIPTION_INVALID_STATUS_TRANSITION
+            (HttpStatus.CONFLICT, "현재 구독 상태에서는 이 작업을 수행할 수 없습니다"),
+    SUBSCRIPTION_BILLING_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 결제 수단이 존재합니다"),
+    SUBSCRIPTION_BILLING_REQUIRED(HttpStatus.CONFLICT, "자동 결제를 위해 결제 수단 등록이 필요합니다"),
     // 주문
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다"),
 
@@ -46,7 +49,7 @@ public enum ErrorCode {
     PAYMENT_TARGET_AMBIGUOUS(HttpStatus.BAD_REQUEST, "상품과 구독 중 하나만 선택해주세요"),
     INVALID_PAYMENT_STATE(HttpStatus.CONFLICT, "잘못된 결제 상태입니다"),
     DUPLICATE_ORDER_ID(HttpStatus.CONFLICT, "이미 존재하는 주문 번호입니다"),
-
+    BILLING_KEY_ISSUE_FAILED(HttpStatus.BAD_GATEWAY, "결제 수단 등록에 실패 하였습니다"),
     // 구매
     PURCHASE_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품 유형입니다"),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "상품의 재고가 부족합니다"),

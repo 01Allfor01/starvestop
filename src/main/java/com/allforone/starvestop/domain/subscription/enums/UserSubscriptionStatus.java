@@ -1,5 +1,9 @@
 package com.allforone.starvestop.domain.subscription.enums;
 
 public enum UserSubscriptionStatus {
-    PENDING, EXPIRED, ACTIVE
+    PENDING,
+    ACTIVE,
+    PAYMENT_FAILED,
+    SUSPENDED,
+    EXPIRED
 }

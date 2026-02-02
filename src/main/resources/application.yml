@@ -43,6 +43,10 @@ spring:
             token-uri: https://kauth.kakao.com
             user-info-uri: https://kapi.kakao.com
             user-name-attribute: id
+app:
+  crypto:
+    billing-key-base64: ${BILLING_KEY_BASE64}
+
 cloud:
   aws:
     credentials:

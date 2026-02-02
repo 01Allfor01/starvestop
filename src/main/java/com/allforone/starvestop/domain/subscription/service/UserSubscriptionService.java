@@ -3,24 +3,28 @@ package com.allforone.starvestop.domain.subscription.service;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.common.utils.BillingKeyCrypto;
+import com.allforone.starvestop.domain.payment.entity.UserBilling;
+import com.allforone.starvestop.domain.payment.enums.BillingStatus;
+import com.allforone.starvestop.domain.payment.infra.TossBillingClient;
 import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionDetailResponse;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
+import com.allforone.starvestop.domain.subscription.enums.UserSubscriptionStatus;
 import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateUserSubscriptionResponse;
-import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionDetailResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionResponse;
-import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.subscription.entity.UserSubscription;
 import com.allforone.starvestop.domain.subscription.repository.UserSubscriptionRepository;
-import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,8 @@ public class UserSubscriptionService {
     private final UserService userService;
     private final SubscriptionRepository subscriptionRepository;
     private final UserSubscriptionRepository userSubscriptionRepository;
+    private final TossBillingClient tossBillingClient;
+    private final BillingKeyCrypto billingKeyCrypto;
 
     //사용자 구독 추가
     @Transactional
@@ -108,5 +114,56 @@ public class UserSubscriptionService {
     public UserSubscription getUserSubscriptionOrThrow(Long userSubscriptionId) {
         return userSubscriptionRepository.findByIdAndIsDeletedIsFalse(userSubscriptionId).orElseThrow(
                 () -> new CustomException(ErrorCode.USER_SUBSCRIPTION_NOT_FOUND));
+    }
+
+    @Transactional
+    public void activate(Long userId, Long subscriptionId, UserBilling billing) {
+        UserSubscription us = userSubscriptionRepository
+                .findByUserIdAndSubscriptionId(userId, subscriptionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+
+        us.activate(billing, LocalDateTime.now());
+    }
+
+    @Transactional
+    public int chargeDueSubscriptions() {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<UserSubscription> dueList =
+                userSubscriptionRepository.findAllByStatusAndExpiresAtLessThanEqual(UserSubscriptionStatus.ACTIVE, now);
+
+        int successCount = 0;
+
+        for (UserSubscription us : dueList) {
+            try {
+                UserBilling billing = us.getBilling();
+                if (billing == null || billing.getStatus() != BillingStatus.ACTIVE) {
+                    us.onChargeFailed();
+                    continue;
+                }
+
+                String billingKeyPlain = billingKeyCrypto.decrypt(billing.getEncryptedBillingKey());
+                String customerKey = billing.getCustomerKey();
+
+                String orderId = "sub_" + us.getId() + "_" + UUID.randomUUID();
+                String orderName = "subscription";
+                long amount = resolveAmount(us);
+
+                tossBillingClient.approveBilling(billingKeyPlain, customerKey, orderId, amount, orderName);
+
+                billing.markUsed(now);
+                us.onChargeSuccess(now);
+                successCount++;
+
+            } catch (Exception e) {
+                us.onChargeFailed();
+            }
+        }
+
+        return successCount;
+    }
+
+    private long resolveAmount(UserSubscription us) {
+        return 9900L;
     }
 }

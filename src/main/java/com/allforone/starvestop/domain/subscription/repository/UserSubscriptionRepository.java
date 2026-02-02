@@ -1,10 +1,12 @@
 package com.allforone.starvestop.domain.subscription.repository;
 
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
+import com.allforone.starvestop.domain.subscription.enums.UserSubscriptionStatus;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.subscription.entity.UserSubscription;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +19,8 @@ public interface UserSubscriptionRepository extends JpaRepository<UserSubscripti
     Optional<UserSubscription> findByUserAndSubscription(User user, Subscription subscription);
 
     boolean existsByUserAndSubscriptionAndIsDeletedIsFalse(User user, Subscription subscription);
+
+    List<UserSubscription> findAllByStatusAndExpiresAtLessThanEqual(UserSubscriptionStatus status, LocalDateTime now);
+
+    Optional<UserSubscription> findByUserIdAndSubscriptionId(Long userId, Long subscriptionId);
 }
