@@ -42,20 +42,4 @@ public class PaymentRepositoryImpl implements PaymentRepositoryCustom {
 
         return (int) updated;
     }
-
-    @Override
-    public PaymentStatus getStatusByOrderKey(String orderKey) {
-        QPayment payment = QPayment.payment;
-
-        return jpaQueryFactory
-                .select(payment.status)
-                .from(payment)
-                .where(
-                        payment.orderKey.eq(orderKey),
-                        payment.isDeleted.isFalse()
-                )
-                .fetchOne();
-    }
-
-
 }

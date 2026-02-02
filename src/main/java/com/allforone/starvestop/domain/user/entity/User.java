@@ -8,6 +8,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Getter
 @Entity
 @Table(name = "users")
@@ -34,6 +36,9 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 30)
     private String username;
 
+    @Column(nullable = false, unique = true, updatable = false, length = 36)
+    private String userKey;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private AuthProvider provider;
@@ -50,6 +55,13 @@ public class User extends BaseEntity {
         this.username = username;
         this.provider = provider;
         this.providerId = providerId;
+    }
+
+    @PrePersist
+    private void generateUserKey() {
+        if (this.userKey == null) {
+            this.userKey = UUID.randomUUID().toString();
+        }
     }
 
     public static User create(String email, String password, String nickname, String username) {
