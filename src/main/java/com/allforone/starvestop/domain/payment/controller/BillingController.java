@@ -33,7 +33,7 @@ public class BillingController {
                 userId,
                 request.getCustomerKey(),
                 request.getAuthKey(),
-                request.getUserSubscriptionId()
+                request.getSubscriptionId()
         );
 
         return ResponseEntity.ok(CommonResponse.success(BILLING_CONFIRM_SUCCESS, new BillingConfirmResponse(true)));

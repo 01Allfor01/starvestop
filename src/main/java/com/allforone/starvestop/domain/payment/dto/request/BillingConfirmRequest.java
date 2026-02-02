@@ -6,5 +6,5 @@ import lombok.Getter;
 public class BillingConfirmRequest {
     private String customerKey;
     private String authKey;
-    private Long userSubscriptionId;
+    private Long subscriptionId;
 }

@@ -7,15 +7,15 @@ import com.allforone.starvestop.common.utils.BillingKeyCrypto;
 import com.allforone.starvestop.domain.payment.entity.UserBilling;
 import com.allforone.starvestop.domain.payment.enums.BillingStatus;
 import com.allforone.starvestop.domain.payment.infra.TossBillingClient;
+import com.allforone.starvestop.domain.subscription.dto.response.CreateUserSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionDetailResponse;
+import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
+import com.allforone.starvestop.domain.subscription.entity.UserSubscription;
 import com.allforone.starvestop.domain.subscription.enums.UserSubscriptionStatus;
 import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
-import com.allforone.starvestop.domain.user.entity.User;
-import com.allforone.starvestop.domain.subscription.dto.response.CreateUserSubscriptionResponse;
-import com.allforone.starvestop.domain.subscription.dto.response.GetUserSubscriptionResponse;
-import com.allforone.starvestop.domain.subscription.entity.UserSubscription;
 import com.allforone.starvestop.domain.subscription.repository.UserSubscriptionRepository;
+import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -118,11 +118,11 @@ public class UserSubscriptionService {
 
     @Transactional
     public void activate(Long userId, Long subscriptionId, UserBilling billing) {
-        UserSubscription us = userSubscriptionRepository
+        UserSubscription userSubscription = userSubscriptionRepository
                 .findByUserIdAndSubscriptionId(userId, subscriptionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
 
-        us.activate(billing, LocalDateTime.now());
+        userSubscription.activate(billing, LocalDateTime.now());
     }
 
     @Transactional
