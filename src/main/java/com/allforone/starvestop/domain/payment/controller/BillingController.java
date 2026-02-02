@@ -8,7 +8,10 @@ import com.allforone.starvestop.domain.payment.service.BillingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import static com.allforone.starvestop.common.enums.SuccessMessage.BILLING_CONFIRM_SUCCESS;
 
@@ -30,9 +33,9 @@ public class BillingController {
                 userId,
                 request.getCustomerKey(),
                 request.getAuthKey(),
-                request.getSubscriptionId()
+                request.getUserSubscriptionId()
         );
 
-        return ResponseEntity.ok(CommonResponse.success(BILLING_CONFIRM_SUCCESS,new BillingConfirmResponse(true)));
+        return ResponseEntity.ok(CommonResponse.success(BILLING_CONFIRM_SUCCESS, new BillingConfirmResponse(true)));
     }
 }

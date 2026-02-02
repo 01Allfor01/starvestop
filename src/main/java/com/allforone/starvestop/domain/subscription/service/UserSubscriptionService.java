@@ -129,34 +129,35 @@ public class UserSubscriptionService {
     public int chargeDueSubscriptions() {
         LocalDateTime now = LocalDateTime.now();
 
+        // 1. 결제 대상(연장 대상) 구독 조회
         List<UserSubscription> dueList =
                 userSubscriptionRepository.findAllByStatusAndExpiresAtLessThanEqual(UserSubscriptionStatus.ACTIVE, now);
-
+        // 2. 결제 성공 갯수 집계
         int successCount = 0;
 
-        for (UserSubscription us : dueList) {
+        for (UserSubscription userSubscription : dueList) {
             try {
-                UserBilling billing = us.getBilling();
+                UserBilling billing = userSubscription.getBilling();
                 if (billing == null || billing.getStatus() != BillingStatus.ACTIVE) {
-                    us.onChargeFailed();
+                    userSubscription.onChargeFailed();
                     continue;
                 }
 
                 String billingKeyPlain = billingKeyCrypto.decrypt(billing.getEncryptedBillingKey());
                 String customerKey = billing.getCustomerKey();
 
-                String orderId = "sub_" + us.getId() + "_" + UUID.randomUUID();
+                String orderId = "sub_" + userSubscription.getId() + "_" + UUID.randomUUID();
                 String orderName = "subscription";
-                long amount = resolveAmount(us);
+                long amount = resolveAmount(userSubscription);
 
                 tossBillingClient.approveBilling(billingKeyPlain, customerKey, orderId, amount, orderName);
 
                 billing.markUsed(now);
-                us.onChargeSuccess(now);
+                userSubscription.onChargeSuccess(now);
                 successCount++;
 
             } catch (Exception e) {
-                us.onChargeFailed();
+                userSubscription.onChargeFailed();
             }
         }
 
