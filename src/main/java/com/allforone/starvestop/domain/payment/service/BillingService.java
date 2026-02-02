@@ -33,9 +33,9 @@ public class BillingService {
             throw new CustomException(ErrorCode.SUBSCRIPTION_BILLING_ALREADY_EXISTS);
         });
 
-        Map<String, Object> res;
+        Map<String, Object> response;
         try {
-            res = tossBillingClient.issueBillingKey(authKey, customerKey);
+            response = tossBillingClient.issueBillingKey(authKey, customerKey);
         } catch (WebClientResponseException e) {
             // 토스가 4xx/5xx 주는 케이스
             throw new CustomException(ErrorCode.BILLING_KEY_ISSUE_FAILED);
@@ -44,11 +44,11 @@ public class BillingService {
             throw new CustomException(ErrorCode.BILLING_KEY_ISSUE_FAILED);
         }
 
-        if (res == null || res.get("billingKey") == null) {
+        if (response == null || response.get("billingKey") == null) {
             throw new CustomException(ErrorCode.BILLING_KEY_ISSUE_FAILED);
         }
 
-        String billingKeyPlain = res.get("billingKey").toString();
+        String billingKeyPlain = response.get("billingKey").toString();
         String encrypted = billingKeyCrypto.encrypt(billingKeyPlain);
 
         LocalDateTime now = LocalDateTime.now();

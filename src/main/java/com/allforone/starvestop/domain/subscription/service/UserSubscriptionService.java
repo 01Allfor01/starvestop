@@ -164,7 +164,7 @@ public class UserSubscriptionService {
         return successCount;
     }
 
-    private long resolveAmount(UserSubscription us) {
+    private long resolveAmount(UserSubscription userSubscription) {
         return 9900L;
     }
 }
