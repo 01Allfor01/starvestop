@@ -10,6 +10,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -18,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 @Aspect
 @Component
 @RequiredArgsConstructor
-//@Order(Ordered.HIGHEST_PRECEDENCE)
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class RedissonLockAspect {
 
     private final RedissonClient redissonClient;
@@ -29,12 +31,12 @@ public class RedissonLockAspect {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
 
-//        if (method.getDeclaringClass().isInterface()) {
-//            method = joinPoint
-//                    .getTarget()
-//                    .getClass()
-//                    .getDeclaredMethod(method.getName(), method.getParameterTypes());
-//        }
+        if (method.getDeclaringClass().isInterface()) {
+            method = joinPoint
+                    .getTarget()
+                    .getClass()
+                    .getDeclaredMethod(method.getName(), method.getParameterTypes());
+        }
 
         RedissonLock redissonLock = method.getAnnotation(RedissonLock.class);
 
