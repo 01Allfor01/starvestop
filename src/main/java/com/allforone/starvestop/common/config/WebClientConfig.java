@@ -20,10 +20,13 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class WebClientConfig {
 
-    @Value("${spring.payment.secret-key}")
+    @Value("${payment.secret-key}") // 일반결제 MID 시크릿키
     private String secretKey;
 
-    @Value("${spring.payment.base-url}")
+    @Value("${payment.billing-secret-key}") // 자동결제 MID 시크릿키
+    private String secretBillingKey;
+
+    @Value("${payment.base-url}")
     private String baseUrl;
 
     @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
@@ -32,26 +35,37 @@ public class WebClientConfig {
     @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
     private String kakaoApiUrl;
 
-    @Bean
-    public WebClient paymentWebClient(WebClient.Builder builder) {
-        HttpClient httpClient = HttpClient.create()
+    private HttpClient defaultHttpClient() {
+        return HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3_000)
                 .responseTimeout(Duration.ofSeconds(5))
-                .doOnConnected(conn ->
-                        conn.addHandlerLast(new ReadTimeoutHandler(5, TimeUnit.SECONDS))
-                                .addHandlerLast(new WriteTimeoutHandler(5, TimeUnit.SECONDS))
+                .doOnConnected(conn -> conn
+                        .addHandlerLast(new ReadTimeoutHandler(5, TimeUnit.SECONDS))
+                        .addHandlerLast(new WriteTimeoutHandler(5, TimeUnit.SECONDS))
                 );
+    }
 
+    private WebClient buildTossWebClient(WebClient.Builder builder, String secretKey) {
         String basicToken = Base64.getEncoder()
                 .encodeToString((secretKey + ":").getBytes(StandardCharsets.UTF_8));
 
         return builder
                 .baseUrl(baseUrl)
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .clientConnector(new ReactorClientHttpConnector(defaultHttpClient()))
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Basic " + basicToken)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
+    }
+
+    @Bean
+    public WebClient paymentWebClient(WebClient.Builder builder) {
+        return buildTossWebClient(builder, secretKey);
+    }
+
+    @Bean
+    public WebClient paymentBillingWebClient(WebClient.Builder builder) {
+        return buildTossWebClient(builder, secretBillingKey);
     }
 
     @Bean

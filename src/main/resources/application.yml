@@ -15,9 +15,6 @@ spring:
       hibernate:
         format_sql: false
     show-sql: true
-  payment:
-    base-url: https://api.tosspayments.com
-    secret-key: ${PAYMENT_SECRET_KEY}
   data:
     redis:
       host: ${REDIS_HOST}
@@ -53,3 +50,7 @@ cloud:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
     bucket-name: ${AWS_BUCKET_NAME}
+payment:
+  base-url: https://api.tosspayments.com
+  secret-key: ${PAYMENT_WIDGET_SECRET_KEY}
+  billing-secret-key: ${PAYMENT_SECRET_KEY}
