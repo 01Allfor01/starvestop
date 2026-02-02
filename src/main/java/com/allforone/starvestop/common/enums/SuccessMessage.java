@@ -93,6 +93,9 @@ public enum SuccessMessage {
     PRESIGNED_URL_CREATE_SUCCESS("이미지 업로드 URL 생성 성공"),
     IMAGE_UPLOAD_SUCCESS("이미지 업로드 성공"),
 
+    //api로그
+    API_LOG_GET_SUCCESS("API 로그 조회 성공"),
+
 
     ;
 
