@@ -32,20 +32,20 @@ public class UserBilling {
     private LocalDateTime registeredAt;
     private LocalDateTime lastUsedAt;
 
-    private UserBilling(Long userId, String customerKey, String encryptedBillingKey, LocalDateTime now) {
+    private UserBilling(Long userId, String customerKey, String encryptedBillingKey) {
         this.userId = userId;
         this.customerKey = customerKey;
         this.encryptedBillingKey = encryptedBillingKey;
         this.status = BillingStatus.ACTIVE;
-        this.registeredAt = now;
+        this.registeredAt = LocalDateTime.now();
     }
 
-    public static UserBilling create(Long userId, String customerKey, String encryptedBillingKey, LocalDateTime now) {
-        return new UserBilling(userId, customerKey, encryptedBillingKey, now);
+    public static UserBilling create(Long userId, String customerKey, String encryptedBillingKey) {
+        return new UserBilling(userId, customerKey, encryptedBillingKey);
     }
 
-    public void markUsed(LocalDateTime now) {
-        this.lastUsedAt = now;
+    public void markUsed() {
+        this.lastUsedAt = LocalDateTime.now();
     }
 
     public void deactivate(BillingStatus status) {

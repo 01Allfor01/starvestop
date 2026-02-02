@@ -56,7 +56,7 @@ public class UserSubscription extends BaseEntity {
         return new UserSubscription(user, subscription);
     }
 
-    public void activate(UserBilling billing, LocalDateTime now) {
+    public void activate(UserBilling billing) {
         if (this.status != UserSubscriptionStatus.PENDING) {
             throw new CustomException(ErrorCode.SUBSCRIPTION_INVALID_STATUS_TRANSITION);
         }
@@ -65,19 +65,19 @@ public class UserSubscription extends BaseEntity {
         }
         this.billing = billing;
         this.status = UserSubscriptionStatus.ACTIVE;
-        this.expiresAt = now.plusMonths(1);
+        this.expiresAt = LocalDateTime.now().plusMonths(1);
     }
 
-    public boolean isDue(LocalDateTime now) {
+    public boolean isDue() {
         return this.status == UserSubscriptionStatus.ACTIVE
                 && this.expiresAt != null
-                && !this.expiresAt.isAfter(now); // expiresAt <= now
+                && !this.expiresAt.isAfter(LocalDateTime.now()); // expiresAt <= now
     }
 
-    public void onChargeSuccess(LocalDateTime now) {
+    public void onChargeSuccess() {
         // 성공 시 1개월 연장
         this.status = UserSubscriptionStatus.ACTIVE;
-        this.expiresAt = now.plusMonths(1);
+        this.expiresAt = LocalDateTime.now().plusMonths(1);
     }
 
     public void onChargeFailed() {

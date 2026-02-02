@@ -122,7 +122,7 @@ public class UserSubscriptionService {
                 .findByUserIdAndSubscriptionId(userId, subscriptionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
 
-        userSubscription.activate(billing, LocalDateTime.now());
+        userSubscription.activate(billing);
     }
 
     @Transactional
@@ -152,8 +152,8 @@ public class UserSubscriptionService {
 
                 tossBillingClient.approveBilling(billingKeyPlain, customerKey, orderId, amount, orderName);
 
-                billing.markUsed(now);
-                userSubscription.onChargeSuccess(now);
+                billing.markUsed();
+                userSubscription.onChargeSuccess();
                 successCount++;
 
             } catch (Exception e) {
