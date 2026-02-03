@@ -13,10 +13,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -32,9 +29,9 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<StoreDto> searchStorePage(SearchStoreCond cond) {
+    public Slice<StoreDto> searchStorePage(SearchStoreCond cond) {
 
-        Pageable pageable = PageRequest.of(cond.getPage(), cond.getSize());
+        NumberExpression<Double> distance = distanceExpression(cond.getNowLatitude(), cond.getNowLongitude());
 
         List<StoreDto> list = queryFactory
                 .select(Projections.constructor(StoreDto.class,
@@ -50,31 +47,29 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
                 ))
                 .distinct()
                 .from(store)
-                .leftJoin(product).on(product.store.eq(store).and(product.isDeleted.isFalse()))
                 .where(
                         store.isDeleted.isFalse(),
+                        boundingBox(cond.getNowLatitude(), cond.getNowLongitude()),
+                        withinDistance(distance),
+                        eqCategory(cond.getCategory()),
                         containsKeywordStore(cond.getKeyword()),
-                        eqCategory(cond.getCategory())
+                        cursorIdLt(cond.getCursorId())
                 )
-                .orderBy(createDistanceSort(cond.getNowLatitude(), cond.getNowLongitude()))
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .orderBy(distance.asc(), store.id.desc())
+                .limit(cond.getSize() + 1)
                 .fetch();
 
-        Long count = queryFactory.select(store.countDistinct())
-                .from(store)
-                .where(
-                        store.isDeleted.isFalse(),
-                        containsKeywordStore(cond.getKeyword()),
-                        eqCategory(cond.getCategory())
-                )
-                .fetchOne();
+        boolean hasNext = false;
 
-        long total = count != null ? count : 0L;
+        if (list.size() > cond.getSize()) {
+            list.remove(cond.getSize());
+            hasNext = true;
+        }
 
-        return new PageImpl<>(list, pageable, total);
+        return new SliceImpl<>(list, PageRequest.of(0, cond.getSize()), hasNext);
     }
 
+    //매장 이름 keyword 포함 확인
     private BooleanExpression containsKeywordStore(String keyword) {
         if (!StringUtils.hasText(keyword)) {
             return null;
@@ -82,6 +77,7 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
         return store.name.contains(keyword).or(containsKeywordProduct(keyword));
     }
 
+    //상품 이름 keyword 포함 확인
     private BooleanExpression containsKeywordProduct(String keyword) {
         if (!StringUtils.hasText(keyword)) {
             return null;
@@ -97,6 +93,64 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
                 .exists();
     }
 
+    //boundingBox
+    private BooleanExpression boundingBox(Double nowLatitude, Double nowLongitude) {
+        if (nowLatitude == null || nowLongitude == null) {
+            return null;
+        }
+
+        double deltaLat = (double) 5 / 111.0;
+        double deltaLon = (double) 5 / (111.0 * Math.cos(Math.toRadians(nowLatitude)));
+
+        double minLat = nowLatitude - deltaLat;
+        double maxLat = nowLatitude + deltaLat;
+        double minLon = nowLongitude - deltaLon;
+        double maxLon = nowLongitude + deltaLon;
+
+        String wkt = String.format(
+                "POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))",
+                minLat, minLon,
+                minLat, maxLon,
+                maxLat, maxLon,
+                maxLat, minLon,
+                minLat, minLon
+        );
+
+        NumberExpression<Integer> contains = Expressions.numberTemplate(
+                Integer.class,
+                "MBRContains(ST_GeomFromText({0}, 4326), {1}) ",
+                wkt,
+                store.location
+        );
+
+        return contains.eq(1);
+    }
+
+    //거리 nkm 이내 조건 (5km이내)
+    private BooleanExpression withinDistance(NumberExpression<Double> distance) {
+        if (distance == null) {
+            return null;
+        }
+
+        return distance.loe(5000.0);
+    }
+
+    //거리 계산
+    private NumberExpression<Double> distanceExpression(Double nowLatitude, Double nowLongitude) {
+        if (nowLatitude == null || nowLongitude == null) {
+            return null;
+        }
+
+        Point now = GeometryUtil.createPoint(nowLongitude, nowLatitude);
+
+        return Expressions.numberTemplate(Double.class,
+                "ST_Distance_Sphere({0}, {1})",
+                store.location,
+                now
+        );
+    }
+
+    //매장 카테고리 확인
     private BooleanExpression eqCategory(String category) {
         if (!StringUtils.hasText(category)) {
             return null;
@@ -104,19 +158,8 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
         return store.category.eq(StoreCategory.valueOf(category));
     }
 
-    private OrderSpecifier<?> createDistanceSort(Double nowLatitude, Double nowLongitude) {
-        if (nowLatitude == null || nowLongitude == null) {
-            return store.id.desc();
-        }
-
-        Point now = GeometryUtil.createPoint(nowLongitude, nowLatitude);
-
-        NumberExpression<Double> distanceExpression = Expressions.numberTemplate(Double.class,
-                "ST_Distance_Sphere({0}, {1})",
-                store.location,
-                now
-        );
-
-        return distanceExpression.asc();
+    //커서 기반 id
+    private BooleanExpression cursorIdLt(Long cursorId) {
+        return (cursorId == null) ? null : store.id.lt(cursorId);
     }
 }

@@ -2,10 +2,10 @@ package com.allforone.starvestop.domain.store.repository;
 
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.dto.response.StoreDto;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 
 
 public interface StoreRepositoryCustom {
 
-    Page<StoreDto> searchStorePage(SearchStoreCond searchStoreCond);
+    Slice<StoreDto> searchStorePage(SearchStoreCond searchStoreCond);
 }
