@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>채팅 테스트 (with Token)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body {
+            padding: 20px;
+            font-family: sans-serif;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: inline-block;
+            width: 80px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 300px;
+            padding: 5px;
+        }
+
+        #messages {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            height: 300px;
+            overflow-y: scroll;
+        }
+
+        #messages li {
+            padding: 5px 10px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+<h2>1대1 채팅 테스트</h2>
+
+<div class="input-group">
+    <label>토큰(JWT):</label>
+    <input type="text" id="token" placeholder="Bearer eyJhbGciOi...">
+</div>
+<div class="input-group">
+    <label>방 번호:</label>
+    <input type="text" id="roomId" value="1">
+    <button onclick="connect()">연결 & 구독</button>
+</div>
+
+<hr>
+
+<div class="input-group">
+    <label>메시지:</label>
+    <input type="text" id="message" placeholder="내용 입력">
+    <button onclick="sendMessage()">전송</button>
+</div>
+
+<ul id="messages"></ul>
+
+<script>
+    var stompClient = null;
+
+    function connect() {
+        var rawToken = document.getElementById("token").value; // 입력된 값 가져오기
+        var roomId = document.getElementById("roomId").value;
+
+        if (!rawToken) {
+            alert("로그인 토큰을 입력해주세요!");
+            return;
+        }
+
+        var token = rawToken.startsWith("Bearer ") ? rawToken : "Bearer " + rawToken;
+
+        var socket = new SockJS('http://localhost:8080/ws-stomp');
+        stompClient = Stomp.over(socket);
+
+        var headers = {
+            'Authorization': token
+        };
+
+        stompClient.connect(headers, function (frame) {
+            console.log('Connected: ' + frame);
+            alert("연결 성공!");
+
+            stompClient.subscribe('/sub/chat-rooms/' + roomId, function (message) {
+                showMessage(JSON.parse(message.body).content);
+            }, headers);
+
+        }, function (error) {
+            console.log("Connection error: " + error);
+            alert("연결 실패! 토큰이나 방 번호를 확인하세요.");
+        });
+    }
+
+    function sendMessage() {
+        var token = document.getElementById("token").value;
+        var roomId = document.getElementById("roomId").value;
+        var content = document.getElementById("message").value;
+
+        if (!stompClient) {
+            alert("먼저 연결을 해주세요.");
+            return;
+        }
+
+        // 전송할 때 헤더 포함
+        stompClient.send("/pub/chat-rooms/" + roomId + "/send",
+            {'Authorization': token},
+            JSON.stringify({'content': content})
+        );
+
+        document.getElementById("message").value = '';
+    }
+
+    function showMessage(message) {
+        var li = document.createElement("li");
+        li.appendChild(document.createTextNode(message));
+        document.getElementById("messages").appendChild(li);
+        // 스크롤 아래로
+        var list = document.getElementById("messages");
+        list.scrollTop = list.scrollHeight;
+    }
+</script>
+</body>
+</html>

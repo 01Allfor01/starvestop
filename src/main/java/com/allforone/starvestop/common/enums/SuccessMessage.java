@@ -95,6 +95,10 @@ public enum SuccessMessage {
     //api로그
     API_LOG_GET_SUCCESS("API 로그 조회 성공"),
 
+    //채팅
+    CHAT_ROOM_CREATE_SUCCESS("채팅방 생성 성공"),
+    CHAT_ROOM_GET_SUCCESS("채팅방 목록 조회 성공"),
+    CHAT_MESSAGE_GET_SUCCESS("채팅 메세지 조회 성공")
 
     ;
 
