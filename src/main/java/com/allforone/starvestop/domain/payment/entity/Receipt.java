@@ -5,7 +5,6 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.payment.enums.ReceiptStatus;
-import com.allforone.starvestop.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -23,9 +22,8 @@ public class Receipt extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(nullable = false)
+    private Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id")
@@ -34,7 +32,7 @@ public class Receipt extends BaseEntity {
     @Column(nullable = false)
     private String orderKey;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String paymentKey;
 
     @Column(nullable = false)
@@ -44,8 +42,8 @@ public class Receipt extends BaseEntity {
     @Column(nullable = false)
     private BigDecimal amount;
 
-    private Receipt(User user, Order order, String orderKey, String paymentKey, BigDecimal amount) {
-        this.user = user;
+    private Receipt(Long userId, Order order, String orderKey, String paymentKey, BigDecimal amount) {
+        this.userId = userId;
         this.order = order;
         this.orderKey = orderKey;
         this.paymentKey = paymentKey;
@@ -53,9 +51,9 @@ public class Receipt extends BaseEntity {
         this.amount = amount;
     }
 
-    public static Receipt create(User user, Order order, String orderKey, String paymentKey, BigDecimal amount) {
+    public static Receipt create(Long userId, Order order, String orderKey, String paymentKey, BigDecimal amount) {
         return new Receipt(
-                user,
+                userId,
                 order,
                 orderKey,
                 paymentKey,

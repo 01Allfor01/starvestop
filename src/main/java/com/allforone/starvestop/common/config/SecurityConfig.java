@@ -41,7 +41,9 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/billing.html",
+                                "/billing-success.html"
                         ).permitAll()
 
                         .requestMatchers("/error").permitAll()

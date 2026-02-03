@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+</head>
+<body>
+<h2>구독 성공</h2>
+<p>구독이 정상적으로 완료되었습니다.</p>
+
+<p id="customerKey"></p>
+<p id="authKey"></p>
+
+<script>
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const customerKey = urlParams.get("customerKey");
+    const authKey = urlParams.get("authKey");
+
+    const orderIdElement = document.getElementById("customerKey");
+    const amountElement = document.getElementById("authKey");
+
+    if (customerKey) orderIdElement.textContent = "사용자 키: " + customerKey;
+    if (authKey) amountElement.textContent = "인증 키: " + authKey;
+</script>
+</body>
+</html>

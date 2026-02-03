@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -29,12 +30,8 @@ import java.util.Optional;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final ProductService productService;
-    private final OrderService orderService;
-    private final OrderProductService orderProductService;
-
     private final ObjectMapper objectMapper;
-    private final WebClient paymentWebClient;
+    private final @Qualifier("paymentWebClient") WebClient paymentWebClient;
 
     public Payment getByOrderKey(String orderKey) {
         return paymentRepository.getPaymentByOrderKey(orderKey);
