@@ -32,8 +32,8 @@ public class NotificationController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<CommonResponse<Map<String, Object>>> sendNotification(@RequestBody NotificationDto notification) {
-            BatchResponse response = notificationService.sendNotification(notification, tokens.getAll());
+    public ResponseEntity<CommonResponse<Map<String, Object>>> sendMultiNotification(@RequestBody NotificationDto notification) {
+            BatchResponse response = notificationService.sendMultiNotification(notification, tokens.getAll());
 
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("response", response.getResponses());
@@ -50,4 +50,24 @@ public class NotificationController {
 
             return ResponseEntity.ok(CommonResponse.success(SuccessMessage.NOTIFICATION_SEND_SUCCESS, result));
     }
+
+//    @PostMapping("/send")
+//    public ResponseEntity<CommonResponse<Map<String, Object>>> sendNotification(@RequestBody NotificationDto notification) {
+//        BatchResponse response = notificationService.sendNotification(notification);
+//
+//        Map<String, Object> result = new LinkedHashMap<>();
+//        result.put("response", response.getResponses());
+//        result.put("success", response.getSuccessCount());
+//        result.put("failure", response.getFailureCount());
+//
+//        List<Map<String, String>> failures = new ArrayList<>();
+//        for (SendResponse r : response.getResponses()) {
+//            if (!r.isSuccessful()) {
+//                failures.add(Map.of("error", r.getException().getMessage()));
+//            }
+//        }
+//        result.put("failures", failures);
+//
+//        return ResponseEntity.ok(CommonResponse.success(SuccessMessage.NOTIFICATION_SEND_SUCCESS, result));
+//    }
 }
