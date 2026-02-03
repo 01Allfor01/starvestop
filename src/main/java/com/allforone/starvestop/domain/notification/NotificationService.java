@@ -12,7 +12,7 @@ import java.util.Set;
 public class NotificationService {
 
     @Transactional
-    public BatchResponse sendNotification(NotificationDto notification, Set<String> tokens) {
+    public BatchResponse sendMultiNotification(NotificationDto notification, Set<String> tokens) {
         try {
             MulticastMessage message = MulticastMessage.builder()
                     .addAllTokens(tokens)
@@ -20,20 +20,28 @@ public class NotificationService {
                             .setTitle(notification.getTitle())
                             .setBody(notification.getBody())
                             .build())
-                    .putData("click_action", "OPEN_APP")
                     .build();
 
             return FirebaseMessaging.getInstance().sendEachForMulticast(message);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.NOTIFICATION_SEND_FAIL);
         }
-//        Message message = Message.builder()
+    }
+
+//    @Transactional
+//    public BatchResponse sendNotification(NotificationDto notification) {
+//        try {
+//            Message message = Message.builder()
 //                .setToken(notification.getToken())
 //                .setNotification(Notification.builder()
 //                        .setTitle(notification.getTitle())
 //                        .setBody(notification.getBody())
 //                        .build())
-//                .putData("click_action", "OPEN_APP")
 //                .build();
-    }
+//
+//            return FirebaseMessaging.getInstance().send(message);
+//        } catch (Exception e) {
+//            throw new CustomException(ErrorCode.NOTIFICATION_SEND_FAIL);
+//        }
+//    }
 }
