@@ -4,7 +4,6 @@ import com.allforone.starvestop.common.utils.GeometryUtil;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.dto.response.StoreDto;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
