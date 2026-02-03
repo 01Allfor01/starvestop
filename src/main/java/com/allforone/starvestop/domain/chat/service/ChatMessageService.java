@@ -77,13 +77,9 @@ public class ChatMessageService {
         checkPermission(authUser, chatRoom);
 
         if (authUser.getUserRole() == UserRole.USER) {
-            if (chatRoom.getUserId().equals(authUser.getUserId())) {
-                chatRoom.resetUserUnreadCount();
-            }
+            chatRoom.resetUserUnreadCount();
         } else if (authUser.getUserRole() == UserRole.OWNER) {
-            if (chatRoom.getOwnerId().equals(authUser.getUserId())) {
-                chatRoom.resetOwnerUnreadCount();
-            }
+            chatRoom.resetOwnerUnreadCount();
         }
     }
 
