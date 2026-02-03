@@ -29,7 +29,7 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<StoreDto> searchStorePage(SearchStoreCond cond) {
+    public Slice<StoreDto> searchStoreSlice(SearchStoreCond cond) {
 
         NumberExpression<Double> distance = distanceExpression(cond.getNowLatitude(), cond.getNowLongitude());
 

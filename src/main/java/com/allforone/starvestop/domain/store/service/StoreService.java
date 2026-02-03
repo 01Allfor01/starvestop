@@ -100,7 +100,7 @@ public class StoreService {
     //매장 목록 조회
     @Transactional(readOnly = true)
     public Slice<StoreResponse> getStoreSlice(SearchStoreCond cond) {
-        Slice<StoreDto> storeDtoPage = storeRepository.searchStorePage(cond);
+        Slice<StoreDto> storeDtoPage = storeRepository.searchStoreSlice(cond);
 
         return storeDtoPage
                 .map(dto -> {

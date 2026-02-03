@@ -7,5 +7,5 @@ import org.springframework.data.domain.Slice;
 
 public interface StoreRepositoryCustom {
 
-    Slice<StoreDto> searchStorePage(SearchStoreCond searchStoreCond);
+    Slice<StoreDto> searchStoreSlice(SearchStoreCond searchStoreCond);
 }
