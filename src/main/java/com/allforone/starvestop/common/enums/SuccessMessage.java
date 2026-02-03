@@ -1,6 +1,7 @@
 package com.allforone.starvestop.common.enums;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 public enum SuccessMessage {
@@ -92,6 +93,9 @@ public enum SuccessMessage {
     PRESIGNED_URL_CREATE_SUCCESS("이미지 업로드 URL 생성 성공"),
     IMAGE_UPLOAD_SUCCESS("이미지 업로드 성공"),
 
+    //FCM
+    NOTIFICATION_TOKEN_STORE_SUCCESS("알림 토큰 저장 성공"),
+    NOTIFICATION_SEND_SUCCESS("알림 전송 성공"),
 
     ;
 

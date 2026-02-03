@@ -48,6 +48,9 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/login/**", "/oauth2/**").permitAll()
+                        .requestMatchers("/notifications/**").permitAll()
+                        .requestMatchers("/pushtest.html").permitAll()
+                        .requestMatchers("firebase-messaging-sw.js").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/payments/success").permitAll()
                         .requestMatchers(HttpMethod.GET, "/payments/fail").permitAll()
