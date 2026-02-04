@@ -15,9 +15,6 @@ spring:
       hibernate:
         format_sql: false
     show-sql: true
-  payment:
-    base-url: https://api.tosspayments.com
-    secret-key: ${PAYMENT_SECRET_KEY}
   data:
     redis:
       host: ${REDIS_HOST}
@@ -43,12 +40,20 @@ spring:
             token-uri: https://kauth.kakao.com
             user-info-uri: https://kapi.kakao.com
             user-name-attribute: id
+app:
+  crypto:
+    billing-key-base64: ${BILLING_KEY_BASE64}
+
 cloud:
   aws:
     credentials:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
     bucket-name: ${AWS_BUCKET_NAME}
+payment:
+  base-url: https://api.tosspayments.com
+  secret-key: ${PAYMENT_WIDGET_SECRET_KEY}
+  billing-secret-key: ${PAYMENT_SECRET_KEY}
 
 fcm:
   secret-file: ${FCM_SECRET_FILE}

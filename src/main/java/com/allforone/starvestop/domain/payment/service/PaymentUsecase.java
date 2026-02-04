@@ -61,7 +61,6 @@ public class PaymentUsecase {
             payment.markRequestedEvent();
             paymentEventRelay.relayFrom(payment);
 
-
             return CreatePaymentResponse.from(payment);
 
         } catch (DataIntegrityViolationException e) {
