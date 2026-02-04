@@ -18,20 +18,20 @@ public class SearchStoreCond {
     @DecimalMax(value = "180.0", message = "경도는 180 이하여야 합니다")
     private final Double nowLongitude;
 
-    private final int page;
     private final int size;
+    private final Long cursorId;
 
     public SearchStoreCond(String keyword,
                            String category,
                            Double nowLatitude,
                            Double nowLongitude,
-                           Integer page,
-                           Integer size) {
+                           Integer size,
+                           Long cursorId) {
         this.keyword = keyword;
         this.category = category;
         this.nowLatitude = nowLatitude;
         this.nowLongitude = nowLongitude;
-        this.page = page != null ? page : 0;
         this.size = size != null ? size : 10;
+        this.cursorId = cursorId;
     }
 }
