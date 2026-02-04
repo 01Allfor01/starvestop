@@ -29,7 +29,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-class ProductServiceConcurrencyTest {
+@Tag("concurrency")
+class ProductServiceConCurrencyTest {
 
     @Autowired
     private ProductRepository productRepository;
