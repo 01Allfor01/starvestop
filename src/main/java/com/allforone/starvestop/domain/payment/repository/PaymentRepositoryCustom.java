@@ -12,5 +12,4 @@ public interface PaymentRepositoryCustom {
             List<PaymentStatus> releasableStatuses
     );
 
-    PaymentStatus getStatusByOrderKey(String string);
 }

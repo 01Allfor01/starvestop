@@ -41,7 +41,9 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/billing.html",
+                                "/billing-success.html"
                         ).permitAll()
 
                         .requestMatchers("/error").permitAll()
@@ -69,6 +71,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/coupons/**").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/coupons/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api-logs/**").hasAnyRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
