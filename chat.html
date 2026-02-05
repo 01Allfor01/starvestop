@@ -126,6 +126,22 @@
         var list = document.getElementById("messages");
         list.scrollTop = list.scrollHeight;
     }
+
+    window.onload = function () {
+        loadChatHistory();
+    };
+
+    function loadChatHistory() {
+        fetch(`/stores/${storeId}/chat-rooms/${roomId}/messages?size=50`)
+            .then(response => response.json())
+            .then(data => {
+                var messages = data.data.content;
+                messages.reverse().forEach(message => {
+                    displayMessage(message);
+                });
+            })
+            .catch(error => console.error(error));
+    }
 </script>
 </body>
 </html>

@@ -64,11 +64,18 @@ public class ChatMessageService {
     }
 
     @Transactional(readOnly = true)
-    public Slice<ChatMessageResponse> getChatMessageList(AuthUser authUser, Long roomId, Pageable pageable) {
+    public Slice<ChatMessageResponse> getChatMessageList(AuthUser authUser, Long roomId, Long cursorId, Pageable pageable) {
         ChatRoom chatRoom = chatRoomService.getById(roomId);
         checkPermission(authUser, chatRoom);
-        return chatMessageRepository.findByRoomIdOrderByIdDesc(roomId, pageable)
-                .map(ChatMessageResponse::from);
+        Slice<ChatMessage> messages;
+
+        if (cursorId == null) {
+            messages = chatMessageRepository.findByRoomIdOrderByIdDesc(roomId, pageable);
+        } else {
+            messages = chatMessageRepository.findByRoomIdAndIdLessThanOrderByIdDesc(roomId, cursorId, pageable);
+        }
+
+        return messages.map(ChatMessageResponse::from);
     }
 
     @Transactional

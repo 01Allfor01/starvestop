@@ -13,6 +13,8 @@ public class ChatRoomResponse {
     private final Long id;
     private final Long userId;
     private final Long ownerId;
+    private final Long storeId;
+    private final String storeName;
     private final Integer unreadCount;
     private final Long lastMessageId;
     private final LocalDateTime lastMessageAt;
@@ -22,6 +24,8 @@ public class ChatRoomResponse {
                 chatRoom.getId(),
                 chatRoom.getUserId(),
                 chatRoom.getOwnerId(),
+                chatRoom.getStoreId(),
+                chatRoom.getStoreName(),
                 chatRoom.getUserUnreadCount(),
                 chatRoom.getLastMessageId(),
                 chatRoom.getLastMessageAt()
@@ -33,6 +37,8 @@ public class ChatRoomResponse {
                 chatRoom.getId(),
                 chatRoom.getUserId(),
                 chatRoom.getOwnerId(),
+                chatRoom.getStoreId(),
+                chatRoom.getStoreName(),
                 chatRoom.getOwnerUnreadCount(),
                 chatRoom.getLastMessageId(),
                 chatRoom.getLastMessageAt()

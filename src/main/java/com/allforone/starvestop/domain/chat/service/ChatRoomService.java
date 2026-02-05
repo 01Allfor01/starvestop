@@ -36,7 +36,7 @@ public class ChatRoomService {
         return chatRoomRepository.findByUserIdAndOwnerId(userId, ownerId)
                 .map(ChatRoomResponse::fromForUser)
                 .orElseGet(() -> {
-                    ChatRoom newRoom = ChatRoom.create(userId, ownerId);
+                    ChatRoom newRoom = ChatRoom.create(userId, ownerId, storeId, store.getName());
                     ChatRoom savedRoom = chatRoomRepository.save(newRoom);
                     return ChatRoomResponse.fromForUser(savedRoom);
                 });

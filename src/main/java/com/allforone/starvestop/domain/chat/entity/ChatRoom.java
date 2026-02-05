@@ -32,6 +32,12 @@ public class ChatRoom {
     private Long ownerId;
 
     @Column(nullable = false)
+    private Long storeId;
+
+    @Column(nullable = false)
+    private String storeName;
+
+    @Column(nullable = false)
     private int userUnreadCount;
 
     @Column(nullable = false)
@@ -46,17 +52,19 @@ public class ChatRoom {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    public ChatRoom(Long userId, Long ownerId) {
+    public ChatRoom(Long userId, Long ownerId, Long storeId, String storeName) {
         this.userId = userId;
         this.ownerId = ownerId;
+        this.storeId = storeId;
+        this.storeName = storeName;
         this.userUnreadCount = 0;
         this.ownerUnreadCount = 0;
         this.createdAt = LocalDateTime.now();
         this.lastMessageAt = this.createdAt;
     }
 
-    public static ChatRoom create(Long userId, Long ownerId) {
-        return new ChatRoom(userId, ownerId);
+    public static ChatRoom create(Long userId, Long ownerId, Long storeId, String storeName) {
+        return new ChatRoom(userId, ownerId, storeId, storeName);
     }
 
     public void updateLastMessage(Long messageId, LocalDateTime messageTime) {

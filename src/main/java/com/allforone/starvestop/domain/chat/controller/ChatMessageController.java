@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
@@ -44,11 +45,12 @@ public class ChatMessageController {
     public ResponseEntity<CommonResponse<Slice<ChatMessageResponse>>> getChatMessageList(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long roomId,
+            @RequestParam(required = false) Long cursorId,
             @PageableDefault(size = 20) Pageable pageable
     ) {
         chatMessageService.markAsRead(authUser, roomId);
 
-        Slice<ChatMessageResponse> responseList = chatMessageService.getChatMessageList(authUser, roomId, pageable);
+        Slice<ChatMessageResponse> responseList = chatMessageService.getChatMessageList(authUser, roomId, cursorId, pageable);
 
         return ResponseEntity.ok(CommonResponse.success(CHAT_MESSAGE_GET_SUCCESS, responseList));
     }
