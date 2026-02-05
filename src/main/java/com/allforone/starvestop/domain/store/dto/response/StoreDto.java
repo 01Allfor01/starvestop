@@ -22,17 +22,4 @@ public class StoreDto {
     private final StoreStatus status;
     private final String imageUuid;
 
-    public static StoreDto from(Store store) {
-        return new StoreDto(
-                store.getId(),
-                store.getName(),
-                store.getAddress(),
-                store.getCategory(),
-                store.getLocation(),
-                store.getOpenTime(),
-                store.getCloseTime(),
-                store.getStatus(),
-                store.getImageUuid()
-        );
-    }
 }
