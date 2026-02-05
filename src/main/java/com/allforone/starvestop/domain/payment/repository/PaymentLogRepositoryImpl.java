@@ -6,6 +6,8 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,30 +19,47 @@ public class PaymentLogRepositoryImpl implements PaymentLogRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<SearchPaymentLogResponse> search(String orderKey, Long userId) {
+    public Page<SearchPaymentLogResponse> search(String orderKey, Long userId, Pageable pageable) {
         QPaymentLog pl = QPaymentLog.paymentLog;
 
         if (orderKey == null && userId == null) {
-            return List.of();
+            return Page.empty(pageable);
         }
 
-        return jpaQueryFactory.select(
-                        Projections.constructor(
-                                SearchPaymentLogResponse.class,
-                                pl.id,
-                                pl.paymentId,
-                                pl.userId,
-                                pl.orderKey,
-                                pl.pgStatus,
-                                pl.timestamp
-                        ))
+        List<SearchPaymentLogResponse> content = jpaQueryFactory
+                .select(Projections.constructor(
+                        SearchPaymentLogResponse.class,
+                        pl.id,
+                        pl.paymentId,
+                        pl.userId,
+                        pl.orderKey,
+                        pl.pgStatus,
+                        pl.timestamp
+                ))
                 .from(pl)
-                .where(orderKeyEq(orderKey, pl),
-                        userIdEq(userId, pl))
+                .where(
+                        orderKeyEq(orderKey, pl),
+                        userIdEq(userId, pl)
+                )
                 .orderBy(pl.timestamp.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
+        Long total = jpaQueryFactory
+                .select(pl.count())
+                .from(pl)
+                .where(
+                        orderKeyEq(orderKey, pl),
+                        userIdEq(userId, pl)
+                )
+                .fetchOne();
+
+        long totalElements = (total == null) ? 0L : total;
+
+        return new org.springframework.data.domain.PageImpl<>(content, pageable, totalElements);
     }
+
 
     private BooleanExpression orderKeyEq(String orderKey, QPaymentLog pl) {
         return (orderKey == null || orderKey.isBlank()) ? null : pl.orderKey.eq(orderKey);
@@ -49,4 +68,5 @@ public class PaymentLogRepositoryImpl implements PaymentLogRepositoryCustom {
     private BooleanExpression userIdEq(Long userId, QPaymentLog pl) {
         return (userId == null) ? null : pl.userId.eq(userId);
     }
+
 }

@@ -7,15 +7,13 @@ import com.allforone.starvestop.domain.payment.dto.response.GetReceiptDetailResp
 import com.allforone.starvestop.domain.payment.dto.response.GetReceiptResponse;
 import com.allforone.starvestop.domain.payment.service.ReceiptService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,9 +23,14 @@ public class ReceiptController {
     private final ReceiptService receiptService;
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<GetReceiptResponse>>> getReceiptList(@AuthenticationPrincipal AuthUser authUser) {
+    public ResponseEntity<CommonResponse<Page<GetReceiptResponse>>> getReceiptList(
+            @AuthenticationPrincipal AuthUser authUser,
+            @RequestParam int pageNum,
+            @RequestParam int pageSize) {
         Long userId = authUser.getUserId();
-        List<GetReceiptResponse> result = receiptService.getReceiptList(userId);
+
+        Pageable pageable = PageRequest.of(pageNum, pageSize);
+        Page<GetReceiptResponse> result = receiptService.getReceiptList(userId, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SuccessMessage.RECEIPT_GET_SUCCESS, result));
     }

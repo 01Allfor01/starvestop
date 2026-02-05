@@ -12,6 +12,8 @@ import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.entity.Receipt;
 import com.allforone.starvestop.domain.payment.repository.ReceiptRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,8 +39,8 @@ public class ReceiptService {
 
     // 내 영수증 목록 조회 (N+1 발생 주의 지점 고도화때 해결할 예정)
     @Transactional(readOnly = true)
-    public List<GetReceiptResponse> getReceiptList(Long userId) {
-        List<Receipt> receiptList = receiptRepository.findReceiptsByUserId(userId);
+    public Page<GetReceiptResponse> getReceiptList(Long userId, Pageable pageable) {
+        Page<Receipt> receiptList = receiptRepository.findReceiptsByUserId(userId,pageable);
 
         return receiptList.stream().map((x) -> GetReceiptResponse.from(userId, x)).toList();
     }
