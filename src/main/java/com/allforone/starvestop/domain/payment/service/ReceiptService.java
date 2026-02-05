@@ -42,7 +42,7 @@ public class ReceiptService {
     public Page<GetReceiptResponse> getReceiptList(Long userId, Pageable pageable) {
         Page<Receipt> receiptList = receiptRepository.findReceiptsByUserId(userId,pageable);
 
-        return receiptList.stream().map((x) -> GetReceiptResponse.from(userId, x)).toList();
+        return receiptList.map((x) -> GetReceiptResponse.from(userId, x));
     }
 
     // 내 영수증 상세 조회
