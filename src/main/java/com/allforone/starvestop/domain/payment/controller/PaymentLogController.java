@@ -16,8 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/paymentLogs")
@@ -44,14 +42,14 @@ public class PaymentLogController {
 
     // 로그 검색 (관리자만 접근 가능)
     @GetMapping("/search")
-    public ResponseEntity<CommonResponse<List<SearchPaymentLogResponse>>> search(
+    public ResponseEntity<CommonResponse<Page<SearchPaymentLogResponse>>> search(
             @RequestParam @Nullable String orderKey,
             @RequestParam @Nullable Long userId,
             @RequestParam int pageNum,
             @RequestParam int pageSize) {
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by("timestamp"));
 
-        List<SearchPaymentLogResponse> response = paymentLogService.searchPaymentLog(orderKey, userId, pageable);
+        Page<SearchPaymentLogResponse> response = paymentLogService.searchPaymentLog(orderKey, userId, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SuccessMessage.PAYMENT_LOG_SEARCH_SUCCESS, response));
     }
 }
