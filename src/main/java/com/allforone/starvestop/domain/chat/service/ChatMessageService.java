@@ -63,7 +63,7 @@ public class ChatMessageService {
         messagingTemplate.convertAndSend("/sub/chat-rooms/" + roomId, response);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Slice<ChatMessageResponse> getChatMessageList(AuthUser authUser, Long roomId, Long cursorId, Pageable pageable) {
         ChatRoom chatRoom = chatRoomService.getById(roomId);
         checkPermission(authUser, chatRoom);

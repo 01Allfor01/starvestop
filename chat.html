@@ -2,101 +2,275 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>채팅 테스트 (with Token)</title>
+    <title>채팅 테스트</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <style>
         body {
-            padding: 20px;
+            margin: 0;
+            padding: 0;
             font-family: sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header-area {
+            padding: 15px;
+            background: white;
+            border-bottom: 1px solid #ddd;
         }
 
         .input-group {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         label {
             display: inline-block;
             width: 80px;
+            font-size: 13px;
             font-weight: bold;
         }
 
         input {
-            width: 300px;
-            padding: 5px;
+            width: 250px;
+            padding: 4px;
+            font-size: 13px;
+        }
+
+        #chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #bacee0;
+            overflow: hidden;
+            position: relative;
         }
 
         #messages {
             list-style-type: none;
-            padding: 0;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            height: 300px;
-            overflow-y: scroll;
+            padding: 15px;
+            margin: 0;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        #messages li {
-            padding: 5px 10px;
-            border-bottom: 1px solid #eee;
+        /* 하단 입력바 스타일 */
+        .footer-area {
+            background: white;
+            padding: 10px 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border-top: 1px solid #ddd;
+        }
+
+        #message {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        #btn-send {
+            padding: 10px 20px;
+            background-color: #ffe000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #btn-send:disabled {
+            background-color: #eee;
+            cursor: default;
+        }
+
+        /* 메시지 디자인 */
+        .message-row {
+            display: flex;
+            width: 100%;
+            align-items: flex-end;
+        }
+
+        .my-message {
+            justify-content: flex-end;
+        }
+
+        .my-message .message-bubble {
+            background-color: #ffe000;
+            order: 2;
+            border-top-right-radius: 2px;
+        }
+
+        .my-message .message-time {
+            order: 1;
+            margin-right: 5px;
+            text-align: right;
+        }
+
+        .other-message {
+            justify-content: flex-start;
+        }
+
+        .other-message .message-bubble {
+            background-color: #ffffff;
+            order: 1;
+            border-top-left-radius: 2px;
+        }
+
+        .other-message .message-time {
+            order: 2;
+            margin-left: 5px;
+            text-align: left;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            word-wrap: break-word;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: #555;
+            min-width: 45px;
+            margin-bottom: 2px;
         }
     </style>
 </head>
 <body>
-<h2>1대1 채팅 테스트</h2>
 
-<div class="input-group">
-    <label>토큰(JWT):</label>
-    <input type="text" id="token" placeholder="Bearer eyJhbGciOi...">
-</div>
-<div class="input-group">
-    <label>방 번호:</label>
-    <input type="text" id="roomId" value="1">
-    <button onclick="connect()">연결 & 구독</button>
-</div>
-
-<hr>
-
-<div class="input-group">
-    <label>메시지:</label>
-    <input type="text" id="message" placeholder="내용 입력">
-    <button onclick="sendMessage()">전송</button>
+<div class="header-area">
+    <div class="input-group">
+        <label>토큰:</label>
+        <input type="text" id="token" placeholder="Bearer ...">
+    </div>
+    <div class="input-group">
+        <label>방 번호:</label>
+        <input type="text" id="roomId" value="1">
+        <button id="btn-connect" onclick="connect()">연결</button>
+        <button id="btn-disconnect" onclick="disconnect()" disabled>해제</button>
+    </div>
 </div>
 
-<ul id="messages"></ul>
+<div id="chat-container">
+    <ul id="messages"></ul>
+</div>
+
+<div class="footer-area">
+    <input type="text" id="message" placeholder="메시지를 입력하세요" onkeyup="if(window.event.keyCode==13){sendMessage()}">
+    <button id="btn-send" onclick="sendMessage()" disabled>전송</button>
+</div>
 
 <script>
     var stompClient = null;
+    var myUserId = null;
 
-    function connect() {
-        var rawToken = document.getElementById("token").value; // 입력된 값 가져오기
+    window.onload = function () {
+        var savedToken = localStorage.getItem("chatToken");
+        var savedRoomId = localStorage.getItem("chatRoomId");
+
+        if (savedToken && savedRoomId) {
+            document.getElementById("token").value = savedToken;
+            document.getElementById("roomId").value = savedRoomId;
+            connect(true);
+        }
+    };
+
+    function parseJwt(token) {
+        try {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function formatTime(dateString) {
+        if (!dateString) return "";
+        var date = new Date(dateString);
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var ampm = hours >= 12 ? '오후' : '오전';
+        hours = hours % 12 || 12;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        return ampm + ' ' + hours + ':' + minutes;
+    }
+
+    function setConnected(connected) {
+        document.getElementById('btn-connect').disabled = connected;
+        document.getElementById('btn-disconnect').disabled = !connected;
+        document.getElementById('btn-send').disabled = !connected;
+    }
+
+    function connect(isAutoConnect = false) {
+        if (stompClient !== null && stompClient.connected) return;
+
+        var rawToken = document.getElementById("token").value;
         var roomId = document.getElementById("roomId").value;
 
         if (!rawToken) {
-            alert("로그인 토큰을 입력해주세요!");
+            alert("토큰을 입력해주세요!");
             return;
         }
 
-        var token = rawToken.startsWith("Bearer ") ? rawToken : "Bearer " + rawToken;
+        var decoded = parseJwt(rawToken);
+        if (decoded) {
+            myUserId = decoded.userId || decoded.sub;
+        }
 
+        localStorage.setItem("chatToken", rawToken);
+        localStorage.setItem("chatRoomId", roomId);
+
+        document.getElementById('btn-connect').disabled = true;
+
+        var token = rawToken.startsWith("Bearer ") ? rawToken : "Bearer " + rawToken;
         var socket = new SockJS('http://localhost:8080/ws-stomp');
         stompClient = Stomp.over(socket);
 
-        var headers = {
-            'Authorization': token
-        };
+        var headers = {'Authorization': token};
 
         stompClient.connect(headers, function (frame) {
-            console.log('Connected: ' + frame);
-            alert("연결 성공!");
+            setConnected(true);
+            if (!isAutoConnect) {
+                alert("연결 성공!");
+            }
+            loadChatHistory();
 
             stompClient.subscribe('/sub/chat-rooms/' + roomId, function (message) {
-                showMessage(JSON.parse(message.body).content);
+                var body = JSON.parse(message.body);
+                showMessage(body);
             }, headers);
 
         }, function (error) {
-            console.log("Connection error: " + error);
-            alert("연결 실패! 토큰이나 방 번호를 확인하세요.");
+            alert("연결 실패: " + error);
+            setConnected(false);
+            localStorage.removeItem("chatToken");
         });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+        stompClient = null;
+        setConnected(false);
+        localStorage.removeItem("chatToken");
+        localStorage.removeItem("chatRoomId");
+        alert("연결 해제되었습니다.");
     }
 
     function sendMessage() {
@@ -104,40 +278,64 @@
         var roomId = document.getElementById("roomId").value;
         var content = document.getElementById("message").value;
 
-        if (!stompClient) {
-            alert("먼저 연결을 해주세요.");
-            return;
+        if (!content.trim()) return;
+
+        var finalToken = token.startsWith("Bearer ") ? token : "Bearer " + token;
+
+        try {
+            stompClient.send("/pub/chat-rooms/" + roomId + "/send",
+                {'Authorization': finalToken},
+                JSON.stringify({'content': content})
+            );
+            document.getElementById("message").value = '';
+        } catch (e) {
+            alert("전송 실패!");
         }
-
-        // 전송할 때 헤더 포함
-        stompClient.send("/pub/chat-rooms/" + roomId + "/send",
-            {'Authorization': token},
-            JSON.stringify({'content': content})
-        );
-
-        document.getElementById("message").value = '';
     }
 
-    function showMessage(message) {
-        var li = document.createElement("li");
-        li.appendChild(document.createTextNode(message));
-        document.getElementById("messages").appendChild(li);
-        // 스크롤 아래로
+    function showMessage(data) {
         var list = document.getElementById("messages");
+        var li = document.createElement("li");
+        li.classList.add("message-row");
+
+        var isMe = (data.senderId == myUserId);
+        li.classList.add(isMe ? "my-message" : "other-message");
+
+        var bubble = document.createElement("div");
+        bubble.classList.add("message-bubble");
+        bubble.innerText = data.content;
+
+        var timeSpan = document.createElement("div");
+        timeSpan.classList.add("message-time");
+        timeSpan.innerText = formatTime(data.createdAt);
+
+        li.appendChild(bubble);
+        li.appendChild(timeSpan);
+        list.appendChild(li);
+
         list.scrollTop = list.scrollHeight;
     }
 
-    window.onload = function () {
-        loadChatHistory();
-    };
-
     function loadChatHistory() {
-        fetch(`/stores/${storeId}/chat-rooms/${roomId}/messages?size=50`)
-            .then(response => response.json())
+        var roomId = document.getElementById("roomId").value;
+        var token = document.getElementById("token").value;
+        var list = document.getElementById("messages");
+
+        var finalToken = token.startsWith("Bearer ") ? token : "Bearer " + token;
+        list.innerHTML = '';
+
+        fetch(`http://localhost:8080/chat-rooms/${roomId}/messages?size=50`, {
+            method: 'GET',
+            headers: {'Authorization': finalToken, 'Content-Type': 'application/json'}
+        })
+            .then(response => {
+                if (!response.ok) throw new Error(response.status);
+                return response.json();
+            })
             .then(data => {
                 var messages = data.data.content;
                 messages.reverse().forEach(message => {
-                    displayMessage(message);
+                    showMessage(message);
                 });
             })
             .catch(error => console.error(error));

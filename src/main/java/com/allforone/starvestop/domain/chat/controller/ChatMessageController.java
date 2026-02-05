@@ -15,10 +15,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
@@ -26,6 +23,7 @@ import static com.allforone.starvestop.common.enums.SuccessMessage.CHAT_MESSAGE_
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class ChatMessageController {
 
     private final ChatMessageService chatMessageService;
