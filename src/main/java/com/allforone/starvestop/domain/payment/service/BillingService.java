@@ -51,8 +51,7 @@ public class BillingService {
         String billingKeyPlain = response.get("billingKey").toString();
         String encrypted = billingKeyCrypto.encrypt(billingKeyPlain);
 
-        LocalDateTime now = LocalDateTime.now();
-        UserBilling billing = UserBilling.create(userId, customerKey, encrypted, now);
+        UserBilling billing = UserBilling.create(userId, customerKey, encrypted);
 
         try {
             return billingRepository.save(billing);

@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.store.controller;
 
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
+import com.allforone.starvestop.common.dto.SliceResponse;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.dto.request.CreateStoreRequest;
 import com.allforone.starvestop.domain.store.dto.request.UpdateStoreRequest;
@@ -11,7 +12,7 @@ import com.allforone.starvestop.domain.store.dto.response.StoreResponse;
 import com.allforone.starvestop.domain.store.service.StoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -53,12 +54,16 @@ public class StoreController {
         return ResponseEntity.ok(CommonResponse.successNoData(STORE_DELETE_SUCCESS));
     }
 
+    //매장 조회
     @GetMapping
-    public ResponseEntity<CommonResponse<Page<StoreResponse>>> getStorePage(
+    public ResponseEntity<CommonResponse<SliceResponse<StoreResponse>>> getStorePage(
             @ModelAttribute @Valid SearchStoreCond request
     ) {
-        Page<StoreResponse> response = storeService.getStorePage(request);
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_LIST_GET_SUCCESS, response));
+        Slice<StoreResponse> response = storeService.getStoreSlice(request);
+
+        SliceResponse<StoreResponse> result = SliceResponse.from(response);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_LIST_GET_SUCCESS, result));
     }
 
     //매장 상세 조회
