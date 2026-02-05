@@ -21,7 +21,7 @@ import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,18 +99,19 @@ public class StoreService {
 
     //매장 목록 조회
     @Transactional(readOnly = true)
-    public Page<StoreResponse> getStorePage(SearchStoreCond cond) {
-        Page<StoreDto> storeDtoPage = storeRepository.searchStorePage(cond);
+    public Slice<StoreResponse> getStoreSlice(SearchStoreCond cond) {
+        Slice<StoreDto> storeDtoPage = storeRepository.searchStoreSlice(cond);
 
-        return storeDtoPage.map(dto -> {
+        return storeDtoPage
+                .map(dto -> {
 
-            String imageUrl = s3Service.createPresignedGetUrl(
-                    dto.getId(),
-                    S3BucketStatus.STORE,
-                    dto.getImageUuid());
+                    String imageUrl = s3Service.createPresignedGetUrl(
+                            dto.getId(),
+                            S3BucketStatus.STORE,
+                            dto.getImageUuid());
 
-            return StoreResponse.from(dto, imageUrl);
-        });
+                    return StoreResponse.from(dto, imageUrl);
+                });
     }
 
     //매장 상세 조회
