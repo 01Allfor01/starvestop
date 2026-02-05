@@ -26,10 +26,10 @@ public class OrderService {
     private final OrderProductService orderProductService;
 
     @Transactional
-    public Order createOrder(User user, Store store, UserCoupon userCoupon, BigDecimal amount) {
+    public Order createOrder(User user, Store store, UserCoupon userCoupon, BigDecimal discountedPrice, BigDecimal amount) {
         String orderKey = UUID.randomUUID().toString();
 
-        return orderRepository.save(Order.create(store, orderKey, user, userCoupon, amount));
+        return orderRepository.save(Order.create(store, orderKey, user, userCoupon, discountedPrice, amount));
     }
 
     @Transactional(readOnly = true)
