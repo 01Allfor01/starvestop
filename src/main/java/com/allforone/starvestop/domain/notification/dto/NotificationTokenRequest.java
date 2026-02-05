@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.notification;
+package com.allforone.starvestop.domain.notification.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

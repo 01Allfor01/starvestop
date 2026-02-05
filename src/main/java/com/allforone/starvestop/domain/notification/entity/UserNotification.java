@@ -1,5 +1,6 @@
-package com.allforone.starvestop.domain.notification;
+package com.allforone.starvestop.domain.notification.entity;
 
+import com.allforone.starvestop.domain.notification.NotificationPlatformType;
 import com.allforone.starvestop.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

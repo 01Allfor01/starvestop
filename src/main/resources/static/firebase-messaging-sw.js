@@ -13,10 +13,6 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
-    const title = payload?.notification?.title ?? "알림";
-    const options = {
-        body: payload?.notification?.body ?? "",
-    };
-    self.registration.showNotification(title, options);
-});
+messaging.onBackgroundMessage((payload) =>
+    log("onMessage: " + JSON.stringify(payload))
+);
