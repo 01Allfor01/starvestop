@@ -51,7 +51,7 @@ public class StoreRedisService {
                             return d > lastDistance
                                     || (Double.compare(d, lastDistance) == 0 && id > lastId);
                         })
-                .limit(size + 1)
+                .limit(size * 10L)
                 .map(r -> new StoreRedisDto(
                         Long.parseLong(r.getContent().getName()),
                         r.getContent().getPoint(),

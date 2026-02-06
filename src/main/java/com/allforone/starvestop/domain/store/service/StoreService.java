@@ -161,13 +161,13 @@ public class StoreService {
                             imageUrl
                     );
                 })
-                .toList();
+                .limit(limitSize + 1)
+                .collect(Collectors.toList());
 
-        boolean hasNext = false;
+        boolean hasNext = responseList.size() > limitSize;
 
-        if (list.size() > limitSize) {
-            list.remove(limitSize);
-            hasNext = true;
+        if (hasNext) {
+            responseList.remove(limitSize);
         }
 
         Pageable pageable = PageRequest.of((cond.getSize() == null ? 0 : 1), limitSize);
