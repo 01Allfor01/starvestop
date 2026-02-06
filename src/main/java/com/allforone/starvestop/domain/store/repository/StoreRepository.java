@@ -1,14 +1,15 @@
 package com.allforone.starvestop.domain.store.repository;
 
 import com.allforone.starvestop.domain.store.entity.Store;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface StoreRepository extends JpaRepository<Store, Long>, StoreRepositoryCustom {
 
     Optional<Store> findByIdAndIsDeletedIsFalse(Long id);
 
-    List<Store> findAllByIsDeletedIsFalse();
+    Page<Store> findByOwnerIdAndIsDeletedIsFalseOrderByName(Long ownerId, Pageable pageable);
 }

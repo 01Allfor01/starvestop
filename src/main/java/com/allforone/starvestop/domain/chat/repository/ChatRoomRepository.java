@@ -23,4 +23,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
     Optional<ChatRoom> findByUserIdAndOwnerId(Long userId, Long ownerId);
 
+    @Query("SELECT COALESCE(SUM(c.ownerUnreadCount), 0) FROM ChatRoom c WHERE c.storeId = :storeId")
+    Long countTotalOwnerUnreadByStoreId(@Param("storeId") Long storeId);
 }

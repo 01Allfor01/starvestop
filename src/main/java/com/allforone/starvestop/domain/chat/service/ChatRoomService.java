@@ -80,4 +80,8 @@ public class ChatRoomService {
                 () -> new CustomException(ErrorCode.CHAT_ROOM_NOT_FOUND)
         );
     }
+
+    public Long countUnread(Long storeId) {
+        return chatRoomRepository.countTotalOwnerUnreadByStoreId(storeId);
+    }
 }

@@ -21,6 +21,8 @@ import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -158,5 +160,9 @@ public class StoreService {
         return storeRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
+    }
+
+    public Page<Store> getStorePage(Long ownerId, Pageable pageable) {
+        return storeRepository.findByOwnerIdAndIsDeletedIsFalseOrderByName(ownerId, pageable);
     }
 }
