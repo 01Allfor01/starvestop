@@ -1,10 +1,12 @@
 package com.allforone.starvestop.domain.store.dto.response;
 
+import com.allforone.starvestop.domain.store.dto.StoreRedisDto;
+import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.locationtech.jts.geom.Point;
+import org.springframework.data.geo.Point;
 
 import java.time.LocalTime;
 
@@ -21,20 +23,26 @@ public class StoreResponse {
     private final LocalTime closeTime;
     private final StoreStatus status;
     private final String ImageUrl;
+    private final Double distance;
 
-    public static StoreResponse from(StoreDto storeDto, String imageUrl) {
-        Point point = storeDto.getLocation();
+    public static StoreResponse from(StoreRedisDto redisDto,
+                                     Store store,
+                                     String imageUrl) {
+
+        Point point = redisDto.getPoint();
+
         return new StoreResponse(
-                storeDto.getId(),
-                storeDto.getName(),
-                storeDto.getAddress(),
-                storeDto.getCategory(),
+                redisDto.getId(),
+                store.getName(),
+                store.getAddress(),
+                store.getCategory(),
                 point.getY(),
                 point.getX(),
-                storeDto.getOpenTime(),
-                storeDto.getCloseTime(),
-                storeDto.getStatus(),
-                imageUrl
+                store.getOpenTime(),
+                store.getCloseTime(),
+                store.getStatus(),
+                imageUrl,
+                redisDto.getDistance()
         );
     }
 }

@@ -1,6 +1,5 @@
 package com.allforone.starvestop.domain.store.dto.response;
 
-import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import lombok.AllArgsConstructor;
@@ -15,11 +14,10 @@ public class StoreDto {
     private final Long id;
     private final String name;
     private final String address;
-    private final StoreCategory category;
-    private final Point location;
+    private final String category;
+    private final String location;
     private final LocalTime openTime;
     private final LocalTime closeTime;
-    private final StoreStatus status;
+    private final String status;
     private final String imageUuid;
-
 }

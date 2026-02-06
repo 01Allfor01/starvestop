@@ -2,9 +2,11 @@ package com.allforone.starvestop.domain.store.dto.condition;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class SearchStoreCond {
 
     private final String keyword;
@@ -18,20 +20,7 @@ public class SearchStoreCond {
     @DecimalMax(value = "180.0", message = "경도는 180 이하여야 합니다")
     private final Double nowLongitude;
 
-    private final int size;
-    private final Long cursorId;
-
-    public SearchStoreCond(String keyword,
-                           String category,
-                           Double nowLatitude,
-                           Double nowLongitude,
-                           Integer size,
-                           Long cursorId) {
-        this.keyword = keyword;
-        this.category = category;
-        this.nowLatitude = nowLatitude;
-        this.nowLongitude = nowLongitude;
-        this.size = size != null ? size : 10;
-        this.cursorId = cursorId;
-    }
+    private final Integer size;
+    private final Double lastDistance;
+    private final Long lastId;
 }

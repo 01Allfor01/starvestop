@@ -8,12 +8,12 @@ import com.allforone.starvestop.domain.owner.entity.Owner;
 import com.allforone.starvestop.domain.owner.service.OwnerService;
 import com.allforone.starvestop.domain.s3.enums.S3BucketStatus;
 import com.allforone.starvestop.domain.s3.service.S3Service;
+import com.allforone.starvestop.domain.store.dto.StoreRedisDto;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.dto.request.CreateStoreRequest;
 import com.allforone.starvestop.domain.store.dto.request.UpdateStoreRequest;
 import com.allforone.starvestop.domain.store.dto.response.CreateStoreResponse;
 import com.allforone.starvestop.domain.store.dto.response.GetStoreDetailResponse;
-import com.allforone.starvestop.domain.store.dto.response.StoreDto;
 import com.allforone.starvestop.domain.store.dto.response.StoreResponse;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
@@ -21,9 +21,16 @@ import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +39,7 @@ public class StoreService {
     private final S3Service s3Service;
     private final StoreRepository storeRepository;
     private final OwnerService ownerService;
+    private final StoreRedisService storeRedisService;
 
     //매장 추가
     @Transactional
@@ -59,13 +67,16 @@ public class StoreService {
         );
 
         Store savedStore = storeRepository.save(store);
+
+        storeRedisService.create(savedStore.getId(), location.getX(), location.getY());
+
         return CreateStoreResponse.from(savedStore);
     }
 
     //매장 정보 수정
     @Transactional
     public CreateStoreResponse updateStore(AuthUser authUser, Long storeId, UpdateStoreRequest request) {
-        Store store = getStore(storeId);
+        Store store = getById(storeId);
 
         idMismatchCheck(authUser, store);
 
@@ -85,39 +96,89 @@ public class StoreService {
 
         storeRepository.flush();
 
+        storeRedisService.create(store.getId(), location.getX(), location.getY());
+
         return CreateStoreResponse.from(store);
     }
 
+    //매장 삭제
     @Transactional
     public void deleteStore(AuthUser authUser, Long storeId) {
-        Store store = getStore(storeId);
+        Store store = getById(storeId);
 
         idMismatchCheck(authUser, store);
 
         store.delete();
+
+        storeRedisService.delete(store.getId());
     }
 
     //매장 목록 조회
     @Transactional(readOnly = true)
     public Slice<StoreResponse> getStoreSlice(SearchStoreCond cond) {
-        Slice<StoreDto> storeDtoPage = storeRepository.searchStoreSlice(cond);
+        double distance = cond.getLastDistance() != null ? cond.getLastDistance() : -1;
+        long cursorId = cond.getLastId() != null ? cond.getLastId() : 0L;
+        int limitSize = cond.getSize() != null ? cond.getSize() : 10;
 
-        return storeDtoPage
-                .map(dto -> {
+        List<StoreRedisDto> storeRedisList = storeRedisService.get(
+                cond.getNowLongitude(),
+                cond.getNowLatitude(),
+                distance,
+                cursorId,
+                limitSize);
+
+        List<Long> ids = storeRedisList
+                .stream()
+                .map(StoreRedisDto::getId)
+                .toList();
+
+        List<Store> list = null;
+
+        if (cond.getKeyword() == null) {
+            list = storeRepository.findByIds(ids, cond.getCategory());
+        } else {
+            list = storeRepository.findByIdsWithFullText(ids, cond.getKeyword(), cond.getCategory());
+        }
+
+        Map<Long, Store> storeMap = list
+                .stream()
+                .collect(Collectors.toMap(Store::getId, s -> s));
+
+        List<StoreResponse> responseList = storeRedisList
+                .stream()
+                .filter(redisDto -> storeMap.containsKey(redisDto.getId()))
+                .map(redisDto -> {
+                    Store store = storeMap.get(redisDto.getId());
 
                     String imageUrl = s3Service.createPresignedGetUrl(
-                            dto.getId(),
+                            store.getId(),
                             S3BucketStatus.STORE,
-                            dto.getImageUuid());
+                            store.getImageUuid());
 
-                    return StoreResponse.from(dto, imageUrl);
-                });
+                    return StoreResponse.from(
+                            redisDto,
+                            store,
+                            imageUrl
+                    );
+                })
+                .toList();
+
+        boolean hasNext = false;
+
+        if (list.size() > limitSize) {
+            list.remove(limitSize);
+            hasNext = true;
+        }
+
+        Pageable pageable = PageRequest.of((cond.getSize() == null ? 0 : 1), limitSize);
+
+        return new SliceImpl<>(responseList, pageable, hasNext);
     }
 
     //매장 상세 조회
     @Transactional(readOnly = true)
     public GetStoreDetailResponse getStoreDetail(Long storeId) {
-        Store store = getStore(storeId);
+        Store store = getById(storeId);
 
         String imageUrl = s3Service.createPresignedGetUrl(store.getId(), S3BucketStatus.STORE, store.getImageUuid());
 
@@ -126,9 +187,10 @@ public class StoreService {
 
     //매장 확인
     @Transactional
-    public Store getStore(Long storeId) {
-        return storeRepository.findByIdAndIsDeletedIsFalse(storeId).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND));
+    public Store getById(Long id) {
+        return storeRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
+                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
     }
 
     //판매자 아이디 주인 확인
@@ -152,11 +214,5 @@ public class StoreService {
     //매장
     private Point getLocation(Double longitude, Double latitude) {
         return GeometryUtil.createPoint(longitude, latitude);
-    }
-
-    public Store getById(Long id) {
-        return storeRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
-        );
     }
 }

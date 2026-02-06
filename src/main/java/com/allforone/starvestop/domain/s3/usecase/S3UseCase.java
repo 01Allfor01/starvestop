@@ -45,7 +45,7 @@ public class S3UseCase {
 
     //PresignedUrl 생성 - 매장
     public CreateS3PresignedUrlResponse createPresignedUrlStore(AuthUser authUser, CreateS3PresignedUrlRequest request) {
-        Store store = storeService.getStore(request.getId());
+        Store store = storeService.getById(request.getId());
 
         storeService.idMismatchCheck(authUser, store);
 
