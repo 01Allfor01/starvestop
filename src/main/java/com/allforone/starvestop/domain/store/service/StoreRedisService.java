@@ -2,13 +2,15 @@ package com.allforone.starvestop.domain.store.service;
 
 import com.allforone.starvestop.domain.store.dto.StoreRedisDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.geo.*;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.domain.geo.GeoReference;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -40,7 +42,9 @@ public class StoreRedisService {
                 new Distance(5, Metrics.KILOMETERS),
                 args);
 
-        if (search == null) return null;
+        if (search == null || search.getContent().isEmpty()) {
+            return List.of();
+        }
 
         return search.getContent().stream()
                 .filter(
@@ -51,10 +55,9 @@ public class StoreRedisService {
                             return d > lastDistance
                                     || (Double.compare(d, lastDistance) == 0 && id > lastId);
                         })
-                .limit(size * 10L)
+                .limit(size * 20L)
                 .map(r -> new StoreRedisDto(
                         Long.parseLong(r.getContent().getName()),
-                        r.getContent().getPoint(),
                         r.getDistance().getValue()
                 ))
                 .toList();
