@@ -2,6 +2,8 @@ package com.allforone.starvestop.domain.product.controller;
 
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
+import com.allforone.starvestop.common.dto.SliceResponse;
+import com.allforone.starvestop.domain.product.dto.condition.SearchProductCond;
 import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.dto.request.UpdateProductRequest;
 import com.allforone.starvestop.domain.product.dto.response.*;
@@ -36,24 +38,33 @@ public class ProductController {
 
     //특정 매장 상품 목록 조회
     @GetMapping("/stores/{storeId}/products")
-    public ResponseEntity<CommonResponse<Slice<GetProductResponse>>> getProductStoreSlice(@PathVariable Long storeId) {
-        Slice<GetProductResponse> getProductResponseSlice = productService.getProductStoreSlice(storeId);
+    public ResponseEntity<CommonResponse<SliceResponse<GetProductResponse>>> getProductStoreSlice(
+            @PathVariable Long storeId,
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(required = false) Integer size) {
+        Slice<GetProductResponse> getProductResponseSlice = productService.getProductStoreSlice(storeId, lastId, size);
 
-        CommonResponse<Slice<GetProductResponse>> response =
-                CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseSlice);
+        SliceResponse<GetProductResponse> response = SliceResponse.from(getProductResponseSlice);
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        CommonResponse<SliceResponse<GetProductResponse>> result =
+                CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, response);
+
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     //마감 세일 상품 목록 조회
     @GetMapping("/products/sale")
-    public ResponseEntity<CommonResponse<Slice<GetProductSaleResponse>>> getProductSaleSlice() {
-        Slice<GetProductSaleResponse> getProductSaleResponseSlice = productService.getProductSaleSlice();
+    public ResponseEntity<CommonResponse<SliceResponse<GetProductSaleResponse>>> getProductSaleSlice(
+            @Valid SearchProductCond request
+    ) {
+        Slice<GetProductSaleResponse> getProductSaleResponseSlice = productService.getProductSaleSlice(request);
 
-        CommonResponse<Slice<GetProductSaleResponse>> response =
-                CommonResponse.success(PRODUCT_LIST_BY_SALE_SUCCESS, getProductSaleResponseSlice);
+        SliceResponse<GetProductSaleResponse> response = SliceResponse.from(getProductSaleResponseSlice);
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        CommonResponse<SliceResponse<GetProductSaleResponse>> result =
+                CommonResponse.success(PRODUCT_LIST_BY_SALE_SUCCESS, response);
+
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     //상품 상세 조회

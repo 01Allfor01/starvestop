@@ -1,14 +1,13 @@
-package com.allforone.starvestop.domain.product.dto.condition;
+package com.allforone.starvestop.domain.subscription.dto.cond;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
-public class SearchProductCond {
+public class SearchSubscriptionCond {
     private final String keyword;
     private final String category;
 
