@@ -25,6 +25,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class StoreService {
@@ -158,5 +160,9 @@ public class StoreService {
         return storeRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
+    }
+
+    public List<Long> findAllActiveStoreIds() {
+        return storeRepository.findActiveStoreIds();
     }
 }

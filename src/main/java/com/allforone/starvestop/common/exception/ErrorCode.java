@@ -50,6 +50,7 @@ public enum ErrorCode {
     INVALID_PAYMENT_STATE(HttpStatus.CONFLICT, "잘못된 결제 상태입니다"),
     DUPLICATE_ORDER_ID(HttpStatus.CONFLICT, "이미 존재하는 주문 번호입니다"),
     BILLING_KEY_ISSUE_FAILED(HttpStatus.BAD_GATEWAY, "결제 수단 등록에 실패 하였습니다"),
+
     // 구매
     PURCHASE_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품 유형입니다"),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "상품의 재고가 부족합니다"),
@@ -61,9 +62,13 @@ public enum ErrorCode {
     COUPON_MISSING_EXPIRATION(HttpStatus.BAD_REQUEST, "쿠폰 유효기간이 존재하지 않습니다"),
     COUPON_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "쿠폰 재고가 부족합니다"),
 
+    // 정산
+    INVALID_SETTLEMENT_STATUS_TRANSITION(HttpStatus.CONFLICT, "정산 상태 전이가 올바르지 않습니다"),
+    SETTLEMENT_ALREADY_EXISTS(HttpStatus.CONFLICT,"해당 기간의 정산이 이미 존재합니다"),
+    SETTLEMENT_NO_TARGET_PAYMENTS(HttpStatus.CONFLICT,"해당 기간에 정산 가능한 결제가 존재하지 않습니다"),
+
     //사용자 쿠폰
     USER_COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 쿠폰입니다"),
-
 
     // 결제 로그
     PAYMENT_LOG_NOT_FOUND(HttpStatus.NOT_FOUND, "결제로그가 존재하지 않습니다"),

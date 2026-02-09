@@ -19,7 +19,9 @@ public class PaymentLogEventHandler {
     public void handle(PaymentStatusChangedEvent e) {
         if (!(e.status() == PaymentStatus.REQUESTED ||
                 e.status() == PaymentStatus.SUCCEEDED ||
-                e.status() == PaymentStatus.FAILED)) {
+                e.status() == PaymentStatus.FAILED_NON_RETRYABLE ||
+                e.status() == PaymentStatus.FAILED_RETRYABLE || e.status() == PaymentStatus.PENDING
+        )) {
             return;
         }
 

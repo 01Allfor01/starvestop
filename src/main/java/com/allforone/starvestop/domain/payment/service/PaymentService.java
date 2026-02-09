@@ -62,12 +62,18 @@ public class PaymentService {
 
 
     public int checkClaimed(Payment payment) {
-        return paymentRepository.markFailedAndClaimStockRelease(
+        return paymentRepository.markClaimStockRelease(
                 payment.getId(),
-                PaymentStatus.FAILED,
-                List.of(PaymentStatus.REQUESTED, PaymentStatus.PENDING)
+                List.of(
+                        PaymentStatus.REQUESTED,
+                        PaymentStatus.PENDING,
+                        PaymentStatus.FAILED_NON_RETRYABLE
+                )
         );
     }
+
+
+
 
     @Nullable
     public Map tossApiConfirm(Map<String, Object> requestPayload) {
