@@ -2,7 +2,7 @@ package com.allforone.starvestop.domain.product.repository;
 
 import com.allforone.starvestop.domain.product.dto.ProductSaleDto;
 import com.allforone.starvestop.domain.product.entity.Product;
-import com.allforone.starvestop.domain.product.enums.ProductStatus;
+import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    Slice<Product> findAllByStatusAndIsDeletedIsFalse(ProductStatus status);
-
     Optional<Product> findByIdAndIsDeletedIsFalse(Long id);
 
     @Query("""
@@ -43,12 +41,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     from Product p join Store s on p.store = s and s.isDeleted = false
     where s.id in (:ids)
         and p.isDeleted = false
+        and p.status = 'SALE'
         and (:category is null or s.category = :category)
         and (:keyword is null or p.name like concat('%', :keyword, '%'))
         and (:lastId is null or p.id > :lastId)
     """)
     List<ProductSaleDto> findByCond(@Param("ids")List<Long> ids,
                                     @Param("keyword")String keyword,
-                                    @Param("category")String category,
+                                    @Param("category")StoreCategory category,
                                     @Param("lastId")Long lastId);
 }
