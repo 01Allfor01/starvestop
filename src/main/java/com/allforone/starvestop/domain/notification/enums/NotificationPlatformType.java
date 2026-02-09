@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.notification;
+package com.allforone.starvestop.domain.notification.enums;
 
 import lombok.Getter;
 

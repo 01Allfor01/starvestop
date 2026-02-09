@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -39,14 +39,17 @@
                     log("permission denied");
                     return;
                 }
-
-                const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: reg });
-                log("token: " + token);
-
-                const res = await fetch("http://localhost:8080/notifications/save/token", {
+                const token = localStorage.getItem("accessToken");
+                const fcmToken = await getToken(messaging, { vapidKey, serviceWorkerRegistration: reg });
+                log("token: " + fcmToken);
+                const platform = "WEB"
+                const res = await fetch("/notifications/save/token", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ token })
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": token
+                    },
+                    body: JSON.stringify({ fcmToken, platform })
                 });
 
                 if (!res.ok) {

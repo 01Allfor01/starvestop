@@ -1,6 +1,6 @@
 package com.allforone.starvestop.domain.notification.entity;
 
-import com.allforone.starvestop.domain.notification.NotificationPlatformType;
+import com.allforone.starvestop.domain.notification.enums.NotificationPlatformType;
 import com.allforone.starvestop.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -23,6 +23,7 @@ public class UserNotification {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(unique = true)
     private String token;
 
     @Column(nullable = false)
