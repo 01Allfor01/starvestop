@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: starvestop
+  config:
+    import: optional:file:backend/.env[.properties]
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO}
+    properties:
+      hibernate:
+        format_sql: false
+    show-sql: true
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            redirect-uri: ${KAKAO_REDIRECT_URI}/login/oauth/kakao/callback
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            scope:
+              - profile_nickname
+              - account_email
+              - profile_image
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com
+            user-info-uri: https://kapi.kakao.com
+            user-name-attribute: id
+app:
+  crypto:
+    billing-key-base64: ${BILLING_KEY_BASE64}
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    bucket-name: ${AWS_BUCKET_NAME}
+payment:
+  base-url: https://api.tosspayments.com
+  secret-key: ${PAYMENT_WIDGET_SECRET_KEY}
+  billing-secret-key: ${PAYMENT_SECRET_KEY}
