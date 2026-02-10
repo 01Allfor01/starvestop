@@ -1,7 +1,7 @@
 package com.allforone.starvestop.domain.notification.entity;
 
 import com.allforone.starvestop.domain.notification.enums.NotificationPlatformType;
-import com.allforone.starvestop.domain.user.entity.User;
+import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -11,17 +11,16 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name="user_notifications")
+@Table(name = "notification_tokens")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserNotification {
+public class NotificationToken {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false)
+    private Long userId;
 
     @Column(unique = true)
     private String token;
@@ -30,7 +29,7 @@ public class UserNotification {
     private NotificationPlatformType platform;
 
     @Column(nullable = false)
-    private LocalDateTime last_seen_at;
+    private UserRole role;
 
     @Column(updatable = false)
     private LocalDateTime created_at;
@@ -38,18 +37,18 @@ public class UserNotification {
     @PrePersist
     public void prePersist() {
         this.created_at = LocalDateTime.now();
-        this.last_seen_at = LocalDateTime.now();
     }
 
-    public UserNotification(User user, String token, NotificationPlatformType platform) {
-        this.user = user;
+    public NotificationToken(Long userId, String token, NotificationPlatformType platform, UserRole role) {
+        this.userId = userId;
         this.token = token;
         this.platform = platform;
+        this.role = role;
     }
 
-    public static UserNotification create(User user, String token, NotificationPlatformType platform) {
-        return new UserNotification(
-            user, token, platform
+    public static NotificationToken createToken(Long userId, String token, NotificationPlatformType platform, UserRole role) {
+        return new NotificationToken(
+                userId, token, platform, role
         );
     }
 }

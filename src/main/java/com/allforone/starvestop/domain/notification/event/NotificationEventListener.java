@@ -1,6 +1,6 @@
 package com.allforone.starvestop.domain.notification.event;
 
-import com.allforone.starvestop.domain.notification.service.UserNotificationService;
+import com.allforone.starvestop.domain.notification.service.NotificationService;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.event.PaymentStatusChangedEvent;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class NotificationEventListener {
 
-    public final UserNotificationService userNotificationService;
+    public final NotificationService notificationService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onPaymentStatusSuccess(PaymentStatusChangedEvent event) {
@@ -21,6 +21,7 @@ public class NotificationEventListener {
             return;
         }
 
-        userNotificationService.sendPaymentNotification(event.userId());
+        notificationService.sendPaymentOwnerNotification(event.orderKey());
+        notificationService.sendPaymentUserNotification(event.userId());
     }
 }

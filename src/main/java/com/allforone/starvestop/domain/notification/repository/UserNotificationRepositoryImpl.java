@@ -1,14 +1,36 @@
 package com.allforone.starvestop.domain.notification.repository;
 
+import com.allforone.starvestop.domain.notification.entity.NotificationToken;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+
+import static com.allforone.starvestop.domain.notification.entity.QNotificationToken.notificationToken;
+import static com.allforone.starvestop.domain.order.entity.QOrder.order;
+import static com.allforone.starvestop.domain.store.entity.QStore.store;
+import static com.allforone.starvestop.domain.owner.entity.QOwner.owner;
+
 
 @Repository
 @RequiredArgsConstructor
 public class UserNotificationRepositoryImpl implements UserNotificationRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public NotificationToken findOwnerTokenByOrderId(Long orderId) {
+        return queryFactory
+                .select(notificationToken)
+                .from(order)
+                .join(order.store, store)
+                .join(store.owner, owner)
+                .join(notificationToken).on(notificationToken.userId.eq(owner.id))
+                .where(
+                        order.id.eq(orderId),
+                        owner.isDeleted.isFalse()
+                ).fetchOne();
+
+    }
 
 //    @Override
 //    public List<SendMealTimeNotificationDto> findByMealTime(Integer day, Integer mealTime) {

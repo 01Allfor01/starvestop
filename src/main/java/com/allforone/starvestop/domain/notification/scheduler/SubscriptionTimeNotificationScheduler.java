@@ -1,6 +1,6 @@
 package com.allforone.starvestop.domain.notification.scheduler;
 
-import com.allforone.starvestop.domain.notification.service.UserNotificationService;
+import com.allforone.starvestop.domain.notification.service.NotificationService;
 import com.allforone.starvestop.domain.notification.enums.DayBit;
 import com.allforone.starvestop.domain.notification.enums.MealTimeBit;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SubscriptionTimeNotificationScheduler {
 
-    private final UserNotificationService userNotificationService;
+    private final NotificationService notificationService;
 
     @Scheduled(cron = "0 0 7 * * *", zone = "Asia/Seoul")
     public void morning() { run(MealTimeBit.MORNING); }
@@ -25,6 +25,6 @@ public class SubscriptionTimeNotificationScheduler {
     private void run(MealTimeBit mealTime) {
         Integer dayBit = DayBit.todayBit();
         int mealTimeBit = mealTime.getBit();
-        userNotificationService.sendSubscriptionTimeNotification(dayBit, mealTimeBit);
+        notificationService.sendSubscriptionTimeNotification(dayBit, mealTimeBit);
     }
 }
