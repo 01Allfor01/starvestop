@@ -7,15 +7,12 @@ import com.allforone.starvestop.domain.notification.dto.NotificationMulticastReq
 import com.allforone.starvestop.domain.notification.dto.SendMealTimeNotificationDto;
 import com.allforone.starvestop.domain.notification.entity.NotificationToken;
 import com.allforone.starvestop.domain.notification.enums.NotificationPlatformType;
-import com.allforone.starvestop.domain.notification.repository.UserNotificationRepository;
+import com.allforone.starvestop.domain.notification.repository.NotificationTokenRepository;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
 import com.allforone.starvestop.domain.order.service.OrderProductService;
-import com.allforone.starvestop.domain.owner.entity.Owner;
-import com.allforone.starvestop.domain.owner.repository.OwnerRepository;
 import com.allforone.starvestop.domain.owner.service.OwnerService;
 import com.allforone.starvestop.domain.payment.entity.Payment;
 import com.allforone.starvestop.domain.payment.service.PaymentService;
-import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import com.allforone.starvestop.domain.user.service.UserService;
 import com.google.firebase.messaging.*;
@@ -34,7 +31,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final UserNotificationRepository userNotificationRepository;
+    private final NotificationTokenRepository notificationTokenRepository;
     private final UserService userService;
     private final OwnerService ownerService;
     private final PaymentService paymentService;
@@ -55,7 +52,7 @@ public class NotificationService {
         }
 
         NotificationToken notificationToken = NotificationToken.createToken(userId, token, platform, role);
-        userNotificationRepository.save(notificationToken);
+        notificationTokenRepository.save(notificationToken);
 
     }
 
@@ -103,7 +100,7 @@ public class NotificationService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendPaymentUserNotification(Long userId) {
 
-        NotificationToken notificationToken = userNotificationRepository.findByUserId(userId);
+        NotificationToken notificationToken = notificationTokenRepository.findByUserId(userId);
 
         if (notificationToken == null) {
             return;
@@ -135,7 +132,7 @@ public class NotificationService {
                 .map(p -> "%s(%d)".formatted(p.getProductName(), p.getQuantity()))
                 .collect(Collectors.joining("\n"));
 
-        NotificationToken notificationToken = userNotificationRepository.findOwnerTokenByOrderId(orderId);
+        NotificationToken notificationToken = notificationTokenRepository.findOwnerTokenByOrderId(orderId);
 
         if (notificationToken == null) {
             return;
@@ -159,7 +156,7 @@ public class NotificationService {
     @Transactional
     public void sendSubscriptionTimeNotification(Integer dayBit, Integer mealTimeBit) {
 
-        List<SendMealTimeNotificationDto> dtoList = userNotificationRepository.findByMealTime(dayBit, mealTimeBit);
+        List<SendMealTimeNotificationDto> dtoList = notificationTokenRepository.findByMealTime(dayBit, mealTimeBit);
 
         if (dtoList.isEmpty()) {
             return;
@@ -196,7 +193,7 @@ public class NotificationService {
 
         if (code.equals(MessagingErrorCode.UNREGISTERED)
                 || code.equals(MessagingErrorCode.INVALID_ARGUMENT)) {
-            userNotificationRepository.deleteByToken(token);
+            notificationTokenRepository.deleteByToken(token);
         }
     }
 }

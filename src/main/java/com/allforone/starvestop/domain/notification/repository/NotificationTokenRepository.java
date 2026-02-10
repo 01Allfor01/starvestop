@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface UserNotificationRepository extends JpaRepository<NotificationToken, Long>, UserNotificationRepositoryCustom {
+public interface NotificationTokenRepository extends JpaRepository<NotificationToken, Long>, NotificationTokenRepositoryCustom {
     @Query("SELECT un FROM NotificationToken un WHERE un.userId = :userId AND un.role = 'USER'")
     NotificationToken findByUserId(Long userId);
 
@@ -16,14 +16,15 @@ public interface UserNotificationRepository extends JpaRepository<NotificationTo
 
 
     @Query(value = """
-        SELECT un.token AS token, s.name AS subscriptionName
+        SELECT ut.id AS id, us.user_id AS userId, ut.token AS token, s.name AS subscriptionName, s.meal_time AS mealTime
         FROM user_subscriptions us
         JOIN subscriptions s ON s.id = us.subscription_id
-        JOIN user_notifications un ON un.user_id = us.user_id
-        WHERE us.status = 'ACTIVE'
+        JOIN notification_tokens ut ON ut.user_id = us.user_id
+        JOIN users u ON u.id = ut.user_id
+          WHERE us.status = 'ACTIVE'
           AND (s.day & :day) <> 0
           AND (s.meal_time & :mealTime) <> 0
-          AND un.token IS NOT NULL
+          AND ut.token IS NOT NULL
         """, nativeQuery = true)
     List<SendMealTimeNotificationDto> findByMealTime(Integer day, Integer mealTime);
 

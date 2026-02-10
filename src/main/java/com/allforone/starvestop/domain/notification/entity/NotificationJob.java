@@ -1,8 +1,8 @@
 package com.allforone.starvestop.domain.notification.entity;
 
 
+import com.allforone.starvestop.domain.notification.enums.DayBit;
 import com.allforone.starvestop.domain.notification.enums.MealTimeBit;
-import com.allforone.starvestop.domain.notification.enums.NotificationPlatformType;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.persistence.*;
@@ -20,17 +20,18 @@ public class NotificationJob {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(nullable = false)
     private Long userId;
 
-    @JoinColumn()
-    private Subscription subscription;
+    @Column(nullable = false)
+    private String token;
 
     @Column(nullable = false)
-    private UserRole role;
+    private String subscriptionName;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MealTimeBit mealTime;
 
@@ -42,10 +43,11 @@ public class NotificationJob {
         this.created_at = LocalDateTime.now();
     }
 
-    public NotificationJob(Long userId, MealTimeBit mealTime, UserRole role) {
+    public NotificationJob(Long userId, String token, String subscriptionName, MealTimeBit mealTime) {
         this.userId = userId;
+        this.token = token;
+        this.subscriptionName = subscriptionName;
         this.mealTime = mealTime;
-        this.role = role;
     }
 
 }
