@@ -1,16 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { SlidersHorizontal, Grid, List, Clock, Heart, MapPin } from 'lucide-react';
+import { Grid, List, Clock, MapPin } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 
+// 실시간 카운트다운 컴포넌트
+function CountdownTimer({ endTime }: { endTime: Date }) {
+    const [timeLeft, setTimeLeft] = useState('');
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = endTime.getTime() - now;
+
+            if (distance < 0) {
+                setTimeLeft('종료');
+                clearInterval(timer);
+                return;
+            }
+
+            const hours = Math.floor(distance / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            setTimeLeft(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [endTime]);
+
+    return (
+        <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center space-x-1">
+            <Clock className="w-4 h-4 text-red-500" />
+            <span className="text-sm font-semibold text-gray-900">{timeLeft}</span>
+        </div>
+    );
+}
+
 export default function SaleProductsPage() {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [sortBy, setSortBy] = useState('deadline');
-    const [filterCategory, setFilterCategory] = useState('all');
 
     // TODO: 나중에 실제 API 데이터로 교체
     const products = [
@@ -20,12 +52,12 @@ export default function SaleProductsPage() {
             storeName: '파리바게뜨 강남점',
             originalPrice: 6000,
             salePrice: 3000,
-            discount: 50,
+            discount: 3000,
             stock: 5,
             distance: 1.2,
             image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
             category: '베이커리',
-            timeLeft: '02:34:12',
+            endTime: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2시간 후
         },
         {
             id: 2,
@@ -33,12 +65,12 @@ export default function SaleProductsPage() {
             storeName: '샐러디 역삼점',
             originalPrice: 12000,
             salePrice: 7200,
-            discount: 40,
+            discount: 4800,
             stock: 3,
             distance: 0.8,
             image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
             category: '샐러드',
-            timeLeft: '01:15:33',
+            endTime: new Date(Date.now() + 1.5 * 60 * 60 * 1000), // 1.5시간 후
         },
         {
             id: 3,
@@ -46,12 +78,12 @@ export default function SaleProductsPage() {
             storeName: '본도시락 선릉점',
             originalPrice: 15000,
             salePrice: 9750,
-            discount: 35,
+            discount: 5250,
             stock: 8,
             distance: 1.5,
             image: 'https://images.unsplash.com/photo-1608198399988-841b3c6f76d2',
             category: '도시락',
-            timeLeft: '03:42:08',
+            endTime: new Date(Date.now() + 3.5 * 60 * 60 * 1000), // 3.5시간 후
         },
         {
             id: 4,
@@ -59,12 +91,12 @@ export default function SaleProductsPage() {
             storeName: '과일천국 강남점',
             originalPrice: 20000,
             salePrice: 11000,
-            discount: 45,
+            discount: 9000,
             stock: 6,
             distance: 2.1,
             image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff',
             category: '과일',
-            timeLeft: '04:21:45',
+            endTime: new Date(Date.now() + 4 * 60 * 60 * 1000), // 4시간 후
         },
         {
             id: 5,
@@ -72,12 +104,12 @@ export default function SaleProductsPage() {
             storeName: '버거킹 역삼점',
             originalPrice: 18000,
             salePrice: 10800,
-            discount: 40,
+            discount: 7200,
             stock: 4,
             distance: 1.8,
             image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd',
             category: '패스트푸드',
-            timeLeft: '05:12:22',
+            endTime: new Date(Date.now() + 5 * 60 * 60 * 1000), // 5시간 후
         },
         {
             id: 6,
@@ -85,20 +117,14 @@ export default function SaleProductsPage() {
             storeName: '마켓컬리 강남점',
             originalPrice: 25000,
             salePrice: 13750,
-            discount: 45,
+            discount: 11250,
             stock: 10,
             distance: 2.5,
             image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999',
             category: '채소',
-            timeLeft: '06:33:11',
+            endTime: new Date(Date.now() + 6 * 60 * 60 * 1000), // 6시간 후
         },
     ];
-
-    const categories = ['all', '베이커리', '샐러드', '도시락', '과일', '패스트푸드', '채소'];
-
-    const filteredProducts = products.filter((product) =>
-        filterCategory === 'all' ? true : product.category === filterCategory
-    );
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
@@ -107,28 +133,13 @@ export default function SaleProductsPage() {
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">🔥 마감 세일</h1>
                     <p className="text-gray-600">
-                        오늘 마감되는 <span className="text-primary-600 font-semibold">{filteredProducts.length}개</span>의 특가 상품
+                        오늘 마감되는 <span className="text-primary-600 font-semibold">{products.length}개</span>의 특가 상품
                     </p>
                 </div>
 
-                {/* 필터 & 정렬 */}
+                {/* 정렬 & 뷰모드 */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                    {/* 카테고리 필터 */}
-                    <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-                        {categories.map((category) => (
-                            <button
-                                key={category}
-                                onClick={() => setFilterCategory(category)}
-                                className={`px-4 py-2 rounded-lg whitespace-nowrap transition ${
-                                    filterCategory === category
-                                        ? 'bg-primary-500 text-white'
-                                        : 'bg-white text-gray-700 hover:bg-gray-100'
-                                }`}
-                            >
-                                {category === 'all' ? '전체' : category}
-                            </button>
-                        ))}
-                    </div>
+                    <div></div>
 
                     {/* 정렬 & 뷰모드 */}
                     <div className="flex items-center space-x-3">
@@ -139,7 +150,7 @@ export default function SaleProductsPage() {
                             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                         >
                             <option value="deadline">마감 임박순</option>
-                            <option value="discount">할인율 높은순</option>
+                            <option value="discount">할인 금액 높은순</option>
                             <option value="price-low">낮은 가격순</option>
                             <option value="price-high">높은 가격순</option>
                             <option value="distance">가까운 거리순</option>
@@ -166,7 +177,7 @@ export default function SaleProductsPage() {
                 {/* 상품 목록 - Grid View */}
                 {viewMode === 'grid' && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {filteredProducts.map((product) => (
+                        {products.map((product) => (
                             <Card key={product.id} hover padding="none" className="overflow-hidden">
                                 <Link href={`/products/${product.id}`}>
                                     <div className="relative">
@@ -176,15 +187,9 @@ export default function SaleProductsPage() {
                                             className="w-full h-48 object-cover"
                                         />
                                         <Badge variant="sale" className="absolute top-3 left-3">
-                                            {product.discount}% OFF
+                                            {product.discount.toLocaleString()}원 할인
                                         </Badge>
-                                        <button className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 transition">
-                                            <Heart className="w-5 h-5 text-gray-600" />
-                                        </button>
-                                        <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center space-x-1">
-                                            <Clock className="w-4 h-4 text-red-500" />
-                                            <span className="text-sm font-semibold text-gray-900">{product.timeLeft}</span>
-                                        </div>
+                                        <CountdownTimer endTime={product.endTime} />
                                     </div>
                                     <div className="p-4">
                                         <p className="text-sm text-gray-500 mb-1">{product.storeName}</p>
@@ -215,7 +220,7 @@ export default function SaleProductsPage() {
                 {/* 상품 목록 - List View */}
                 {viewMode === 'list' && (
                     <div className="space-y-4">
-                        {filteredProducts.map((product) => (
+                        {products.map((product) => (
                             <Card key={product.id} hover padding="none" className="overflow-hidden">
                                 <Link href={`/products/${product.id}`} className="flex">
                                     <div className="relative w-48 flex-shrink-0">
@@ -225,12 +230,9 @@ export default function SaleProductsPage() {
                                             className="w-full h-full object-cover"
                                         />
                                         <Badge variant="sale" className="absolute top-3 left-3">
-                                            {product.discount}% OFF
+                                            {product.discount.toLocaleString()}원 할인
                                         </Badge>
-                                        <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center space-x-1">
-                                            <Clock className="w-4 h-4 text-red-500" />
-                                            <span className="text-sm font-semibold text-gray-900">{product.timeLeft}</span>
-                                        </div>
+                                        <CountdownTimer endTime={product.endTime} />
                                     </div>
                                     <div className="flex-1 p-6">
                                         <div className="flex justify-between items-start mb-4">
@@ -246,9 +248,6 @@ export default function SaleProductsPage() {
                                                     <span>재고 {product.stock}개</span>
                                                 </div>
                                             </div>
-                                            <button className="p-2 hover:bg-gray-100 rounded-full transition">
-                                                <Heart className="w-6 h-6 text-gray-600" />
-                                            </button>
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-baseline space-x-3">
@@ -266,19 +265,6 @@ export default function SaleProductsPage() {
                             </Card>
                         ))}
                     </div>
-                )}
-
-                {/* 비어있을 때 */}
-                {filteredProducts.length === 0 && (
-                    <Card className="text-center py-16">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                            해당 카테고리의 상품이 없습니다
-                        </h3>
-                        <p className="text-gray-600 mb-6">
-                            다른 카테고리를 선택해주세요
-                        </p>
-                        <Button onClick={() => setFilterCategory('all')}>전체 보기</Button>
-                    </Card>
                 )}
             </div>
         </div>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Clock, Star, Phone, Heart, Share2, MessageCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, MessageCircle } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -12,8 +12,7 @@ export default function StoreDetailPage() {
     const params = useParams();
     const storeId = params.id;
 
-    const [activeTab, setActiveTab] = useState<'products' | 'reviews' | 'info'>('products');
-    const [isFavorite, setIsFavorite] = useState(false);
+    const [activeTab, setActiveTab] = useState<'products' | 'info'>('products');
 
     // TODO: 나중에 실제 API 데이터로 교체
     const store = {
@@ -21,10 +20,7 @@ export default function StoreDetailPage() {
         name: '파리바게뜨 강남점',
         category: '베이커리',
         address: '서울특별시 강남구 테헤란로 123',
-        phone: '02-1234-5678',
         distance: 1.2,
-        rating: 4.8,
-        reviewCount: 234,
         openTime: '07:00',
         closeTime: '22:00',
         isOpen: true,
@@ -40,7 +36,7 @@ export default function StoreDetailPage() {
             name: '프리미엄 크루아상 3입',
             originalPrice: 6000,
             salePrice: 3000,
-            discount: 50,
+            discount: 3000,
             stock: 5,
             image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
             timeLeft: '02:34:12',
@@ -50,7 +46,7 @@ export default function StoreDetailPage() {
             name: '바게트 2입',
             originalPrice: 5000,
             salePrice: 3500,
-            discount: 30,
+            discount: 1500,
             stock: 8,
             image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff',
             timeLeft: '03:15:22',
@@ -72,49 +68,15 @@ export default function StoreDetailPage() {
         },
     ];
 
-    const reviews = [
-        {
-            id: 1,
-            userName: '김**',
-            rating: 5,
-            date: '2026.02.08',
-            content: '크루아상이 정말 바삭하고 맛있어요! 마감세일로 저렴하게 구매할 수 있어서 좋았습니다.',
-            images: [],
-        },
-        {
-            id: 2,
-            userName: '이**',
-            rating: 4,
-            date: '2026.02.07',
-            content: '빵이 신선하고 가격도 합리적입니다. 다만 주차가 어려워요.',
-            images: [],
-        },
-    ];
-
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* 헤더 */}
             <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <Link href="/" className="flex items-center text-gray-600 hover:text-gray-900">
-                            <ArrowLeft className="w-5 h-5 mr-2" />
-                            <span>뒤로</span>
-                        </Link>
-                        <div className="flex items-center space-x-2">
-                            <button
-                                onClick={() => setIsFavorite(!isFavorite)}
-                                className="p-2 rounded-full hover:bg-gray-100 transition"
-                            >
-                                <Heart
-                                    className={`w-6 h-6 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
-                                />
-                            </button>
-                            <button className="p-2 rounded-full hover:bg-gray-100 transition">
-                                <Share2 className="w-6 h-6 text-gray-600" />
-                            </button>
-                        </div>
-                    </div>
+                    <Link href="/" className="flex items-center text-gray-600 hover:text-gray-900">
+                        <ArrowLeft className="w-5 h-5 mr-2" />
+                        <span>뒤로</span>
+                    </Link>
                 </div>
             </div>
 
@@ -143,17 +105,6 @@ export default function StoreDetailPage() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            {/* 평점 */}
-                            <Card padding="sm">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center">
-                                        <Star className="w-5 h-5 text-yellow-400 mr-1" />
-                                        <span className="text-lg font-bold text-gray-900">{store.rating}</span>
-                                    </div>
-                                    <span className="text-sm text-gray-600">({store.reviewCount})</span>
-                                </div>
-                            </Card>
-
                             {/* 거리 */}
                             <Card padding="sm">
                                 <div className="flex items-center">
@@ -162,23 +113,14 @@ export default function StoreDetailPage() {
                                 </div>
                             </Card>
 
-                            {/* 영업시간 */}
+                            {/* 운영 시간 */}
                             <Card padding="sm">
                                 <div className="flex items-center">
                                     <Clock className="w-5 h-5 text-gray-400 mr-2" />
+                                    <span className="font-bold text-gray-900 mr-2">운영 시간</span>
                                     <span className="font-medium text-gray-900">
-                    {store.openTime} - {store.closeTime}
-                  </span>
-                                </div>
-                            </Card>
-
-                            {/* 전화번호 */}
-                            <Card padding="sm">
-                                <div className="flex items-center">
-                                    <Phone className="w-5 h-5 text-gray-400 mr-2" />
-                                    <a href={`tel:${store.phone}`} className="font-medium text-primary-600 hover:text-primary-700">
-                                        {store.phone}
-                                    </a>
+            {store.openTime}~{store.closeTime}
+        </span>
                                 </div>
                             </Card>
                         </div>
@@ -195,14 +137,10 @@ export default function StoreDetailPage() {
                         </Card>
 
                         {/* 버튼 */}
-                        <div className="flex space-x-3">
-                            <Button size="lg" className="flex-1">
+                        <div>
+                            <Button size="lg" fullWidth>
                                 <MessageCircle className="w-5 h-5 mr-2" />
                                 가게 문의
-                            </Button>
-                            <Button variant="outline" size="lg" className="flex-1">
-                                <Phone className="w-5 h-5 mr-2" />
-                                전화하기
                             </Button>
                         </div>
                     </div>
@@ -220,16 +158,6 @@ export default function StoreDetailPage() {
                             }`}
                         >
                             상품
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('reviews')}
-                            className={`py-4 px-1 border-b-2 font-semibold transition ${
-                                activeTab === 'reviews'
-                                    ? 'border-primary-500 text-primary-600'
-                                    : 'border-transparent text-gray-600 hover:text-gray-900'
-                            }`}
-                        >
-                            리뷰 ({store.reviewCount})
                         </button>
                         <button
                             onClick={() => setActiveTab('info')}
@@ -262,7 +190,7 @@ export default function StoreDetailPage() {
                                                         className="w-full h-48 object-cover"
                                                     />
                                                     <Badge variant="sale" className="absolute top-3 left-3">
-                                                        {product.discount}% OFF
+                                                        {product.discount.toLocaleString()}원 할인
                                                     </Badge>
                                                     <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center space-x-1">
                                                         <Clock className="w-4 h-4 text-red-500" />
@@ -315,34 +243,6 @@ export default function StoreDetailPage() {
                     </div>
                 )}
 
-                {activeTab === 'reviews' && (
-                    <div className="space-y-4">
-                        {reviews.map((review) => (
-                            <Card key={review.id}>
-                                <div className="flex items-start justify-between mb-3">
-                                    <div>
-                                        <div className="flex items-center mb-2">
-                                            <span className="font-medium text-gray-900 mr-2">{review.userName}</span>
-                                            <div className="flex items-center">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <Star
-                                                        key={i}
-                                                        className={`w-4 h-4 ${
-                                                            i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
-                                                        }`}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <p className="text-sm text-gray-500">{review.date}</p>
-                                    </div>
-                                </div>
-                                <p className="text-gray-700">{review.content}</p>
-                            </Card>
-                        ))}
-                    </div>
-                )}
-
                 {activeTab === 'info' && (
                     <div className="space-y-6">
                         <Card>
@@ -351,10 +251,10 @@ export default function StoreDetailPage() {
                         </Card>
 
                         <Card>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">영업 정보</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">운영 정보</h3>
                             <div className="space-y-3 text-gray-700">
                                 <div className="flex">
-                                    <span className="w-24 text-gray-500">영업시간</span>
+                                    <span className="w-24 text-gray-500">운영 시간</span>
                                     <span>{store.openTime} - {store.closeTime}</span>
                                 </div>
                                 <div className="flex">
@@ -364,12 +264,6 @@ export default function StoreDetailPage() {
                                 <div className="flex">
                                     <span className="w-24 text-gray-500">정기휴무</span>
                                     <span>{store.holiday}</span>
-                                </div>
-                                <div className="flex">
-                                    <span className="w-24 text-gray-500">전화번호</span>
-                                    <a href={`tel:${store.phone}`} className="text-primary-600 hover:text-primary-700">
-                                        {store.phone}
-                                    </a>
                                 </div>
                             </div>
                         </Card>

@@ -2,14 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Store } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import Badge from '@/components/ui/Badge';
 
 interface CartItem {
     id: number;
     productId: number;
     name: string;
+    storeId: number;
     storeName: string;
     price: number;
     originalPrice: number;
@@ -26,43 +28,52 @@ export default function CartPage() {
             id: 1,
             productId: 1,
             name: '프리미엄 크루아상 3입',
+            storeId: 1,
             storeName: '파리바게뜨 강남점',
             price: 3000,
             originalPrice: 6000,
             quantity: 2,
             stock: 5,
             image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
-            discount: 50,
+            discount: 3000,
         },
         {
             id: 2,
             productId: 2,
-            name: '프리미엄 닭가슴살 샐러드',
-            storeName: '샐러디 역삼점',
-            price: 7200,
-            originalPrice: 12000,
+            name: '바게트 2입',
+            storeId: 1,
+            storeName: '파리바게뜨 강남점',
+            price: 3500,
+            originalPrice: 5000,
             quantity: 1,
             stock: 3,
-            image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-            discount: 40,
+            image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff',
+            discount: 1500,
         },
         {
             id: 3,
-            productId: 3,
-            name: '스페셜 연어 도시락',
-            storeName: '본도시락 선릉점',
-            price: 9750,
-            originalPrice: 15000,
+            productId: 5,
+            name: '소금빵 5입',
+            storeId: 1,
+            storeName: '파리바게뜨 강남점',
+            price: 8000,
+            originalPrice: 8000,
             quantity: 1,
             stock: 8,
-            image: 'https://images.unsplash.com/photo-1608198398988-841b3c6f76d2',
-            discount: 35,
+            image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff',
+            discount: 0,
         },
     ]);
 
     const [selectedItems, setSelectedItems] = useState<number[]>(
         cartItems.map((item) => item.id)
     );
+
+    // 현재 장바구니의 매장 정보
+    const currentStore = cartItems.length > 0 ? {
+        id: cartItems[0].storeId,
+        name: cartItems[0].storeName,
+    } : null;
 
     // 전체 선택/해제
     const toggleSelectAll = () => {
@@ -117,7 +128,7 @@ export default function CartPage() {
     // 선택된 상품 총 할인 금액
     const selectedDiscount = cartItems
         .filter((item) => selectedItems.includes(item.id))
-        .reduce((sum, item) => sum + (item.originalPrice - item.price) * item.quantity, 0);
+        .reduce((sum, item) => sum + item.discount * item.quantity, 0);
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
@@ -148,6 +159,25 @@ export default function CartPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* 왼쪽: 상품 목록 */}
                         <div className="lg:col-span-2 space-y-4">
+                            {/* 현재 매장 정보 */}
+                            {currentStore && (
+                                <Card padding="sm" className="bg-primary-50 border-primary-200">
+                                    <div className="flex items-center">
+                                        <Store className="w-5 h-5 text-primary-600 mr-2" />
+                                        <div className="flex-1">
+                                            <Link href={`/stores/${currentStore.id}`}>
+                                                <span className="font-semibold text-primary-900 hover:text-primary-600">
+                                                    {currentStore.name}
+                                                </span>
+                                            </Link>
+                                            <p className="text-sm text-primary-700 mt-1">
+                                                💡 한 매장의 상품만 함께 주문할 수 있습니다
+                                            </p>
+                                        </div>
+                                    </div>
+                                </Card>
+                            )}
+
                             {/* 전체 선택 & 선택 삭제 */}
                             <Card padding="sm" className="flex items-center justify-between">
                                 <label className="flex items-center cursor-pointer">
@@ -198,20 +228,21 @@ export default function CartPage() {
                                         {/* 상품 정보 */}
                                         <div className="flex-1 ml-4">
                                             <Link href={`/products/${item.productId}`}>
-                                                <p className="text-sm text-gray-500 mb-1">{item.storeName}</p>
                                                 <h3 className="font-semibold text-gray-900 mb-2 hover:text-primary-600">
                                                     {item.name}
                                                 </h3>
                                             </Link>
 
-                                            <div className="flex items-center space-x-2 mb-3">
-                        <span className="text-sm text-gray-400 line-through">
-                          {item.originalPrice.toLocaleString()}원
-                        </span>
-                                                <span className="text-sm font-semibold text-red-500">
-                          {item.discount}% 할인
-                        </span>
-                                            </div>
+                                            {item.discount > 0 && (
+                                                <div className="flex items-center space-x-2 mb-3">
+                                                    <span className="text-sm text-gray-400 line-through">
+                                                        {item.originalPrice.toLocaleString()}원
+                                                    </span>
+                                                    <Badge variant="sale" className="text-xs">
+                                                        {item.discount.toLocaleString()}원 할인
+                                                    </Badge>
+                                                </div>
+                                            )}
 
                                             <div className="flex items-center justify-between">
                                                 {/* 수량 조절 */}
@@ -272,10 +303,6 @@ export default function CartPage() {
                                             <span>할인 금액</span>
                                             <span>-{selectedDiscount.toLocaleString()}원</span>
                                         </div>
-                                        <div className="flex justify-between text-gray-600">
-                                            <span>배송비</span>
-                                            <span className="text-green-600 font-medium">무료</span>
-                                        </div>
                                     </div>
 
                                     <div className="pt-6 border-t border-gray-200">
@@ -306,11 +333,13 @@ export default function CartPage() {
                                     </div>
 
                                     {/* 혜택 정보 */}
-                                    <div className="mt-6 p-4 bg-primary-50 rounded-lg">
-                                        <p className="text-sm text-primary-800">
-                                            💰 <span className="font-semibold">{selectedDiscount.toLocaleString()}원</span> 절약했어요!
-                                        </p>
-                                    </div>
+                                    {selectedDiscount > 0 && (
+                                        <div className="mt-6 p-4 bg-primary-50 rounded-lg">
+                                            <p className="text-sm text-primary-800">
+                                                💰 <span className="font-semibold">{selectedDiscount.toLocaleString()}원</span> 절약했어요!
+                                            </p>
+                                        </div>
+                                    )}
                                 </Card>
                             </div>
                         </div>

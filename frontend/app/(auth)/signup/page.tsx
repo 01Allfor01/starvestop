@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Mail, Lock, User, Eye, EyeOff, Phone } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
 export default function SignupPage() {
@@ -14,7 +14,6 @@ export default function SignupPage() {
         passwordConfirm: '',
         nickname: '',
         username: '',
-        phone: '',
     });
     const [loading, setLoading] = useState(false);
 
@@ -41,6 +40,10 @@ export default function SignupPage() {
             setLoading(false);
         }, 1000);
     };
+
+    // 비밀번호 일치 여부 체크
+    const passwordsMatch = formData.passwordConfirm && formData.password === formData.passwordConfirm;
+    const passwordsDontMatch = formData.passwordConfirm && formData.password !== formData.passwordConfirm;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
@@ -106,28 +109,49 @@ export default function SignupPage() {
                         </div>
 
                         {/* 비밀번호 확인 */}
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                            <input
-                                type={showPasswordConfirm ? 'text' : 'password'}
-                                name="passwordConfirm"
-                                placeholder="비밀번호 확인"
-                                value={formData.passwordConfirm}
-                                onChange={handleChange}
-                                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                required
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-                                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                            >
-                                {showPasswordConfirm ? (
-                                    <EyeOff className="w-5 h-5" />
-                                ) : (
-                                    <Eye className="w-5 h-5" />
-                                )}
-                            </button>
+                        <div>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                                <input
+                                    type={showPasswordConfirm ? 'text' : 'password'}
+                                    name="passwordConfirm"
+                                    placeholder="비밀번호 확인"
+                                    value={formData.passwordConfirm}
+                                    onChange={handleChange}
+                                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
+                                        passwordsMatch
+                                            ? 'border-green-300 focus:ring-green-500'
+                                            : passwordsDontMatch
+                                                ? 'border-red-300 focus:ring-red-500'
+                                                : 'border-gray-300 focus:ring-primary-500'
+                                    }`}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
+                                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                                >
+                                    {showPasswordConfirm ? (
+                                        <EyeOff className="w-5 h-5" />
+                                    ) : (
+                                        <Eye className="w-5 h-5" />
+                                    )}
+                                </button>
+                            </div>
+                            {/* 실시간 피드백 메시지 */}
+                            {passwordsMatch && (
+                                <div className="flex items-center mt-2 text-sm text-green-600">
+                                    <CheckCircle className="w-4 h-4 mr-1" />
+                                    <span>비밀번호가 일치합니다</span>
+                                </div>
+                            )}
+                            {passwordsDontMatch && (
+                                <div className="flex items-center mt-2 text-sm text-red-600">
+                                    <XCircle className="w-4 h-4 mr-1" />
+                                    <span>비밀번호가 일치하지 않습니다</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* 닉네임 */}
@@ -158,42 +182,6 @@ export default function SignupPage() {
                             />
                         </div>
 
-                        {/* 전화번호 */}
-                        <div className="relative">
-                            <Phone className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                            <input
-                                type="tel"
-                                name="phone"
-                                placeholder="전화번호 (선택)"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                            />
-                        </div>
-
-                        {/* 약관 동의 */}
-                        <div className="space-y-3 pt-2">
-                            <label className="flex items-start cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    required
-                                    className="w-4 h-4 mt-0.5 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
-                                />
-                                <span className="ml-2 text-sm text-gray-600">
-                  <span className="text-primary-500">[필수]</span> 이용약관 및 개인정보처리방침에 동의합니다.
-                </span>
-                            </label>
-                            <label className="flex items-start cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 mt-0.5 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
-                                />
-                                <span className="ml-2 text-sm text-gray-600">
-                  <span className="text-gray-400">[선택]</span> 마케팅 정보 수신에 동의합니다.
-                </span>
-                            </label>
-                        </div>
-
                         {/* 회원가입 버튼 */}
                         <Button
                             type="submit"
@@ -201,6 +189,7 @@ export default function SignupPage() {
                             size="lg"
                             loading={loading}
                             className="mt-6"
+                            disabled={passwordsDontMatch}
                         >
                             회원가입
                         </Button>

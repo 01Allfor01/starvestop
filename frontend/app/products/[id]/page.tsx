@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Heart, MapPin, Clock, Minus, Plus, ShoppingCart, Star, Store, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Heart, MapPin, Clock, Minus, Plus, ShoppingCart, Store, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -23,22 +23,14 @@ export default function ProductDetailPage() {
         storeId: 1,
         originalPrice: 6000,
         salePrice: 3000,
-        discount: 50,
+        discount: 3000,
         stock: 5,
         distance: 1.2,
-        rating: 4.8,
-        reviewCount: 234,
         description: '갓 구운 신선한 크루아상입니다. 바삭한 겉면과 부드러운 속살이 일품입니다.',
         expiryTime: '2:34:12',
-        images: [
-            'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
-            'https://images.unsplash.com/photo-1509440159596-0249088772ff',
-            'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-        ],
+        image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
         category: '베이커리',
     };
-
-    const [selectedImage, setSelectedImage] = useState(0);
 
     const handleQuantityChange = (delta: number) => {
         const newQuantity = quantity + delta;
@@ -75,40 +67,23 @@ export default function ProductDetailPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* 왼쪽: 이미지 */}
-                    <div className="space-y-4">
+                    <div>
                         {/* 메인 이미지 */}
                         <div className="relative aspect-square rounded-2xl overflow-hidden bg-white">
                             <img
-                                src={product.images[selectedImage]}
+                                src={product.image}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                             />
                             {/* 할인 배지 */}
                             <Badge variant="sale" className="absolute top-4 left-4 text-base px-3 py-1">
-                                {product.discount}% OFF
+                                {product.discount.toLocaleString()}원 할인
                             </Badge>
                             {/* 타이머 */}
                             <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center space-x-2 shadow-lg">
                                 <Clock className="w-5 h-5 text-red-500" />
                                 <span className="font-semibold text-gray-900">{product.expiryTime}</span>
                             </div>
-                        </div>
-
-                        {/* 썸네일 이미지 */}
-                        <div className="grid grid-cols-3 gap-4">
-                            {product.images.map((image, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => setSelectedImage(index)}
-                                    className={`aspect-square rounded-lg overflow-hidden border-2 transition ${
-                                        selectedImage === index
-                                            ? 'border-primary-500'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                    }`}
-                                >
-                                    <img src={image} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
-                                </button>
-                            ))}
                         </div>
                     </div>
 
@@ -120,15 +95,9 @@ export default function ProductDetailPage() {
                                 <Store className="w-10 h-10 text-primary-500" />
                                 <div className="flex-1">
                                     <h3 className="font-semibold text-gray-900">{product.storeName}</h3>
-                                    <div className="flex items-center space-x-3 text-sm text-gray-600">
-                                        <div className="flex items-center">
-                                            <MapPin className="w-4 h-4 mr-1" />
-                                            {product.distance}km
-                                        </div>
-                                        <div className="flex items-center">
-                                            <Star className="w-4 h-4 text-yellow-400 mr-1" />
-                                            {product.rating} ({product.reviewCount})
-                                        </div>
+                                    <div className="flex items-center text-sm text-gray-600">
+                                        <MapPin className="w-4 h-4 mr-1" />
+                                        {product.distance}km
                                     </div>
                                 </div>
                             </Card>
@@ -148,7 +117,7 @@ export default function ProductDetailPage() {
                   {product.originalPrice.toLocaleString()}원
                 </span>
                                 <Badge variant="sale" className="text-lg px-3 py-1">
-                                    {product.discount}% 할인
+                                    {product.discount.toLocaleString()}원 할인
                                 </Badge>
                             </div>
                             <div className="text-4xl font-bold text-primary-600">
@@ -213,17 +182,12 @@ export default function ProductDetailPage() {
                     </div>
                 </div>
 
-                {/* 상세 정보 탭 */}
+                {/* 상세 정보 */}
                 <div className="mt-12">
                     <div className="border-b border-gray-200">
-                        <nav className="flex space-x-8">
-                            <button className="py-4 px-1 border-b-2 border-primary-500 text-primary-600 font-semibold">
-                                상세정보
-                            </button>
-                            <button className="py-4 px-1 border-b-2 border-transparent text-gray-600 hover:text-gray-900">
-                                리뷰 ({product.reviewCount})
-                            </button>
-                        </nav>
+                        <div className="py-4 px-1 border-b-2 border-primary-500 text-primary-600 font-semibold inline-block">
+                            상세정보
+                        </div>
                     </div>
 
                     <div className="py-8">

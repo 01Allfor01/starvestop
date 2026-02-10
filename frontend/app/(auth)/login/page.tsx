@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
@@ -83,20 +82,6 @@ export default function LoginPage() {
                             </button>
                         </div>
 
-                        {/* 자동 로그인 & 비밀번호 찾기 */}
-                        <div className="flex items-center justify-between text-sm">
-                            <label className="flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
-                                />
-                                <span className="ml-2 text-gray-600">자동 로그인</span>
-                            </label>
-                            <Link href="/forgot-password" className="text-primary-500 hover:text-primary-600">
-                                비밀번호 찾기
-                            </Link>
-                        </div>
-
                         {/* 로그인 버튼 */}
                         <Button
                             type="submit"
@@ -141,7 +126,7 @@ export default function LoginPage() {
                             href="/owner/login"
                             className="block text-center text-sm text-gray-500 hover:text-primary-500"
                         >
-                            사장님이신가요? 사장님 로그인 →
+                            사장님이신가요? 사장님 로그인으로 이동
                         </Link>
                     </div>
                 </div>

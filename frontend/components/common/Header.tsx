@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, Search, User, Bell, Menu } from 'lucide-react';
+import { ShoppingCart, Search, User, Bell, Menu, CalendarCheck } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
 export default function Header() {
@@ -27,6 +27,12 @@ export default function Header() {
                                 type="text"
                                 placeholder="상품, 가게를 검색하세요"
                                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        const query = (e.target as HTMLInputElement).value;
+                                        window.location.href = `/search?q=${query}`;
+                                    }
+                                }}
                             />
                         </div>
                     </div>
@@ -34,29 +40,31 @@ export default function Header() {
                     {/* 우측 메뉴 */}
                     <div className="flex items-center space-x-4">
                         {/* 장바구니 */}
-                        <button className="relative p-2 text-gray-700 hover:text-primary-500 transition-colors">
+                        <Link href="/cart" className="relative p-2 text-gray-700 hover:text-primary-500 transition-colors">
                             <ShoppingCart className="w-6 h-6" />
                             <span className="absolute top-0 right-0 w-5 h-5 bg-primary-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                 3
               </span>
-                        </button>
+                        </Link>
 
                         {/* 알림 */}
-                        <button className="relative p-2 text-gray-700 hover:text-primary-500 transition-colors">
+                        <Link href="/mypage/notifications" className="relative p-2 text-gray-700 hover:text-primary-500 transition-colors">
                             <Bell className="w-6 h-6" />
                             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
+                        </Link>
 
                         {/* 프로필 */}
-                        <button className="p-2 text-gray-700 hover:text-primary-500 transition-colors">
+                        <Link href="/mypage" className="p-2 text-gray-700 hover:text-primary-500 transition-colors">
                             <User className="w-6 h-6" />
-                        </button>
+                        </Link>
 
                         {/* 로그인 버튼 (데스크탑) */}
                         <div className="hidden lg:block">
-                            <Button variant="outline" size="sm">
-                                로그인
-                            </Button>
+                            <Link href="/login">
+                                <Button variant="outline" size="sm">
+                                    로그인
+                                </Button>
+                            </Link>
                         </div>
 
                         {/* 모바일 메뉴 */}
@@ -74,6 +82,12 @@ export default function Header() {
                             type="text"
                             placeholder="상품, 가게를 검색하세요"
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                    const query = (e.target as HTMLInputElement).value;
+                                    window.location.href = `/search?q=${query}`;
+                                }
+                            }}
                         />
                     </div>
                 </div>
@@ -89,18 +103,14 @@ export default function Header() {
                             </Link>
                         </li>
                         <li>
-                            <Link href="/subscriptions" className="text-gray-700 hover:text-primary-500">
-                                💚 정기구독
+                            <Link href="/subscriptions" className="text-gray-700 hover:text-primary-500 inline-flex items-center">
+                                <CalendarCheck className="w-4 h-4 mr-1.5 text-secondary-500" />
+                                정기구독
                             </Link>
                         </li>
                         <li>
                             <Link href="/stores" className="text-gray-700 hover:text-primary-500">
                                 📍 내 근처
-                            </Link>
-                        </li>
-                        <li>
-                            <Link href="/categories" className="text-gray-700 hover:text-primary-500">
-                                카테고리
                             </Link>
                         </li>
                     </ul>

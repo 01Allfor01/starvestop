@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MapPin, Clock, CreditCard, Tag, ChevronRight } from 'lucide-react';
+import { Clock, CreditCard, Tag, ChevronRight, Store } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -20,6 +20,7 @@ export default function OrderPage() {
             id: 1,
             productId: 1,
             name: '프리미엄 크루아상 3입',
+            storeId: 1,
             storeName: '파리바게뜨 강남점',
             quantity: 2,
             price: 3000,
@@ -28,11 +29,12 @@ export default function OrderPage() {
         {
             id: 2,
             productId: 2,
-            name: '프리미엄 닭가슴살 샐러드',
-            storeName: '샐러디 역삼점',
+            name: '바게트 2입',
+            storeId: 1,
+            storeName: '파리바게뜨 강남점',
             quantity: 1,
-            price: 7200,
-            image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+            price: 3500,
+            image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff',
         },
     ];
 
@@ -47,22 +49,21 @@ export default function OrderPage() {
             id: 2,
             name: '10% 할인',
             discountRate: 10,
+            discount: 1000,
             minAmount: 15000,
         },
     ];
 
-    const deliveryInfo = {
-        address: '서울특별시 강남구 테헤란로 123',
-        phone: '010-1234-5678',
-        name: '홍길동',
-    };
+    const storeInfo = orderItems.length > 0 ? {
+        id: orderItems[0].storeId,
+        name: orderItems[0].storeName,
+    } : null;
 
     const productTotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const deliveryFee = 0;
     const couponDiscount = selectedCoupon
         ? availableCoupons.find((c) => c.id === selectedCoupon)?.discount || 0
         : 0;
-    const finalTotal = productTotal + deliveryFee - couponDiscount;
+    const finalTotal = productTotal - couponDiscount;
 
     const handleOrder = () => {
         // TODO: 실제 주문 API 호출
@@ -83,31 +84,22 @@ export default function OrderPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* 왼쪽: 주문 정보 */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* 배송 정보 */}
-                        <Card>
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-bold text-gray-900">배송 정보</h2>
-                                <Button variant="outline" size="sm">변경</Button>
-                            </div>
-                            <div className="space-y-3">
-                                <div className="flex items-start">
-                                    <MapPin className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                        {/* 픽업 매장 정보 */}
+                        {storeInfo && (
+                            <Card>
+                                <h2 className="text-xl font-bold text-gray-900 mb-4">픽업 매장</h2>
+                                <div className="flex items-center p-4 bg-primary-50 rounded-lg">
+                                    <Store className="w-6 h-6 text-primary-600 mr-3" />
                                     <div>
-                                        <p className="font-medium text-gray-900">{deliveryInfo.address}</p>
-                                        <p className="text-sm text-gray-600 mt-1">
-                                            {deliveryInfo.name} · {deliveryInfo.phone}
+                                        <p className="font-semibold text-gray-900">{storeInfo.name}</p>
+                                        <p className="text-sm text-primary-700 mt-1">
+                                            <Clock className="w-4 h-4 inline mr-1" />
+                                            30분 이내에 픽업 부탁드립니다
                                         </p>
                                     </div>
                                 </div>
-                                <div className="pt-3 border-t border-gray-200">
-                                    <Input
-                                        placeholder="배송 요청사항 (예: 문 앞에 놓아주세요)"
-                                        value={orderRequest}
-                                        onChange={(e) => setOrderRequest(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-                        </Card>
+                            </Card>
+                        )}
 
                         {/* 주문 상품 */}
                         <Card>
@@ -121,7 +113,6 @@ export default function OrderPage() {
                                             className="w-20 h-20 object-cover rounded-lg mr-4"
                                         />
                                         <div className="flex-1">
-                                            <p className="text-sm text-gray-500">{item.storeName}</p>
                                             <p className="font-medium text-gray-900">{item.name}</p>
                                             <p className="text-sm text-gray-600">수량: {item.quantity}개</p>
                                         </div>
@@ -237,10 +228,6 @@ export default function OrderPage() {
                                         <span>상품 금액</span>
                                         <span>{productTotal.toLocaleString()}원</span>
                                     </div>
-                                    <div className="flex justify-between text-gray-700">
-                                        <span>배송비</span>
-                                        <span className="text-green-600 font-medium">무료</span>
-                                    </div>
                                     {couponDiscount > 0 && (
                                         <div className="flex justify-between text-red-500">
                                             <span>쿠폰 할인</span>
@@ -263,9 +250,9 @@ export default function OrderPage() {
                                     <ChevronRight className="w-5 h-5 ml-2" />
                                 </Button>
 
-                                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                                    <p className="text-sm text-blue-800">
-                                        💡 주문 완료 후 30분 이내 픽업 또는 배송됩니다
+                                <div className="mt-4 p-4 bg-primary-50 rounded-lg">
+                                    <p className="text-sm text-primary-800">
+                                        💡 30분 이내에 픽업 부탁드립니다
                                     </p>
                                 </div>
                             </Card>

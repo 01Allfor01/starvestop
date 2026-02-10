@@ -1,51 +1,48 @@
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
-import { XCircle } from 'lucide-react';
+import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
 
-export default function PaymentFailPage() {
-    const searchParams = useSearchParams();
+export default function PaymentPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
 
-    const code = searchParams.get('code');
-    const message = searchParams.get('message') || '결제에 실패했습니다.';
     const orderId = searchParams.get('orderId');
+    const amount = searchParams.get('amount');
 
-    const getErrorMessage = (code: string | null) => {
-        switch (code) {
-            case 'PAY_PROCESS_CANCELED':
-                return '사용자가 결제를 취소했습니다.';
-            case 'PAY_PROCESS_ABORTED':
-                return '결제가 중단되었습니다.';
-            case 'REJECT_CARD_PAYMENT':
-                return '카드 결제가 거부되었습니다.';
-            default:
-                return message;
-        }
-    };
+    useEffect(() => {
+        // TODO: 실제 결제 API 호출
+        // 지금은 시뮬레이션으로 3초 후 성공 페이지로 이동
+
+        const timer = setTimeout(() => {
+            // 실제로는 결제 API 응답에 따라 success 또는 fail로 이동
+            router.push(`/payment/success?orderId=${orderId}&amount=${amount}`);
+
+            // 실패 시:
+            // router.push('/payment/fail?code=PAY_PROCESS_CANCELED&message=결제가 취소되었습니다');
+        }, 3000);
+
+        return () => clearTimeout(timer);
+    }, [orderId, amount, router]);
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-            <Card className="max-w-md w-full text-center">
-                <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">결제 실패</h2>
-                <p className="text-gray-600 mb-6">{getErrorMessage(code)}</p>
-
-                {code && (
-                    <p className="text-sm text-gray-500 mb-6">
-                        오류 코드: {code}
+            <Card className="max-w-md w-full text-center py-12">
+                <Loader2 className="w-16 h-16 text-primary-500 mx-auto mb-6 animate-spin" />
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">결제 진행 중</h2>
+                <p className="text-gray-600 mb-4">
+                    잠시만 기다려주세요...
+                </p>
+                {amount && (
+                    <p className="text-xl font-semibold text-primary-600">
+                        {parseInt(amount).toLocaleString()}원
                     </p>
                 )}
-
-                <div className="space-y-3">
-                    <Button onClick={() => router.push('/order')} fullWidth>
-                        주문서로 돌아가기
-                    </Button>
-                    <Button variant="outline" onClick={() => router.push('/')} fullWidth>
-                        홈으로 가기
-                    </Button>
+                <div className="mt-8 text-sm text-gray-500">
+                    <p>• 창을 닫지 마세요</p>
+                    <p>• 결제가 완료될 때까지 기다려주세요</p>
                 </div>
             </Card>
         </div>
