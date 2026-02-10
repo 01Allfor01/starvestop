@@ -43,8 +43,8 @@ public class PaymentLogController {
     // 로그 검색 (관리자만 접근 가능)
     @GetMapping("/search")
     public ResponseEntity<CommonResponse<Page<SearchPaymentLogResponse>>> search(
-            @RequestParam @Nullable String orderKey,
-            @RequestParam @Nullable Long userId,
+            @RequestParam(required = false) String orderKey,
+            @RequestParam(required = false) Long userId,
             @RequestParam int pageNum,
             @RequestParam int pageSize) {
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by("timestamp"));
