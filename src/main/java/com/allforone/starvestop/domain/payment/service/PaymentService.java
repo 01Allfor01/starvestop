@@ -60,7 +60,6 @@ public class PaymentService {
         return paymentRepository.findById(paymentId).orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
     }
 
-
     public int checkClaimed(Payment payment) {
         return paymentRepository.markClaimStockRelease(
                 payment.getId(),
@@ -71,9 +70,6 @@ public class PaymentService {
                 )
         );
     }
-
-
-
 
     @Nullable
     public Map tossApiConfirm(Map<String, Object> requestPayload) {

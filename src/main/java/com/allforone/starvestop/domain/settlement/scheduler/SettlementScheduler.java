@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.YearMonth;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @Slf4j
@@ -20,24 +19,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SettlementScheduler {
 
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
+
     private final SettlementService settlementService;
     private final StoreService storeService;
 
-    // 정책값: 수수료율 (예: 5% = 0.05)
+    // 수수료율 5%
     private static final BigDecimal FEE_RATE = new BigDecimal("0.05");
 
-
-    //매월 1일 02:10 (KST) : 지난달 정산 생성
-    //전체 매장 대상으로 생성 시도
-    //이미 존재 / 결제없음은 스킵
-    //그 외 예외는 로그 남기고 계속 진행
+    // 매월 1일 02:10 (KST) : 지난달 정산 생성
     @Scheduled(cron = "0 10 2 1 * *", zone = "Asia/Seoul")
     public void createLastMonthSettlements() {
-        YearMonth lastMonth = YearMonth.from(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).minusMonths(1));
+        long start = System.currentTimeMillis();
 
-        List<Long> storeIds = storeService.findAllActiveStoreIds(); // 너희 기준에 맞게 구현
+        YearMonth lastMonth = YearMonth.now(KST).minusMonths(1);
+        String periodYm = lastMonth.toString(); // "2026-01" 형태로 고정
+
+        List<Long> storeIds = storeService.findAllActiveStoreIds();
         if (storeIds.isEmpty()) {
-            log.info("[SettlementScheduler] no stores. period={}", lastMonth);
+            log.info("[SettlementScheduler] no stores. periodYm={}", periodYm);
             return;
         }
 
@@ -50,26 +50,31 @@ public class SettlementScheduler {
                 settlementService.createMonthly(storeId, lastMonth, FEE_RATE);
                 created++;
             } catch (CustomException e) {
-                // 스킵 대상은 조용히 넘김(운영 로그만)
-                if (e.getErrorCode() == ErrorCode.SETTLEMENT_ALREADY_EXISTS ||
-                        e.getErrorCode() == ErrorCode.SETTLEMENT_NO_TARGET_PAYMENTS) {
+                ErrorCode code = e.getErrorCode();
+
+                // 스킵 대상은 stacktrace 없이 info 로깅
+                if (code == ErrorCode.SETTLEMENT_ALREADY_EXISTS ||
+                        code == ErrorCode.SETTLEMENT_NO_TARGET_PAYMENTS) {
+
                     skipped++;
-                    log.info("[SettlementScheduler] skipped. storeId={} period={} reason={}",
-                            storeId, lastMonth, e.getErrorCode());
+                    log.info("[SettlementScheduler] skipped. storeId={} periodYm={} reason={}",
+                            storeId, periodYm, code);
                     continue;
                 }
 
                 failed++;
-                log.warn("[SettlementScheduler] failed(custom). storeId={} period={} code={}",
-                        storeId, lastMonth, e.getErrorCode(), e);
+                log.warn("[SettlementScheduler] failed(custom). storeId={} periodYm={} code={}",
+                        storeId, periodYm, code, e);
+
             } catch (Exception e) {
                 failed++;
-                log.error("[SettlementScheduler] failed(unexpected). storeId={} period={}",
-                        storeId, lastMonth, e);
+                log.error("[SettlementScheduler] failed(unexpected). storeId={} periodYm={}",
+                        storeId, periodYm, e);
             }
         }
 
-        log.info("[SettlementScheduler] done. period={} created={} skipped={} failed={}",
-                lastMonth, created, skipped, failed);
+        long elapsedMs = System.currentTimeMillis() - start;
+        log.info("[SettlementScheduler] done. periodYm={} stores={} created={} skipped={} failed={} elapsedMs={}",
+                periodYm, storeIds.size(), created, skipped, failed, elapsedMs);
     }
 }

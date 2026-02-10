@@ -70,8 +70,8 @@ public class PaymentUsecase {
     }
 
     @Transactional
-    public String confirmSuccess(String paymentKey, String orderId, Long amount) {
-        Payment payment = paymentService.findByOrderKeyForUpdate(orderId);
+    public String confirmSuccess(String paymentKey, String orderKey, Long amount) {
+        Payment payment = paymentService.findByOrderKeyForUpdate(orderKey);
         Order order = orderService.getForPayment(payment.getOrder().getId());
 
         // 이미 성공
@@ -102,7 +102,7 @@ public class PaymentUsecase {
                     paymentService.toJson(Map.of(
                             "code", "PAYMENT_AMOUNT_MISMATCH",
                             "message", "결제 금액이 올바르지 않습니다.",
-                            "orderId", orderId,
+                            "orderId", orderKey,
                             "paymentKey", paymentKey
                     )),
                     true
@@ -120,7 +120,7 @@ public class PaymentUsecase {
 
         Map<String, Object> requestPayload = Map.of(
                 "paymentKey", paymentKey,
-                "orderId", orderId,
+                "orderId", orderKey,
                 "amount", amount
         );
 
@@ -138,7 +138,12 @@ public class PaymentUsecase {
 
         } catch (WebClientResponseException e) {
             // 8. 실패시 재고 반환
-            failAndReleaseReservedStockExactlyOnce(payment, null, paymentService.toJson(e));
+            if (isRetryable(e)) {
+                failAndMaybeReleaseReservedStockExactlyOnce(payment, PaymentStatus.FAILED_RETRYABLE, "PG_CONFIRM_FAILED", paymentService.toJson(e), false);
+            } else {
+                failAndMaybeReleaseReservedStockExactlyOnce(payment, PaymentStatus.FAILED_NON_RETRYABLE, "PG_CONFIRM_FAILED", paymentService.toJson(e), true);
+            }
+
 
             return "/fail.html?orderId=" + payment.getOrderKey()
                     + "&reason=PG_CONFIRM_FAILED";

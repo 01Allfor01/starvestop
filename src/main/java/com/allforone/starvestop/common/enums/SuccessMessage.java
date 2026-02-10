@@ -96,8 +96,8 @@ public enum SuccessMessage {
     //api로그
     API_LOG_GET_SUCCESS("API 로그 조회 성공"),
 
-
-    ;
+    // 정산
+    SETTLEMENT_CREATE_SUCCESS("정산 생성 성공");
 
     private final String message;
 
