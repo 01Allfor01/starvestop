@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/login/**", "/oauth2/**").permitAll()
+                        .requestMatchers("/ws-stomp/**").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/payments/success").permitAll()
                         .requestMatchers(HttpMethod.GET, "/payments/fail").permitAll()
@@ -59,6 +60,8 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.PATCH, "/owners").hasRole("OWNER")
                         .requestMatchers(HttpMethod.DELETE, "/owners").hasRole("OWNER")
+
+                        .requestMatchers(HttpMethod.POST, "/stores/*/chat-rooms").hasRole("USER")
 
                         .requestMatchers(HttpMethod.POST, "/products/**").hasAnyRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH, "/products/**").hasAnyRole("OWNER")
