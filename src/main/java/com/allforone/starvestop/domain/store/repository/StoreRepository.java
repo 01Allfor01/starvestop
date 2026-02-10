@@ -1,6 +1,8 @@
 package com.allforone.starvestop.domain.store.repository;
 
 import com.allforone.starvestop.domain.store.entity.Store;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +14,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     Optional<Store> findByIdAndIsDeletedIsFalse(Long id);
 
+    Page<Store> findByOwnerIdAndIsDeletedIsFalseOrderByName(Long ownerId, Pageable pageable);
     @Query(value = """
     select distinct s.*
     from stores s left join products p on s.id = p.store_id and p.is_deleted = 0

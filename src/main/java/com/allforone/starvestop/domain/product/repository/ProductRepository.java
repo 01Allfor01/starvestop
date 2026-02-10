@@ -11,7 +11,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, ProductRepositoryCustom {
+    Slice<Product> findAllByStatusAndIsDeletedIsFalse(ProductStatus status);
+
     Optional<Product> findByIdAndIsDeletedIsFalse(Long id);
 
     @Query("""

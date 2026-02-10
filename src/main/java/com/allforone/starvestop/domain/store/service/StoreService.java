@@ -23,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
@@ -214,5 +216,9 @@ public class StoreService {
     //매장
     private Point getLocation(Double longitude, Double latitude) {
         return GeometryUtil.createPoint(longitude, latitude);
+    }
+
+    public Page<Store> getStorePage(Long ownerId, Pageable pageable) {
+        return storeRepository.findByOwnerIdAndIsDeletedIsFalseOrderByName(ownerId, pageable);
     }
 }
