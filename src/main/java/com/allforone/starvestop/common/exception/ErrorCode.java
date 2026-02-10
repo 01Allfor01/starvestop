@@ -86,7 +86,10 @@ public enum ErrorCode {
     IMAGE_EXTENSION_BAD_REQUEST(HttpStatus.BAD_REQUEST, "지원하지 않는 확장자입니다"),
 
     //api로그
-    API_LOG_NOT_FOUND(HttpStatus.NOT_FOUND, "API 로그가 존재하지 않습니다")
+    API_LOG_NOT_FOUND(HttpStatus.NOT_FOUND, "API 로그가 존재하지 않습니다"),
+
+    //채팅
+    CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 방이 존재하지 않습니다"),
 
     ;
 
