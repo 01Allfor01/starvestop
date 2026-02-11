@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle, Package, MapPin, Clock, Home, FileText } from 'lucide-react';
+import { CheckCircle, Store, MapPin, Clock, Home, FileText, MessageCircle } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -16,41 +16,35 @@ export default function OrderCompletePage() {
         id: orderId,
         date: '2026.02.09 14:30',
         status: 'PENDING',
-        statusText: '주문 접수',
-        totalAmount: 25950,
+        statusText: '주문 완료',
+        totalAmount: 14500,
         paymentMethod: '카카오페이',
+        storeId: 1,
+        storeName: '파리바게뜨 강남점',
+        storeAddress: '서울특별시 강남구 테헤란로 123',
         items: [
             {
                 id: 1,
                 name: '프리미엄 크루아상 3입',
-                storeName: '파리바게뜨 강남점',
                 quantity: 2,
                 price: 3000,
                 image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
             },
             {
                 id: 2,
-                name: '프리미엄 닭가슴살 샐러드',
-                storeName: '샐러디 역삼점',
+                name: '바게트 2입',
                 quantity: 1,
-                price: 7200,
-                image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+                price: 3500,
+                image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff',
             },
             {
                 id: 3,
-                name: '스페셜 연어 도시락',
-                storeName: '본도시락 선릉점',
+                name: '소금빵 5입',
                 quantity: 1,
-                price: 9750,
-                image: 'https://images.unsplash.com/photo-1608198399988-841b3c6f76d2',
+                price: 5000,
+                image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff',
             },
         ],
-        delivery: {
-            address: '서울특별시 강남구 테헤란로 123',
-            phone: '010-1234-5678',
-            request: '문 앞에 놓아주세요',
-            estimatedTime: '오늘 17:00 ~ 18:00',
-        },
     };
 
     return (
@@ -72,75 +66,42 @@ export default function OrderCompletePage() {
                         <Badge variant="success">{order.statusText}</Badge>
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="flex items-center">
-                            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-4">
-                                <CheckCircle className="w-6 h-6 text-green-500" />
-                            </div>
-                            <div>
-                                <p className="font-medium text-gray-900">주문 접수 완료</p>
-                                <p className="text-sm text-gray-500">{order.date}</p>
-                            </div>
+                    <div className="flex items-center p-4 bg-green-50 rounded-lg">
+                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                            <CheckCircle className="w-7 h-7 text-green-500" />
                         </div>
-
-                        <div className="flex items-center">
-                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-4">
-                                <Package className="w-6 h-6 text-gray-400" />
-                            </div>
-                            <div>
-                                <p className="font-medium text-gray-500">상품 준비 중</p>
-                                <p className="text-sm text-gray-400">곧 준비가 시작됩니다</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center">
-                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-4">
-                                <MapPin className="w-6 h-6 text-gray-400" />
-                            </div>
-                            <div>
-                                <p className="font-medium text-gray-500">배달 중</p>
-                                <p className="text-sm text-gray-400">배송이 시작되면 알려드려요</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center">
-                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-4">
-                                <CheckCircle className="w-6 h-6 text-gray-400" />
-                            </div>
-                            <div>
-                                <p className="font-medium text-gray-500">배달 완료</p>
-                            </div>
+                        <div className="flex-1">
+                            <p className="font-semibold text-gray-900">주문 접수 완료</p>
+                            <p className="text-sm text-gray-600">{order.date}</p>
+                            <p className="text-sm text-primary-700 font-medium mt-1">
+                                <Clock className="w-4 h-4 inline mr-1" />
+                                30분 이내에 픽업 부탁드립니다
+                            </p>
                         </div>
                     </div>
                 </Card>
 
-                {/* 배송 정보 */}
+                {/* 픽업 매장 정보 */}
                 <Card className="mb-6">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">배송 정보</h2>
-                    <div className="space-y-3 text-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">픽업 매장</h2>
+                    <div className="space-y-3">
+                        <div className="flex items-start">
+                            <Store className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
+                            <div className="flex-1">
+                                <Link href={`/stores/${order.storeId}`}>
+                                    <p className="font-semibold text-gray-900 hover:text-primary-600">
+                                        {order.storeName}
+                                    </p>
+                                </Link>
+                            </div>
+                        </div>
                         <div className="flex items-start">
                             <MapPin className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                             <div>
-                                <p className="font-medium text-gray-900">배송 주소</p>
-                                <p className="text-sm">{order.delivery.address}</p>
+                                <p className="font-medium text-gray-900">매장 위치</p>
+                                <p className="text-sm text-gray-600">{order.storeAddress}</p>
                             </div>
                         </div>
-                        <div className="flex items-start">
-                            <Clock className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
-                            <div>
-                                <p className="font-medium text-gray-900">배송 예정 시간</p>
-                                <p className="text-sm text-primary-600">{order.delivery.estimatedTime}</p>
-                            </div>
-                        </div>
-                        {order.delivery.request && (
-                            <div className="flex items-start">
-                                <FileText className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
-                                <div>
-                                    <p className="font-medium text-gray-900">요청사항</p>
-                                    <p className="text-sm">{order.delivery.request}</p>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </Card>
 
@@ -156,7 +117,6 @@ export default function OrderCompletePage() {
                                     className="w-16 h-16 object-cover rounded-lg mr-4"
                                 />
                                 <div className="flex-1">
-                                    <p className="text-sm text-gray-500">{item.storeName}</p>
                                     <p className="font-medium text-gray-900">{item.name}</p>
                                     <p className="text-sm text-gray-600">수량: {item.quantity}개</p>
                                 </div>
@@ -193,8 +153,7 @@ export default function OrderCompletePage() {
                             <div className="mt-2 text-sm text-blue-700">
                                 <ul className="list-disc pl-5 space-y-1">
                                     <li>주문 상태는 마이페이지에서 확인하실 수 있습니다</li>
-                                    <li>배송이 시작되면 알림으로 안내드립니다</li>
-                                    <li>문의사항은 고객센터 또는 가게에 직접 연락해주세요</li>
+                                    <li>문의사항은 아래 "가게에 문의하기" 버튼을 통해 채팅으로 문의하실 수 있습니다</li>
                                 </ul>
                             </div>
                         </div>
@@ -203,14 +162,23 @@ export default function OrderCompletePage() {
 
                 {/* 버튼 */}
                 <div className="space-y-3">
-                    <Link href="/mypage/orders">
+                    <Link href={`/mypage/order/${order.id}`}>
                         <Button fullWidth size="lg">
                             <FileText className="w-5 h-5 mr-2" />
                             주문 상세보기
                         </Button>
                     </Link>
-                    <Link href="/">
+                    <Link href={`/chat/${order.storeId}`}>
                         <Button variant="outline" fullWidth size="lg">
+                            <MessageCircle className="w-5 h-5 mr-2" />
+                            가게에 문의하기
+                        </Button>
+                    </Link>
+                </div>
+
+                <div className="mt-8">
+                    <Link href="/" className="block text-center">
+                        <Button variant="ghost" fullWidth size="lg" className="text-gray-600 hover:text-gray-900">
                             <Home className="w-5 h-5 mr-2" />
                             홈으로 돌아가기
                         </Button>

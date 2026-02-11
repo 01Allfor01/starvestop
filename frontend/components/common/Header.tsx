@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, Search, User, Bell, Menu, CalendarCheck } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, CalendarCheck } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
 export default function Header() {
@@ -45,12 +45,6 @@ export default function Header() {
                             <span className="absolute top-0 right-0 w-5 h-5 bg-primary-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                 3
               </span>
-                        </Link>
-
-                        {/* 알림 */}
-                        <Link href="/mypage/notifications" className="relative p-2 text-gray-700 hover:text-primary-500 transition-colors">
-                            <Bell className="w-6 h-6" />
-                            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                         </Link>
 
                         {/* 프로필 */}

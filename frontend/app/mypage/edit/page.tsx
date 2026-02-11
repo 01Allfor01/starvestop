@@ -2,27 +2,38 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Camera, User, Mail, Phone, MapPin } from 'lucide-react';
+import { ArrowLeft, Camera, User, X, CheckCircle, XCircle } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 
 export default function EditProfilePage() {
     const [loading, setLoading] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
 
     // TODO: 실제 사용자 데이터로 교체
     const [formData, setFormData] = useState({
+        name: '홍길동',
         nickname: '홍길동',
-        username: '홍길동',
         email: 'hong@example.com',
-        phone: '010-1234-5678',
-        address: '서울특별시 강남구 테헤란로 123',
-        addressDetail: '456호',
+    });
+
+    // 비밀번호 변경 모달 상태
+    const [passwordData, setPasswordData] = useState({
+        newPassword: '',
+        confirmPassword: '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
             ...formData,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPasswordData({
+            ...passwordData,
             [e.target.name]: e.target.value,
         });
     };
@@ -39,8 +50,24 @@ export default function EditProfilePage() {
         }, 1000);
     };
 
-    const handlePasswordChange = () => {
-        alert('비밀번호 변경 페이지로 이동합니다.');
+    const handlePasswordSubmit = async () => {
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            alert('비밀번호가 일치하지 않습니다.');
+            return;
+        }
+
+        if (passwordData.newPassword.length < 8) {
+            alert('비밀번호는 8자 이상이어야 합니다.');
+            return;
+        }
+
+        // TODO: 실제 API 호출로 교체
+        setTimeout(() => {
+            console.log('비밀번호 변경:', passwordData);
+            alert('비밀번호가 변경되었습니다.');
+            setShowPasswordModal(false);
+            setPasswordData({ newPassword: '', confirmPassword: '' });
+        }, 1000);
     };
 
     const handleWithdraw = () => {
@@ -48,6 +75,12 @@ export default function EditProfilePage() {
             alert('회원 탈퇴가 처리되었습니다.');
         }
     };
+
+    // 비밀번호 일치 여부
+    const passwordsMatch = passwordData.newPassword && passwordData.confirmPassword &&
+        passwordData.newPassword === passwordData.confirmPassword;
+    const passwordsDontMatch = passwordData.confirmPassword &&
+        passwordData.newPassword !== passwordData.confirmPassword;
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
@@ -92,6 +125,27 @@ export default function EditProfilePage() {
                     <Card>
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">기본 정보</h2>
                         <div className="space-y-4">
+                            {/* 이름 - 정보 표시 */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    이름
+                                </label>
+                                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg">
+                                    <p className="text-gray-900">{formData.name}</p>
+                                </div>
+                            </div>
+
+                            {/* 이메일 - 정보 표시 */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    이메일
+                                </label>
+                                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg">
+                                    <p className="text-gray-900">{formData.email}</p>
+                                </div>
+                            </div>
+
+                            {/* 닉네임 - 입력 가능 */}
                             <Input
                                 label="닉네임"
                                 name="nickname"
@@ -99,61 +153,18 @@ export default function EditProfilePage() {
                                 onChange={handleChange}
                                 required
                             />
-                            <Input
-                                label="이름"
-                                name="username"
-                                value={formData.username}
-                                onChange={handleChange}
-                                required
-                            />
-                            <Input
-                                label="이메일"
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                disabled
-                                helperText="이메일은 변경할 수 없습니다"
-                            />
-                            <Input
-                                label="전화번호"
-                                type="tel"
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                            />
-                        </div>
-                    </Card>
-
-                    {/* 배송지 정보 */}
-                    <Card>
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">기본 배송지</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <Input
-                                    label="주소"
-                                    name="address"
-                                    value={formData.address}
-                                    onChange={handleChange}
-                                />
-                                <Button type="button" variant="outline" size="sm" className="mt-2">
-                                    주소 검색
-                                </Button>
-                            </div>
-                            <Input
-                                label="상세주소"
-                                name="addressDetail"
-                                value={formData.addressDetail}
-                                onChange={handleChange}
-                                placeholder="동/호수를 입력하세요"
-                            />
                         </div>
                     </Card>
 
                     {/* 보안 */}
                     <Card>
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">보안</h2>
-                        <Button type="button" variant="outline" fullWidth onClick={handlePasswordChange}>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            fullWidth
+                            onClick={() => setShowPasswordModal(true)}
+                        >
                             비밀번호 변경
                         </Button>
                     </Card>
@@ -179,6 +190,88 @@ export default function EditProfilePage() {
                         </button>
                     </div>
                 </form>
+
+                {/* 비밀번호 변경 모달 */}
+                {showPasswordModal && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-2xl max-w-md w-full p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold text-gray-900">비밀번호 변경</h3>
+                                <button
+                                    onClick={() => {
+                                        setShowPasswordModal(false);
+                                        setPasswordData({ newPassword: '', confirmPassword: '' });
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <Input
+                                    label="새 비밀번호"
+                                    type="password"
+                                    name="newPassword"
+                                    value={passwordData.newPassword}
+                                    onChange={handlePasswordChange}
+                                    placeholder="8자 이상 입력해주세요"
+                                    required
+                                />
+                                <div>
+                                    <Input
+                                        label="새 비밀번호 확인"
+                                        type="password"
+                                        name="confirmPassword"
+                                        value={passwordData.confirmPassword}
+                                        onChange={handlePasswordChange}
+                                        placeholder="비밀번호를 다시 입력해주세요"
+                                        required
+                                        className={
+                                            passwordsDontMatch
+                                                ? 'border-red-500 focus:ring-red-500'
+                                                : passwordsMatch
+                                                    ? 'border-green-500 focus:ring-green-500'
+                                                    : ''
+                                        }
+                                    />
+                                    {passwordsMatch && (
+                                        <div className="flex items-center mt-2 text-sm text-green-600">
+                                            <CheckCircle className="w-4 h-4 mr-1" />
+                                            <span>비밀번호가 일치합니다</span>
+                                        </div>
+                                    )}
+                                    {passwordsDontMatch && (
+                                        <div className="flex items-center mt-2 text-sm text-red-600">
+                                            <XCircle className="w-4 h-4 mr-1" />
+                                            <span>비밀번호가 일치하지 않습니다</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="mt-6 space-y-3">
+                                <Button
+                                    fullWidth
+                                    onClick={handlePasswordSubmit}
+                                    disabled={passwordsDontMatch || !passwordData.newPassword || !passwordData.confirmPassword}
+                                >
+                                    변경하기
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    fullWidth
+                                    onClick={() => {
+                                        setShowPasswordModal(false);
+                                        setPasswordData({ newPassword: '', confirmPassword: '' });
+                                    }}
+                                >
+                                    취소
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

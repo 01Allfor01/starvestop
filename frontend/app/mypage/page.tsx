@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Package, Heart, Gift, User, ChevronRight, LogOut, CreditCard, Bell } from 'lucide-react';
+import { Package, Gift, User, ChevronRight, LogOut, CreditCard } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -12,8 +12,6 @@ export default function MyPage() {
     const user = {
         name: '홍길동',
         email: 'hong@example.com',
-        phone: '010-1234-5678',
-        point: 5000,
     };
 
     const recentOrders = [
@@ -23,15 +21,13 @@ export default function MyPage() {
             storeName: '파리바게뜨 강남점',
             items: '크루아상 외 2건',
             totalPrice: 15000,
-            status: '배달완료',
         },
         {
             id: 2,
             date: '2026.02.08',
-            storeName: '샐러디 역삼점',
-            items: '샐러드 외 1건',
+            storeName: '파리바게뜨 강남점',
+            items: '바게트 외 1건',
             totalPrice: 12000,
-            status: '배달완료',
         },
     ];
 
@@ -84,15 +80,6 @@ export default function MyPage() {
                                 <p className="text-sm text-gray-600">{user.email}</p>
                             </div>
 
-                            <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg p-4 mb-6">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-700">보유 포인트</span>
-                                    <span className="text-2xl font-bold text-primary-600">
-                    {user.point.toLocaleString()}P
-                  </span>
-                                </div>
-                            </div>
-
                             <Link href="/mypage/edit">
                                 <Button variant="outline" fullWidth>
                                     <User className="w-4 h-4 mr-2" />
@@ -119,28 +106,12 @@ export default function MyPage() {
                                 <ChevronRight className="w-5 h-5 text-gray-400" />
                             </Link>
 
-                            <Link href="/mypage/coupons" className="flex items-center justify-between p-4 hover:bg-gray-50 transition border-b border-gray-100">
+                            <Link href="/mypage/coupons" className="flex items-center justify-between p-4 hover:bg-gray-50 transition">
                                 <div className="flex items-center">
                                     <Gift className="w-5 h-5 text-gray-600 mr-3" />
                                     <span className="font-medium text-gray-900">쿠폰함</span>
                                 </div>
                                 <Badge variant="default">{coupons.length}</Badge>
-                            </Link>
-
-                            <Link href="/mypage/favorites" className="flex items-center justify-between p-4 hover:bg-gray-50 transition border-b border-gray-100">
-                                <div className="flex items-center">
-                                    <Heart className="w-5 h-5 text-gray-600 mr-3" />
-                                    <span className="font-medium text-gray-900">찜 목록</span>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-gray-400" />
-                            </Link>
-
-                            <Link href="/mypage/notifications" className="flex items-center justify-between p-4 hover:bg-gray-50 transition">
-                                <div className="flex items-center">
-                                    <Bell className="w-5 h-5 text-gray-600 mr-3" />
-                                    <span className="font-medium text-gray-900">알림 설정</span>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-gray-400" />
                             </Link>
                         </Card>
 
@@ -170,14 +141,15 @@ export default function MyPage() {
                                                 <h3 className="font-semibold text-gray-900">{order.storeName}</h3>
                                                 <p className="text-sm text-gray-600 mt-1">{order.items}</p>
                                             </div>
-                                            <Badge variant="success">{order.status}</Badge>
                                         </div>
                                         <div className="flex justify-between items-center pt-3 border-t border-gray-100">
                       <span className="text-lg font-bold text-gray-900">
                         {order.totalPrice.toLocaleString()}원
                       </span>
                                             <div className="space-x-2">
-                                                <Button variant="outline" size="sm">상세보기</Button>
+                                                <Link href={`/order/${order.id}`}>
+                                                    <Button variant="outline" size="sm">상세보기</Button>
+                                                </Link>
                                                 <Button size="sm">재주문</Button>
                                             </div>
                                         </div>

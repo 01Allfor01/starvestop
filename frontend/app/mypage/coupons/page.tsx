@@ -2,15 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Gift, Plus, Clock } from 'lucide-react';
+import { ArrowLeft, Gift, Clock, Plus } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
-import Input from '@/components/ui/Input';
 
 export default function CouponsPage() {
     const [activeTab, setActiveTab] = useState<'available' | 'used' | 'expired'>('available');
-    const [couponCode, setCouponCode] = useState('');
 
     // TODO: 실제 API 데이터로 교체
     const coupons = {
@@ -21,7 +19,6 @@ export default function CouponsPage() {
                 discount: 5000,
                 minAmount: 30000,
                 expiryDate: '2026.03.31',
-                code: 'WELCOME5000',
             },
             {
                 id: 2,
@@ -29,7 +26,6 @@ export default function CouponsPage() {
                 discountRate: 10,
                 minAmount: 20000,
                 expiryDate: '2026.02.28',
-                code: 'SAVE10',
             },
             {
                 id: 3,
@@ -37,7 +33,6 @@ export default function CouponsPage() {
                 discountRate: 20,
                 minAmount: 10000,
                 expiryDate: '2026.04.15',
-                code: 'FIRST20',
             },
         ],
         used: [
@@ -47,7 +42,6 @@ export default function CouponsPage() {
                 discount: 3000,
                 minAmount: 15000,
                 usedDate: '2026.02.01',
-                code: 'NEW3000',
             },
         ],
         expired: [
@@ -57,19 +51,8 @@ export default function CouponsPage() {
                 discount: 5000,
                 minAmount: 20000,
                 expiryDate: '2026.01.31',
-                code: 'JAN5000',
             },
         ],
-    };
-
-    const handleRegisterCoupon = () => {
-        if (!couponCode.trim()) {
-            alert('쿠폰 코드를 입력해주세요.');
-            return;
-        }
-        // TODO: 실제 쿠폰 등록 API 호출
-        alert(`쿠폰 "${couponCode}"가 등록되었습니다!`);
-        setCouponCode('');
     };
 
     return (
@@ -81,27 +64,21 @@ export default function CouponsPage() {
                         <ArrowLeft className="w-5 h-5 mr-2" />
                         <span>마이페이지로</span>
                     </Link>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">쿠폰함</h1>
-                    <p className="text-gray-600">
-                        사용 가능한 쿠폰 <span className="text-primary-600 font-semibold">{coupons.available.length}개</span>
-                    </p>
-                </div>
-
-                {/* 쿠폰 등록 */}
-                <Card className="mb-6">
-                    <div className="flex items-center space-x-3">
-                        <Input
-                            placeholder="쿠폰 코드를 입력하세요"
-                            value={couponCode}
-                            onChange={(e) => setCouponCode(e.target.value)}
-                            className="flex-1"
-                        />
-                        <Button onClick={handleRegisterCoupon}>
-                            <Plus className="w-5 h-5 mr-2" />
-                            등록
-                        </Button>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">쿠폰함</h1>
+                            <p className="text-gray-600">
+                                사용 가능한 쿠폰 <span className="text-primary-600 font-semibold">{coupons.available.length}개</span>
+                            </p>
+                        </div>
+                        <Link href="/coupons">
+                            <Button>
+                                <Plus className="w-5 h-5 mr-2" />
+                                쿠폰 받기
+                            </Button>
+                        </Link>
                     </div>
-                </Card>
+                </div>
 
                 {/* 탭 */}
                 <div className="flex space-x-4 mb-6 border-b border-gray-200">
@@ -150,15 +127,9 @@ export default function CouponsPage() {
                                     </Badge>
                                 </div>
                                 <h3 className="text-lg font-bold text-gray-900 mb-2">{coupon.name}</h3>
-                                <p className="text-sm text-gray-600 mb-3">
+                                <p className="text-sm text-gray-600">
                                     {coupon.minAmount.toLocaleString()}원 이상 구매 시
                                 </p>
-                                <div className="flex items-center justify-between">
-                                    <code className="text-sm font-mono bg-white px-3 py-1 rounded border border-gray-200">
-                                        {coupon.code}
-                                    </code>
-                                    <Button size="sm" variant="outline">사용하기</Button>
-                                </div>
                             </Card>
                         ))}
                     </div>
@@ -174,12 +145,9 @@ export default function CouponsPage() {
                                     <Badge variant="default">사용 완료</Badge>
                                 </div>
                                 <h3 className="text-lg font-bold text-gray-900 mb-2">{coupon.name}</h3>
-                                <p className="text-sm text-gray-600 mb-3">
+                                <p className="text-sm text-gray-600">
                                     사용일: {coupon.usedDate}
                                 </p>
-                                <code className="text-sm font-mono bg-gray-100 px-3 py-1 rounded border border-gray-200">
-                                    {coupon.code}
-                                </code>
                             </Card>
                         ))}
                     </div>
@@ -195,12 +163,9 @@ export default function CouponsPage() {
                                     <Badge variant="default">기간 만료</Badge>
                                 </div>
                                 <h3 className="text-lg font-bold text-gray-900 mb-2">{coupon.name}</h3>
-                                <p className="text-sm text-gray-600 mb-3">
+                                <p className="text-sm text-gray-600">
                                     만료일: {coupon.expiryDate}
                                 </p>
-                                <code className="text-sm font-mono bg-gray-100 px-3 py-1 rounded border border-gray-200">
-                                    {coupon.code}
-                                </code>
                             </Card>
                         ))}
                     </div>
@@ -210,11 +175,19 @@ export default function CouponsPage() {
                 {coupons[activeTab].length === 0 && (
                     <Card className="text-center py-16">
                         <Gift className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 mb-6">
                             {activeTab === 'available' && '사용 가능한 쿠폰이 없습니다'}
                             {activeTab === 'used' && '사용한 쿠폰이 없습니다'}
                             {activeTab === 'expired' && '만료된 쿠폰이 없습니다'}
                         </p>
+                        {activeTab === 'available' && (
+                            <Link href="/coupons">
+                                <Button>
+                                    <Plus className="w-5 h-5 mr-2" />
+                                    쿠폰 받으러 가기
+                                </Button>
+                            </Link>
+                        )}
                     </Card>
                 )}
             </div>
