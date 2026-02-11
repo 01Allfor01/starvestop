@@ -8,6 +8,7 @@ import com.allforone.starvestop.domain.owner.entity.Owner;
 import com.allforone.starvestop.domain.owner.service.OwnerService;
 import com.allforone.starvestop.domain.s3.enums.S3BucketStatus;
 import com.allforone.starvestop.domain.s3.service.S3Service;
+import com.allforone.starvestop.domain.store.dto.StoreDto;
 import com.allforone.starvestop.domain.store.dto.StoreRedisDto;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.dto.request.CreateStoreRequest;
@@ -21,14 +22,14 @@ import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.Map;
@@ -129,37 +130,45 @@ public class StoreService {
                 cursorId,
                 limitSize);
 
+        if (storeRedisList.isEmpty()) {
+            Pageable pageable = PageRequest.of(
+                    (cond.getSize() == null ? 0 : 1),
+                    limitSize
+            );
+
+            return new SliceImpl<>(List.of(), pageable, false);
+        }
+
         List<Long> ids = storeRedisList
                 .stream()
                 .map(StoreRedisDto::getId)
                 .toList();
 
-        List<Store> list = null;
+        List<StoreDto> list = null;
 
         if (cond.getKeyword() == null) {
-            list = storeRepository.findByIds(ids, cond.getCategory());
+            list = storeRepository.findStoreDtoList(ids, cond.getCategory());
         } else {
-            list = storeRepository.findByIdsWithFullText(ids, cond.getKeyword(), cond.getCategory());
+            list = storeRepository.findWithKeywordStoreDtoList(ids, cond.getKeyword(), cond.getCategory());
         }
 
-        Map<Long, Store> storeMap = list
+        Map<Long, StoreDto> storeMap = list
                 .stream()
-                .collect(Collectors.toMap(Store::getId, s -> s));
+                .collect(Collectors.toMap(StoreDto::getId, s -> s));
 
         List<StoreResponse> responseList = storeRedisList
                 .stream()
                 .filter(redisDto -> storeMap.containsKey(redisDto.getId()))
                 .map(redisDto -> {
-                    Store store = storeMap.get(redisDto.getId());
+                    StoreDto storeDto = storeMap.get(redisDto.getId());
 
                     String imageUrl = s3Service.createPresignedGetUrl(
-                            store.getId(),
+                            storeDto.getId(),
                             S3BucketStatus.STORE,
-                            store.getImageUuid());
+                            storeDto.getImageUuid());
 
                     return StoreResponse.from(
-                            redisDto,
-                            store,
+                            storeDto, redisDto,
                             imageUrl
                     );
                 })
@@ -213,12 +222,16 @@ public class StoreService {
         return status == null ? StoreStatus.CLOSED : status;
     }
 
-    //매장
+    //매장 위치
     private Point getLocation(Double longitude, Double latitude) {
         return GeometryUtil.createPoint(longitude, latitude);
     }
 
     public Page<Store> getStorePage(Long ownerId, Pageable pageable) {
         return storeRepository.findByOwnerIdAndIsDeletedIsFalseOrderByName(ownerId, pageable);
+    }
+
+    public List<Long> findAllActiveStoreIds() {
+        return storeRepository.findActiveStoreIds();
     }
 }

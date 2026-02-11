@@ -8,11 +8,13 @@ import com.allforone.starvestop.domain.payment.dto.response.SearchPaymentLogResp
 import com.allforone.starvestop.domain.payment.service.PaymentLogService;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,8 +23,12 @@ public class PaymentLogController {
     private final PaymentLogService paymentLogService;
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<GetPaymentLogResponse>>> getPaymentLogList() {
-        List<GetPaymentLogResponse> result = paymentLogService.getPaymentLogResponseList();
+    public ResponseEntity<CommonResponse<Page<GetPaymentLogResponse>>> getPaymentLogList(
+            @RequestParam int pageNum, @RequestParam int pageSize
+    ) {
+        Pageable pageable = PageRequest.of(pageNum, pageSize);
+
+        Page<GetPaymentLogResponse> result = paymentLogService.getPaymentLogResponseList(pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SuccessMessage.PAYMENT_LOG_GET_SUCCESS, result));
     }
@@ -36,11 +42,14 @@ public class PaymentLogController {
 
     // 로그 검색 (관리자만 접근 가능)
     @GetMapping("/search")
-    public ResponseEntity<CommonResponse<List<SearchPaymentLogResponse>>> search(
-            @RequestParam @Nullable String orderKey,
-            @RequestParam @Nullable Long userId) {
+    public ResponseEntity<CommonResponse<Page<SearchPaymentLogResponse>>> search(
+            @RequestParam(required = false) String orderKey,
+            @RequestParam(required = false) Long userId,
+            @RequestParam int pageNum,
+            @RequestParam int pageSize) {
+        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by("timestamp"));
 
-        List<SearchPaymentLogResponse> response = paymentLogService.searchPaymentLog(orderKey, userId);
+        Page<SearchPaymentLogResponse> response = paymentLogService.searchPaymentLog(orderKey, userId, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SuccessMessage.PAYMENT_LOG_SEARCH_SUCCESS, response));
     }
 }

@@ -1,5 +1,6 @@
 package com.allforone.starvestop.domain.store.dto.condition;
 
+import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.AllArgsConstructor;
@@ -10,7 +11,7 @@ import lombok.Getter;
 public class SearchStoreCond {
 
     private final String keyword;
-    private final String category;
+    private final StoreCategory category;
 
     @DecimalMin(value = "-90.0", message = "위도는 -90 이상이어야 합니다")
     @DecimalMax(value = "90.0", message = "위도는 90 이하여야 합니다")
