@@ -1,13 +1,19 @@
 package com.allforone.starvestop.domain.payment.repository;
 
+import com.allforone.starvestop.domain.order.entity.QOrder;
+import com.allforone.starvestop.domain.payment.dto.PaymentAggregate;
 import com.allforone.starvestop.domain.payment.entity.QPayment;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -17,29 +23,44 @@ public class PaymentRepositoryImpl implements PaymentRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
     private final EntityManager em;
 
-    @Transactional
     @Override
-    public int markFailedAndClaimStockRelease(//결제 상태 실패로 만들고, stockRelease true변경
-            Long paymentId,
-            PaymentStatus failedStatus,
-            List<PaymentStatus> releasableStatuses
-    ) {
+    public int markClaimStockRelease(Long paymentId, List<PaymentStatus> allowedStatuses) {
         QPayment p = QPayment.payment;
 
-        em.flush();
-
-        long updated = jpaQueryFactory
+        return (int) jpaQueryFactory
                 .update(p)
-                .set(p.status, failedStatus)
                 .set(p.stockReleased, true)
                 .where(
                         p.id.eq(paymentId),
                         p.stockReleased.isFalse(),
-                        p.status.in(releasableStatuses)
-                ).execute();
+                        p.status.in(allowedStatuses)
+                )
+                .execute();
+    }
 
-        em.clear();
+    @Override
+    public PaymentAggregate aggregateGrossAmountByStoreAndPaidAt(
+            Long storeId,
+            PaymentStatus status,
+            LocalDateTime start,
+            LocalDateTime end
+    ) {
+        QPayment p = QPayment.payment;
+        QOrder o = QOrder.order;
 
-        return (int) updated;
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        PaymentAggregate.class,
+                        Expressions.numberTemplate(BigDecimal.class, "sum({0})", p.amount)
+                ))
+                .from(p)
+                .join(p.order, o)
+                .where(
+                        o.store.id.eq(storeId),
+                        p.status.eq(status),
+                        p.paymentAt.goe(start),
+                        p.paymentAt.lt(end)
+                )
+                .fetchOne();
     }
 }
