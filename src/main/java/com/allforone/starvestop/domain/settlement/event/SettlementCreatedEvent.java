@@ -6,14 +6,16 @@ import java.util.UUID;
 public record SettlementCreatedEvent(
         String eventId,
         Long settlementId,
+        Long actorAdminId,
         Long storeId,
         String periodYm,
         LocalDateTime occurredAt
 ) {
-    public static SettlementCreatedEvent of(Long settlementId, Long storeId, String periodYm) {
+    public static SettlementCreatedEvent of(Long settlementId,Long actorAdminId,Long storeId, String periodYm) {
         return new SettlementCreatedEvent(
                 UUID.randomUUID().toString(),
                 settlementId,
+                actorAdminId,
                 storeId,
                 periodYm,
                 LocalDateTime.now()
