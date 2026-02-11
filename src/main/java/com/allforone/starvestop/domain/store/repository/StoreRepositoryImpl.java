@@ -3,7 +3,6 @@ package com.allforone.starvestop.domain.store.repository;
 import com.allforone.starvestop.common.utils.GeometryUtil;
 import com.allforone.starvestop.domain.store.dto.StoreDto;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
-import com.allforone.starvestop.domain.store.dto.response.StoreDto;
 import com.allforone.starvestop.domain.store.entity.QStore;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.querydsl.core.types.Projections;
