@@ -31,6 +31,7 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -229,5 +230,9 @@ public class StoreService {
 
     public Page<Store> getStorePage(Long ownerId, Pageable pageable) {
         return storeRepository.findByOwnerIdAndIsDeletedIsFalseOrderByName(ownerId, pageable);
+    }
+
+    public List<Long> findAllActiveStoreIds() {
+        return storeRepository.findActiveStoreIds();
     }
 }

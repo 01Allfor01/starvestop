@@ -3,6 +3,8 @@ package com.allforone.starvestop.domain.store.repository;
 import com.allforone.starvestop.common.utils.GeometryUtil;
 import com.allforone.starvestop.domain.store.dto.StoreDto;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
+import com.allforone.starvestop.domain.store.dto.response.StoreDto;
+import com.allforone.starvestop.domain.store.entity.QStore;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -68,6 +70,17 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
         }
 
         return new SliceImpl<>(list, PageRequest.of(0, cond.getSize()), hasNext);
+    }
+
+    @Override
+    public List<Long> findActiveStoreIds() {
+        QStore store = QStore.store;
+
+        return queryFactory
+                .select(store.id)
+                .from(store)
+                .where(store.isDeleted.isTrue())
+                .fetch();
     }
 
     //매장 이름 keyword 포함 확인
