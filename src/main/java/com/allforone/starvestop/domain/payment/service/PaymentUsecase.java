@@ -16,6 +16,8 @@ import com.allforone.starvestop.domain.payment.event.PaymentEventRelay;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -141,13 +143,14 @@ public class PaymentUsecase {
     }
 
     @Transactional(readOnly = true)
-    public List<GetPaymentResponse> getMyPaymentList(Long userId) {
+    public Page<GetPaymentResponse> getMyPaymentList(Long userId, Pageable pageable) {
 
-        List<Payment> paymentList =
-                paymentService.findByOrderUserId(userId);
+        Page<Payment> paymentList =
+                paymentService.findByOrderUserId(userId, pageable);
 
-        return paymentList.stream().map(GetPaymentResponse::from).toList();
+        return paymentList.map(GetPaymentResponse::from);
     }
+
 
     @Transactional(readOnly = true)
     public GetPaymentDetailsResponse getPayment(Long userId, Long paymentId) {

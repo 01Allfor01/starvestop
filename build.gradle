@@ -64,6 +64,9 @@ dependencies {
     //s3
     implementation 'software.amazon.awssdk:s3:2.40.13'
 
+    //webSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
     //fcm
     implementation 'com.google.firebase:firebase-admin:9.7.1'
 }

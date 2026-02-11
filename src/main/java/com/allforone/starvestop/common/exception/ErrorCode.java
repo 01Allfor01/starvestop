@@ -81,6 +81,9 @@ public enum ErrorCode {
     //api로그
     API_LOG_NOT_FOUND(HttpStatus.NOT_FOUND, "API 로그가 존재하지 않습니다"),
 
+    //채팅
+    CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 방이 존재하지 않습니다"),
+
     //FCM
     SECRET_FILE_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "알림에 필요한 비밀 키를 찾을 수 없습니다"),
     INVALID_SECRET_FILE(HttpStatus.INTERNAL_SERVER_ERROR, "알림에 필요한 비밀 키가 손상되었습니다"),
