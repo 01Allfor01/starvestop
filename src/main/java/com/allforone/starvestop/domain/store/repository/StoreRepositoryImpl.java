@@ -1,8 +1,8 @@
 package com.allforone.starvestop.domain.store.repository;
 
 import com.allforone.starvestop.common.utils.GeometryUtil;
+import com.allforone.starvestop.domain.store.dto.StoreDto;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
-import com.allforone.starvestop.domain.store.dto.response.StoreDto;
 import com.allforone.starvestop.domain.store.entity.QStore;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.querydsl.core.types.Projections;
@@ -13,7 +13,9 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -53,7 +55,7 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
                         withinDistance(distance),
                         eqCategory(cond.getCategory()),
                         containsKeywordStore(cond.getKeyword()),
-                        cursorIdLt(cond.getCursorId())
+                        cursorIdLt(cond.getLastId())
                 )
                 .orderBy(distance.asc(), store.id.desc())
                 .limit(cond.getSize() + 1)
@@ -162,11 +164,11 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
     }
 
     //매장 카테고리 확인
-    private BooleanExpression eqCategory(String category) {
-        if (!StringUtils.hasText(category)) {
+    private BooleanExpression eqCategory(StoreCategory category) {
+        if (category == null) {
             return null;
         }
-        return store.category.eq(StoreCategory.valueOf(category));
+        return store.category.eq(category);
     }
 
     //커서 기반 id

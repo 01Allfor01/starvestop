@@ -66,6 +66,9 @@ dependencies {
 
     //webSocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    //fcm
+    implementation 'com.google.firebase:firebase-admin:9.7.1'
 }
 
 tasks.named('test') {

@@ -38,3 +38,6 @@ out/
 
 ### .env ###
 .env
+
+### fcm secret file ###
+*fire-base-adminsdk*.json
