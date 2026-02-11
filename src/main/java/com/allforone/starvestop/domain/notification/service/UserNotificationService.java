@@ -37,7 +37,6 @@ public class UserNotificationService {
 
     }
 
-    //
     @Transactional
     public BatchResponse sendMultiNotification(Long subscriptionId, NotificationMulticastRequest notification, Set<String> tokens) {
         try {
@@ -55,8 +54,6 @@ public class UserNotificationService {
         }
     }
 
-
-    //
     @Transactional
     public String sendNotification(NotificationDto notification) {
         try {
@@ -75,9 +72,7 @@ public class UserNotificationService {
         return "알림 전송에 실패했습니다";
     }
 
-
     //결제 완료 메세지 전송
-
     @Transactional
     public void sendPaymentNotification(Long userId) {
 
