@@ -31,7 +31,6 @@ public class ReceiptService {
     @Transactional
     public void createReceipt(Long userId, Payment payment) {
 
-
         Receipt receipt = Receipt.create(userId, payment.getOrder(), payment.getOrderKey(), payment.getPaymentKey(), payment.getAmount());
 
         receiptRepository.save(receipt);
@@ -81,6 +80,4 @@ public class ReceiptService {
         }
         receiptRepository.save(Receipt.create(userId, order, orderKey, paymentKey, amount));
     }
-    // 환불 요청
-
 }

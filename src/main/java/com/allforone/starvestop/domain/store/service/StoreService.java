@@ -27,6 +27,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class StoreService {
@@ -164,5 +166,9 @@ public class StoreService {
 
     public Page<Store> getStorePage(Long ownerId, Pageable pageable) {
         return storeRepository.findByOwnerIdAndIsDeletedIsFalseOrderByName(ownerId, pageable);
+    }
+
+    public List<Long> findAllActiveStoreIds() {
+        return storeRepository.findActiveStoreIds();
     }
 }
