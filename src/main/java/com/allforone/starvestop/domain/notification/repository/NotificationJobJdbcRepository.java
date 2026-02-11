@@ -24,11 +24,8 @@ public class NotificationJobJdbcRepository {
 
             ps.setLong(1, j.getUserId());
             ps.setString(2, j.getToken());
-            ps.setLong(3, j.getSubscriptionName());
-            ps.setInt(4, j.getToken());
-            ps.setString(9, j.title());
-            ps.setString(10, j.body());
-            ps.setTimestamp(11, java.sql.Timestamp.valueOf(j.nextAttemptAt()));
+            ps.setString(3, j.getSubscriptionName());
+            ps.setString(4, j.getMealTime().toString());
         });
     }
 }

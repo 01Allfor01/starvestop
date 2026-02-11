@@ -49,6 +49,5 @@ public class NotificationJob {
         this.subscriptionName = subscriptionName;
         this.mealTime = mealTime;
     }
-
 }
 

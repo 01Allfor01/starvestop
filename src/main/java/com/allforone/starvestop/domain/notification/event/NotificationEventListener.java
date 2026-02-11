@@ -17,11 +17,14 @@ public class NotificationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onPaymentStatusSuccess(PaymentStatusChangedEvent event) {
 
-        if (event.status() != PaymentStatus.SUCCEEDED) {
+        if (event.status() == PaymentStatus.FAILED) {
+            notificationService.sendPaymentUserNotification(event.userId(), event.status());
             return;
         }
 
-        notificationService.sendPaymentOwnerNotification(event.orderKey());
-        notificationService.sendPaymentUserNotification(event.userId());
+        if (event.status() == PaymentStatus.SUCCEEDED) {
+            notificationService.sendPaymentOwnerNotification(event.orderKey());
+            notificationService.sendPaymentUserNotification(event.userId(), event.status());
+        }
     }
 }

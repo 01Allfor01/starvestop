@@ -28,6 +28,7 @@ public class NotificationToken {
     @Column(nullable = false)
     private NotificationPlatformType platform;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;
 

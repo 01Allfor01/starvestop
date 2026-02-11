@@ -12,6 +12,7 @@ import com.allforone.starvestop.domain.order.entity.OrderProduct;
 import com.allforone.starvestop.domain.order.service.OrderProductService;
 import com.allforone.starvestop.domain.owner.service.OwnerService;
 import com.allforone.starvestop.domain.payment.entity.Payment;
+import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.service.PaymentService;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import com.allforone.starvestop.domain.user.service.UserService;
@@ -95,10 +96,10 @@ public class NotificationService {
     }
 
 
-    //결제 완료 메세지 전송
+    //결제 메세지 전송
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void sendPaymentUserNotification(Long userId) {
+    public void sendPaymentUserNotification(Long userId, PaymentStatus status) {
 
         NotificationToken notificationToken = notificationTokenRepository.findByUserId(userId);
 
@@ -110,7 +111,9 @@ public class NotificationService {
                 .setToken(notificationToken.getToken())
                 .setNotification(Notification.builder()
                         .setTitle("Starve stop")
-                        .setBody("결제가 완료되었습니다")
+                        .setBody(status.equals(PaymentStatus.SUCCEEDED)
+                                ? "결제가 완료되었습니다"
+                                : "결제가 실패되었습니다")
                         .build())
                 .build();
         try {
@@ -156,7 +159,7 @@ public class NotificationService {
     @Transactional
     public void sendSubscriptionTimeNotification(Integer dayBit, Integer mealTimeBit) {
 
-        List<SendMealTimeNotificationDto> dtoList = notificationTokenRepository.findByMealTime(dayBit, mealTimeBit);
+        List<SendMealTimeNotificationDto> dtoList = notificationTokenRepository.findByTargetList(dayBit);
 
         if (dtoList.isEmpty()) {
             return;
