@@ -101,6 +101,10 @@ public enum SuccessMessage {
     CHAT_ROOM_GET_SUCCESS("채팅방 목록 조회 성공"),
     CHAT_MESSAGE_GET_SUCCESS("채팅 메세지 조회 성공"),
 
+    //FCM
+    NOTIFICATION_TOKEN_STORE_SUCCESS("알림 토큰 저장 성공"),
+    NOTIFICATION_SEND_SUCCESS("알림 전송 성공"),
+
     // 정산
     SETTLEMENT_CREATE_SUCCESS("정산 생성 성공");
     ;

@@ -91,6 +91,10 @@ public enum ErrorCode {
     //채팅
     CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 방이 존재하지 않습니다"),
 
+    //FCM
+    SECRET_FILE_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "알림에 필요한 비밀 키를 찾을 수 없습니다"),
+    INVALID_SECRET_FILE(HttpStatus.INTERNAL_SERVER_ERROR, "알림에 필요한 비밀 키가 손상되었습니다"),
+    NOTIFICATION_SEND_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "알림 전송에 실패했습니다"),
     ;
 
     private final HttpStatus status;
