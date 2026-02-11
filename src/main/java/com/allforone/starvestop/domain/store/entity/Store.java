@@ -14,7 +14,7 @@ import java.time.LocalTime;
 
 @Getter
 @Entity
-@Table(name = "stores")
+@Table(name = "stores", indexes = {@Index(name = "idx_stores_filter", columnList = "isDeleted, category, id")})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Store extends BaseEntity {
 

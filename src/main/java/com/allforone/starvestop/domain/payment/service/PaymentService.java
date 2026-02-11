@@ -60,12 +60,14 @@ public class PaymentService {
         return paymentRepository.findById(paymentId).orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
     }
 
-
     public int checkClaimed(Payment payment) {
-        return paymentRepository.markFailedAndClaimStockRelease(
+        return paymentRepository.markClaimStockRelease(
                 payment.getId(),
-                PaymentStatus.FAILED,
-                List.of(PaymentStatus.REQUESTED, PaymentStatus.PENDING)
+                List.of(
+                        PaymentStatus.REQUESTED,
+                        PaymentStatus.PENDING,
+                        PaymentStatus.FAILED_NON_RETRYABLE
+                )
         );
     }
 

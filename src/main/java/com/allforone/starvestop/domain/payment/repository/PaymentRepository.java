@@ -24,5 +24,4 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, Payment
 
     @Query("select p from Payment p where p.orderKey = :orderKey and p.isDeleted = false")
     Payment getPaymentByOrderKey(@Param("orderKey") String orderKey);
-
 }

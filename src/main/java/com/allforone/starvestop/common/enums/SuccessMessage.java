@@ -107,6 +107,7 @@ public enum SuccessMessage {
 
     // 정산
     SETTLEMENT_CREATE_SUCCESS("정산 생성 성공");
+    ;
 
     private final String message;
 
