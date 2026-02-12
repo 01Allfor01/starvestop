@@ -15,6 +15,7 @@ import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.service.StoreService;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +50,7 @@ public class ProductService {
 
     //매장 상품 목록 조회
     @Transactional(readOnly = true)
-    public Slice<GetProductResponse> getProductStoreSlice(Long storeId) {
+    public Slice<GetProductResponse> getProductStoreSlice(Long storeId, Pageable pageable) {
         Store store = storeService.getById(storeId);
 
         Slice<Product> productSlice = productRepository.findAllByStoreIdAndIsDeletedIsFalseOrderById(store.getId());
@@ -64,7 +65,7 @@ public class ProductService {
 
     //마감 세일 상품 목록 조회
     @Transactional(readOnly = true)
-    public Slice<GetProductSaleResponse> getProductSaleSlice() {
+    public Slice<GetProductSaleResponse> getProductSaleSlice(Pageable pageable) {
         Slice<Product> productSlice = productRepository.findAllByStatusAndIsDeletedIsFalse(ProductStatus.SALE);
 
         return productSlice.map(product -> {
