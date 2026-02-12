@@ -19,7 +19,6 @@ import com.allforone.starvestop.domain.store.service.StoreService;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
@@ -27,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -77,137 +78,68 @@ public class ProductService {
     //마감 세일 상품 목록 조회
     @Transactional(readOnly = true)
     public Slice<GetProductSaleResponse> getProductSaleSlice(SearchProductCond cond) {
-        double distance = cond.getLastDistance() != null ? cond.getLastDistance() : -1;
+        double lastDistance = cond.getLastDistance() != null ? cond.getLastDistance() : -1;
         long lastStoreId = cond.getLastStoreId() != null ? cond.getLastStoreId() : 0L;
         int limitSize = cond.getSize() != null ? cond.getSize() : 10;
 
-        //매장당 최대 몇개
-        int perStoreLimit = 5;
+        //매장 당 n개의 마감 세일 상품
+        int perStoreLimit = 3;
 
-        int target = limitSize + 1;
+        int storeSize = Math.max(10, (int) Math.ceil((double) limitSize / perStoreLimit) * 5);
 
-        List<GetProductSaleResponse> result = new ArrayList<>(target);
-
-        //1. lastStoreId 있을 때
-        if (lastStoreId != 0L) {
-            int remain = target - result.size();
-            int pageSize = Math.min(perStoreLimit, remain) + 1;
-
-            Pageable pageable = PageRequest.of(0, pageSize);
-
-            List<ProductSaleDto> first = productRepository.findByCond(
-                    lastStoreId,
-                    cond.getLastId(),
-                    cond.getCategory(),
-                    cond.getKeyword(),
-                    pageable);
-
-            int take = Math.min(first.size(), Math.min(perStoreLimit, remain));
-
-            for (int i = 0; i < take; i++) {
-                ProductSaleDto p = first.get(i);
-
-                String imageUrl = s3Service.createPresignedGetUrl(
-                        p.getId(),
-                        S3BucketStatus.PRODUCT,
-                        p.getImageUuid()
-                );
-                result.add(GetProductSaleResponse.from(p, null, imageUrl))
-            }
-        }
-
-
-
-
-        //1. Redis에서 5km이내 매장 거리순으로 매장 id와 거리 가져오기
-        List<StoreRedisDto> storeRedisList = storeRedisService.get(
+        //Redis에서 현재 좌표에서 후보 List 가져오기
+        List<StoreRedisDto> nearStores = storeRedisService.get(
                 cond.getNowLongitude(),
                 cond.getNowLatitude(),
-                distance,
+                lastDistance,
                 lastStoreId,
-                limitSize);
+                storeSize + 1
+        );
 
-        //2. 매장이 없으면 빈 List 반환
-        if (storeRedisList == null || storeRedisList.isEmpty()) {
-            Pageable pageable = PageRequest.of(
-                    (cond.getSize() == null ? 0 : 1),
-                    limitSize
-            );
-            return new SliceImpl<>(List.of(), pageable, false);
+        if (nearStores == null || nearStores.isEmpty()) {
+            return new SliceImpl<>(List.of(), PageRequest.of(0, limitSize), false);
         }
 
-        List<GetProductSaleResponse> responseList = new ArrayList<>(limitSize + 1);
+        boolean hasNext = nearStores.size() > limitSize;
+        if (hasNext) nearStores = nearStores.subList(0, limitSize);
 
-        boolean hasNext = false;
+        List<Long> storeIds = nearStores.stream().map(StoreRedisDto::getId).toList();
 
-        //3. 매장을 거리순으로 순회하며 상품을 가져와서 채움
-        for (StoreRedisDto storeRedisDto : storeRedisList) {
+        //거리 매핑
+        Map<Long, Double> distanceMap = nearStores.stream()
+                .collect(Collectors.toMap(StoreRedisDto::getId, StoreRedisDto::getDistance));
 
-            if(responseList.size() >= limitSize + 1) {
-                hasNext = true;
-                break;
-            }
+        //DB 1번 쿼리로 “매장별 3개” 잘린 결과를 한 번에 가져옴
+        List<ProductSaleDto> dtoList = productRepository.findSaleByCond(
+                storeIds,
+                cond.getCategory() == null ? null : cond.getCategory().name(),
+                cond.getKeyword(),
+                perStoreLimit
+        );
 
-            Long storeId = storeRedisDto.getId();
+        // 응답 만들기 (storeIds 순서 유지하고 싶으면 storeId 기준으로 다시 정렬/그룹)
+        Map<Long, List<ProductSaleDto>> grouped = dtoList.stream()
+                .collect(Collectors.groupingBy(ProductSaleDto::storeId));
 
-            //4. 마지막 매장 아이디면 lastId 적용 나머지는 커서 없음으로 null 처리
-            Long cursorStore = (storeId == lastStoreId) ? cond.getLastId() : null;
+        List<GetProductSaleResponse> result = new ArrayList<>();
 
-            int remaining = (limitSize + 1) - responseList.size();
-            int pageSize = Math.min(perStoreLimit, remaining) + 1;
+        for (Long storeId : storeIds) {
+            List<ProductSaleDto> list = grouped.getOrDefault(storeId, List.of());
+            for (ProductSaleDto dto : list) {
+                if (result.size() >= limitSize) break;
 
-            Pageable pageable = PageRequest.of(0, pageSize);
-
-            List<ProductSaleDto> products = productRepository.findByCond(
-                    storeId,
-                    cursorStore,
-                    cond.getCategory(),
-                    cond.getKeyword(),
-                    pageable
-            );
-
-            if (products.isEmpty()) continue;
-
-            //해당 매장에 더 있니?
-            boolean storeMore = products.size() > Math.min(perStoreLimit, remaining);
-
-            //실제로 담을 개수만큼 자르기
-            int take = Math.min(products.size(), Math.min(perStoreLimit, remaining));
-
-            for (int i = 0; i < take; i++) {
-                ProductSaleDto product = products.get(i);
-
-                //이미지 발급
                 String imageUrl = s3Service.createPresignedGetUrl(
-                        product.getId(),
+                        dto.id(),
                         S3BucketStatus.PRODUCT,
-                        product.getImageUuid()
+                        dto.imageUuid()
                 );
 
-                responseList.add(GetProductSaleResponse.from(product, storeRedisDto, imageUrl));
-
-                if (responseList.size() >= limitSize + 1) break;
+                result.add(GetProductSaleResponse.from(dto, distanceMap.get(storeId), imageUrl));
             }
-
-            //5. responseList가 매장에 상품이 더 남아있으면 다음페이지 존재
-            if (storeMore) {
-                hasNext = true;
-            }
-
-            //6. responseList가 다 차 있으면 break
-            if (responseList.size() >= limitSize + 1) {
-                hasNext = true;
-                break;
-            }
+            if (result.size() >= limitSize) break;
         }
 
-        if (responseList.size() > limitSize) {
-            hasNext = true;
-            responseList.remove(limitSize);
-        }
-
-        Pageable resultPageable = PageRequest.of(0, limitSize);
-        return new SliceImpl<>(responseList, resultPageable, hasNext);
+        return new SliceImpl<>(result, PageRequest.of(0, limitSize), hasNext);
     }
 
     //상품 상세 조회

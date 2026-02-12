@@ -3,8 +3,6 @@ package com.allforone.starvestop.domain.product.repository;
 import com.allforone.starvestop.domain.product.dto.ProductSaleDto;
 import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
-import com.allforone.starvestop.domain.store.enums.StoreCategory;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -31,59 +29,48 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
                                      @Param("lastId")Long lastId,
                                      @Param("size")int size);
 
-    @Query("""
-    select new com.allforone.starvestop.domain.product.dto.ProductSaleDto(
-        p.id,
-        s.id,
-        s.name,
-        p.name,
-        p.description,
-        p.stock,
-        p.price,
-        p.salePrice,
-        p.imageUuid,
-        p.updatedAt
-    )
-    from Product p join Store s on p.store = s
-    where s.id = :storeId
-        and s.isDeleted = false
-        and p.isDeleted = false
-        and p.status = 'SALE'
-        and (:category is null or s.category = :category)
-        and (:keyword is null or p.name like concat('%', :keyword, '%'))
-        and (:lastId is null or p.id > :lastId)
-    order by p.id asc
-    """)
-    List<ProductSaleDto> findByCond(@Param("storeId")Long storeId,
-                                    @Param("lastId")Long lastId,
-                                    @Param("category")StoreCategory category,
-                                    @Param("keyword")String keyword,
-                                    Pageable pageable);
 
-    @Query("""
-    select new com.allforone.starvestop.domain.product.dto.ProductSaleDto(
-        p.id,
-        s.id,
-        s.name,
-        p.name,
-        p.description,
-        p.stock,
-        p.price,
-        p.salePrice,
-        p.imageUuid,
-        p.updatedAt
-    )
-    from Product p join Store s on p.store = s
-    where s.id in :ids
-        and s.isDeleted = false
-        and p.isDeleted = false
-        and p.status = 'SALE'
-        and (:category is null or s.category = :category)
-        and (:keyword is null or p.name like concat('%', :keyword, '%'))
-    order by s.id asc, p.id asc
-    """)
-    List<ProductSaleDto> findSaleByStores(@Param("ids") List<Long> ids,
-                                          @Param("category") StoreCategory category,
-                                          @Param("keyword") String keyword,
-                                          Pageable pageable);
+    @Query(value = """
+    select 
+        id,
+        store_id,
+        store_name,
+        name,
+        description,
+        stock,
+        price,
+        sale_price,
+        image_uuid,
+        updated_at
+    from (
+        select
+            p.id            as id,
+            s.id            as store_id,
+            s.name          as store_name,
+            p.name          as name,
+            p.description   as description,
+            p.stock         as stock,
+            p.price         as price,
+            p.sale_price    as sale_price,
+            p.image_uuid    as image_uuid,
+            p.updated_at    as updated_at,
+            row_number() over (partition by s.id order by p.id asc) as rn
+        from products p
+        join stores s on s.id = p.store_id
+        where s.id in (:storeIds)
+          and s.is_deleted = false
+          and p.is_deleted = false
+          and p.status = 'SALE'
+          and (:category is null or s.category = :category)
+          and (:keyword is null or p.name like concat('%', :keyword, '%'))
+    ) t
+    where t.rn <= :perStoreLimit
+    order by t.store_id asc, t.id asc
+    """, nativeQuery = true)
+    List<ProductSaleDto> findSaleByCond(
+            @Param("storeIds") List<Long> storeIds,
+            @Param("category") String category,
+            @Param("keyword") String keyword,
+            @Param("perStoreLimit") int perStoreLimit
+    );
 }

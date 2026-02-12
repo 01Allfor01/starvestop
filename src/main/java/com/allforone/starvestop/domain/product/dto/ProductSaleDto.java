@@ -1,23 +1,17 @@
 package com.allforone.starvestop.domain.product.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.locationtech.jts.geom.Point;
-
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
-@Getter
-@AllArgsConstructor
-public class ProductSaleDto {
-    private final Long id;
-    private final Long storeId;
-    private final String storeName;
-    private final String name;
-    private final String description;
-    private final Integer stock;
-    private final BigDecimal price;
-    private final BigDecimal salePrice;
-    private final String imageUuid;
-    private final LocalDateTime updatedAt;
+public record ProductSaleDto(
+        Long id,
+        Long storeId,
+        String storeName,
+        String name,
+        String description,
+        Integer stock,
+        BigDecimal price,
+        BigDecimal salePrice,
+        String imageUuid,
+        Timestamp updatedAt) {
 }

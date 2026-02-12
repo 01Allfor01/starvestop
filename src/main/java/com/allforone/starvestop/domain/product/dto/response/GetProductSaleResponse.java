@@ -1,7 +1,6 @@
 package com.allforone.starvestop.domain.product.dto.response;
 
 import com.allforone.starvestop.domain.product.dto.ProductSaleDto;
-import com.allforone.starvestop.domain.store.dto.StoreRedisDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import java.math.BigDecimal;
@@ -22,19 +21,19 @@ public class GetProductSaleResponse {
     private final Double distance;
     private final LocalDateTime updatedAt;
 
-    public static GetProductSaleResponse from(ProductSaleDto productSaleDto, StoreRedisDto redisDto, String imageUrl) {
+    public static GetProductSaleResponse from(ProductSaleDto productSaleDto, Double distance, String imageUrl) {
         return new GetProductSaleResponse(
-                productSaleDto.getId(),
-                productSaleDto.getStoreId(),
-                productSaleDto.getStoreName(),
-                productSaleDto.getName(),
-                productSaleDto.getDescription(),
-                productSaleDto.getStock(),
-                productSaleDto.getPrice(),
-                productSaleDto.getSalePrice(),
+                productSaleDto.id(),
+                productSaleDto.storeId(),
+                productSaleDto.storeName(),
+                productSaleDto.name(),
+                productSaleDto.description(),
+                productSaleDto.stock(),
+                productSaleDto.price(),
+                productSaleDto.salePrice(),
                 imageUrl,
-                redisDto.getDistance(),
-                productSaleDto.getUpdatedAt()
+                distance,
+                productSaleDto.updatedAt().toLocalDateTime()
         );
     }
 }
