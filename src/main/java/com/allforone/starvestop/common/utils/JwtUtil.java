@@ -1,7 +1,7 @@
 package com.allforone.starvestop.common.utils;
 
 import com.allforone.starvestop.common.dto.AuthUser;
-import com.allforone.starvestop.domain.user.enums.UserRole;
+import com.allforone.starvestop.common.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;

@@ -6,7 +6,7 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.chat.service.ChatRoomService;
 import com.allforone.starvestop.domain.store.dto.response.GetStoreForOwnerResponse;
 import com.allforone.starvestop.domain.store.entity.Store;
-import com.allforone.starvestop.domain.user.enums.UserRole;
+import com.allforone.starvestop.common.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

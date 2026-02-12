@@ -1,6 +1,5 @@
-package com.allforone.starvestop.domain.owner.entity;
+package com.allforone.starvestop.domain.admin;
 
-import com.allforone.starvestop.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,15 +7,12 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "owners")
+@Table(name = "admins")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Owner extends BaseEntity {
+public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false, length = 30)
-    private String username;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -24,21 +20,23 @@ public class Owner extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
-    private Owner(String email, String password, String userName) {
+    private Boolean isDeleted;
+
+    private Admin(String email, String password) {
         this.email = email;
         this.password = password;
-        this.username = userName;
+        this.isDeleted = false;
     }
 
-    public static Owner create(String email, String password, String userName) {
-        return new Owner(
-                email,
-                password,
-                userName
-        );
+    public static Admin create(String email, String password) {
+        return new Admin(email, password);
     }
 
     public void update(String password) {
         this.password = password;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
     }
 }

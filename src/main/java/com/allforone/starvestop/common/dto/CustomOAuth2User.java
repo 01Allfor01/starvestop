@@ -1,6 +1,6 @@
 package com.allforone.starvestop.common.dto;
 
-import com.allforone.starvestop.domain.user.enums.UserRole;
+import com.allforone.starvestop.common.enums.UserRole;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

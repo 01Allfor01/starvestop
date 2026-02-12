@@ -12,7 +12,7 @@ import com.allforone.starvestop.domain.subscription.dto.response.GetSubscription
 import com.allforone.starvestop.domain.subscription.dto.response.UpdateSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.entity.Subscription;
 import com.allforone.starvestop.domain.subscription.repository.SubscriptionRepository;
-import com.allforone.starvestop.domain.user.enums.UserRole;
+import com.allforone.starvestop.common.enums.UserRole;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
