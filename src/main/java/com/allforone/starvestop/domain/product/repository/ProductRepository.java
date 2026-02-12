@@ -4,6 +4,7 @@ import com.allforone.starvestop.domain.product.dto.ProductSaleDto;
 import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,7 +27,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
         order by p.id asc
         limit :size
     """)
-    Slice<Product> findSliceByCursor(@Param("storeId")Long storeId, @Param("lastId")Long lastId, @Param("size")int size);
+    Slice<Product> findSliceByCursor(@Param("storeId")Long storeId,
+                                     @Param("lastId")Long lastId,
+                                     @Param("size")int size);
 
     @Query("""
     select new com.allforone.starvestop.domain.product.dto.ProductSaleDto(
@@ -41,16 +44,19 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
         p.imageUuid,
         p.updatedAt
     )
-    from Product p join Store s on p.store = s and s.isDeleted = false
-    where s.id in (:ids)
+    from Product p join Store s on p.store = s
+    where s.id = :storeId
+        and s.isDeleted = false
         and p.isDeleted = false
         and p.status = 'SALE'
         and (:category is null or s.category = :category)
         and (:keyword is null or p.name like concat('%', :keyword, '%'))
         and (:lastId is null or p.id > :lastId)
+    order by p.id asc
     """)
-    List<ProductSaleDto> findByCond(@Param("ids")List<Long> ids,
-                                    @Param("keyword")String keyword,
+    List<ProductSaleDto> findByCond(@Param("storeId")Long storeId,
+                                    @Param("lastId")Long lastId,
                                     @Param("category")StoreCategory category,
-                                    @Param("lastId")Long lastId);
+                                    @Param("keyword")String keyword,
+                                    Pageable pageable);
 }

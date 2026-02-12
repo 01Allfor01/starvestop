@@ -17,6 +17,7 @@ public interface StoreRepository extends JpaRepository<Store, Long>, StoreReposi
     Optional<Store> findByIdAndIsDeletedIsFalse(Long id);
 
     Page<Store> findByOwnerIdAndIsDeletedIsFalseOrderByName(Long ownerId, Pageable pageable);
+
     @Query("""
     select distinct new com.allforone.starvestop.domain.store.dto.StoreDto(
         s.id,
