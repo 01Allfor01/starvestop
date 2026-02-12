@@ -44,8 +44,8 @@ public class PaymentUsecase {
     @Transactional
     public CreatePaymentResponse createPayment(Long userId, Long orderId) {
         Order order = orderService.getForPayment(orderId);
-        // 1. 같은 유저인지 확인
-        if (!userId.equals(order.getUser().getId())) { //< n+1?
+
+        if (!userId.equals(order.getUser().getId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 
@@ -85,51 +85,71 @@ public class PaymentUsecase {
             return "/success.html?orderKey=" + payment.getOrderKey()
                     + "&amount=" + payment.getAmount();
         }
-        // 3. 이미 실패인경우 실패 페이지 리다이렉트
-        if (payment.getStatus() == PaymentStatus.FAILED || payment.getStatus() == PaymentStatus.CANCELED) {
+
+        // 진행 중(연타/중복)
+        if (payment.getStatus() == PaymentStatus.PENDING) {
+            return "/fail.html?orderId=" + payment.getOrderKey()
+                    + "&reason=ALREADY_PENDING";
+        }
+
+        // 재시도 불가
+        if (payment.getStatus() == PaymentStatus.CANCELED ||
+                payment.getStatus() == PaymentStatus.FAILED_NON_RETRYABLE) {
             return "/fail.html";
         }
 
-        // 4. 가격이 맞지 않을 경우 재고 반환
+        // 금액 불일치 -> non-retryable + 재고 반환
         if (payment.getAmount().compareTo(BigDecimal.valueOf(amount)) != 0) {
-            failAndReleaseReservedStockExactlyOnce(payment,
-                    "PAYMENT_AMOUNT_MISMATCH",  // pgStatus에 넣을 "code"
+            failAndMaybeReleaseReservedStockExactlyOnce(
+                    payment,
+                    PaymentStatus.FAILED_NON_RETRYABLE,
+                    "PAYMENT_AMOUNT_MISMATCH",
                     paymentService.toJson(Map.of(
                             "code", "PAYMENT_AMOUNT_MISMATCH",
                             "message", "결제 금액이 올바르지 않습니다.",
-                            "orderId", orderId,
+                            "orderId", orderKey,
                             "paymentKey", paymentKey
-                    ))
+                    )),
+                    true
             );
+
+            // 실패 이벤트 발행 보장
+            paymentEventRelay.relayFrom(payment);
 
             return "/fail.html?orderId=" + payment.getOrderKey()
                     + "&reason=AMOUNT_MISMATCH";
         }
 
-        // 5. tossPayments 에 보낼 요청값 생성
+        // confirm 진행 선점 (REQUESTED/FAILED_RETRYABLE -> PENDING)
+        payment.pending();
+
         Map<String, Object> requestPayload = Map.of(
                 "paymentKey", paymentKey,
-                "orderId", orderId,
+                "orderId", orderKey,
                 "amount", amount
         );
 
         try {
-            // 6. 결제 승인 api 호출
-            Map response = paymentService.tossApiConfirm(requestPayload);
+            paymentService.tossApiConfirm(requestPayload);
 
             payment.success(paymentKey);
             order.paid(now);
-            paymentEventRelay.relayFrom(payment);
-            // 7. 영수증 생성
-            receiptService.save(payment.getUserId(), payment);
+            order.paid();
 
+            // 성공 이벤트(상태변경/영수증) 발행
+            paymentEventRelay.relayFrom(payment);
 
             return "/success.html?orderKey=" + payment.getOrderKey()
                     + "&amount=" + payment.getAmount();
 
         } catch (WebClientResponseException e) {
             // 8. 실패시 재고 반환
-            failAndReleaseReservedStockExactlyOnce(payment, null, paymentService.toJson(e));
+            if (isRetryable(e)) {
+                failAndMaybeReleaseReservedStockExactlyOnce(payment, PaymentStatus.FAILED_RETRYABLE, "PG_CONFIRM_FAILED", paymentService.toJson(e), false);
+            } else {
+                failAndMaybeReleaseReservedStockExactlyOnce(payment, PaymentStatus.FAILED_NON_RETRYABLE, "PG_CONFIRM_FAILED", paymentService.toJson(e), true);
+            }
+
 
             return "/fail.html?orderId=" + payment.getOrderKey()
                     + "&reason=PG_CONFIRM_FAILED";

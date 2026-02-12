@@ -6,6 +6,7 @@ import com.allforone.starvestop.common.enums.SuccessMessage;
 import com.allforone.starvestop.domain.owner.dto.UpdateOwnerRequest;
 import com.allforone.starvestop.domain.owner.dto.UpdateOwnerResponse;
 import com.allforone.starvestop.domain.owner.service.OwnerService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class OwnerController {
     @PatchMapping
     public ResponseEntity<CommonResponse<UpdateOwnerResponse>> updateOwner(
             @AuthenticationPrincipal AuthUser authUser,
-            @RequestBody UpdateOwnerRequest request
+            @Valid @RequestBody UpdateOwnerRequest request
     ) {
         Long ownerId = authUser.getUserId();
         UpdateOwnerResponse response = ownerService.updateOwner(ownerId, request);

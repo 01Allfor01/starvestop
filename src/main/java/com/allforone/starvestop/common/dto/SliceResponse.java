@@ -10,9 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 public class SliceResponse<T> {
     private final List<T> content;
-    private final int page;
     private final int size;
-    private final int numberOfElements;
     private final boolean hasNext;
     private final boolean first;
     private final boolean last;
@@ -20,9 +18,7 @@ public class SliceResponse<T> {
     public static <T> SliceResponse<T> from(Slice<T> slice) {
         return new SliceResponse<>(
                 slice.getContent(),
-                slice.getNumber(),
                 slice.getSize(),
-                slice.getNumberOfElements(),
                 slice.hasNext(),
                 slice.isFirst(),
                 slice.isLast()

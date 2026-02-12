@@ -48,22 +48,25 @@ public class Order extends BaseEntity {
 
     private LocalDateTime expiresAt;
 
+    private BigDecimal discountedPrice;
+
     @Column(nullable = false)
     private BigDecimal amount;
 
-    private Order(Store store, String orderKey, User user, UserCoupon userCoupon, BigDecimal amount) {
+    private Order(Store store, String orderKey, User user, UserCoupon userCoupon, BigDecimal discountedPrice, BigDecimal amount) {
         this.store = store;
         this.status = OrderStatus.PENDING;
         this.orderKey = orderKey;
         this.user = user;
         this.userCoupon = userCoupon;
+        this.discountedPrice = discountedPrice;
         this.amount = amount;
 
         this.expiresAt = LocalDateTime.now().plusMinutes(EXPIRE_MINUTES);
     }
 
-    public static Order create(Store store, String orderKey, User user, UserCoupon userCoupon, BigDecimal amount) {
-        return new Order(store, orderKey, user, userCoupon, amount);
+    public static Order create(Store store, String orderKey, User user, UserCoupon userCoupon,BigDecimal discountedPrice, BigDecimal amount) {
+        return new Order(store, orderKey, user, userCoupon, discountedPrice, amount);
     }
 
     public void paid(LocalDateTime now) {

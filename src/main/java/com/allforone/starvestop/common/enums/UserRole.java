@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.user.enums;
+package com.allforone.starvestop.common.enums;
 
 import lombok.Getter;
 

@@ -56,7 +56,9 @@ public class OrderUseCase {
 
         BigDecimal amount = calculateAmount(cartList, userCoupon);
 
-        Order order = orderService.createOrder(user, store, userCoupon, amount);
+        BigDecimal discountedPrice = getDiscountPrice(amount, userCoupon);
+
+        Order order = orderService.createOrder(user, store, userCoupon, discountedPrice, amount);
 
         orderProductService.saveAll(order, cartList);
 
@@ -80,7 +82,7 @@ public class OrderUseCase {
     }
 
     private BigDecimal calculateAmount(List<Cart> cartList, UserCoupon userCoupon) {
-        BigDecimal amount = cartList.stream()
+        return cartList.stream()
                 .map(cart -> {
                     Product product = cart.getProduct();
                     BigDecimal unitPrice = product.getStatus() == ProductStatus.GENERAL
@@ -90,12 +92,14 @@ public class OrderUseCase {
                     return unitPrice.multiply(BigDecimal.valueOf(cart.getQuantity()));
                 })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 
+    private BigDecimal getDiscountPrice(BigDecimal amount, UserCoupon userCoupon) {
         if (userCoupon != null && amount.compareTo(userCoupon.getCoupon().getMinAmount()) >= 0) {
             userCoupon.use();
-            return amount.subtract(userCoupon.getCoupon().getDiscountAmount());
+            return userCoupon.getCoupon().getDiscountAmount();
         }
-        return amount;
+        return BigDecimal.valueOf(0);
     }
 
     @Transactional

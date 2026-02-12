@@ -1,12 +1,12 @@
-package com.allforone.starvestop.domain.store.dto.response;
+package com.allforone.starvestop.domain.store.dto;
 
-import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.locationtech.jts.geom.Point;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Getter
@@ -21,5 +21,5 @@ public class StoreDto {
     private final LocalTime closeTime;
     private final StoreStatus status;
     private final String imageUuid;
-
+    private final LocalDateTime updatedAt;
 }

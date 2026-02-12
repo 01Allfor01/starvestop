@@ -19,6 +19,9 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+    web:
+      pageable:
+        max-page-size: 100
 
   security:
     oauth2:
@@ -54,3 +57,9 @@ payment:
   base-url: https://api.tosspayments.com
   secret-key: ${PAYMENT_WIDGET_SECRET_KEY}
   billing-secret-key: ${PAYMENT_SECRET_KEY}
+
+fcm:
+  secret-file: ${FCM_SECRET_FILE}
+
+signup:
+  admin: ${ADMIN_KEY}

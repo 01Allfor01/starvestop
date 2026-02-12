@@ -8,7 +8,9 @@ import com.allforone.starvestop.domain.product.dto.response.*;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,8 +38,8 @@ public class ProductController {
 
     //특정 매장 상품 목록 조회
     @GetMapping("/stores/{storeId}/products")
-    public ResponseEntity<CommonResponse<Slice<GetProductResponse>>> getProductStoreSlice(@PathVariable Long storeId) {
-        Slice<GetProductResponse> getProductResponseSlice = productService.getProductStoreSlice(storeId);
+    public ResponseEntity<CommonResponse<Slice<GetProductResponse>>> getProductStoreSlice(@PathVariable Long storeId, @PageableDefault(size = 10) Pageable pageable) {
+        Slice<GetProductResponse> getProductResponseSlice = productService.getProductStoreSlice(storeId, pageable);
 
         CommonResponse<Slice<GetProductResponse>> response =
                 CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseSlice);
@@ -47,8 +49,8 @@ public class ProductController {
 
     //마감 세일 상품 목록 조회
     @GetMapping("/products/sale")
-    public ResponseEntity<CommonResponse<Slice<GetProductSaleResponse>>> getProductSaleSlice() {
-        Slice<GetProductSaleResponse> getProductSaleResponseSlice = productService.getProductSaleSlice();
+    public ResponseEntity<CommonResponse<Slice<GetProductSaleResponse>>> getProductSaleSlice(@PageableDefault(size = 10) Pageable pageable) {
+        Slice<GetProductSaleResponse> getProductSaleResponseSlice = productService.getProductSaleSlice(pageable);
 
         CommonResponse<Slice<GetProductSaleResponse>> response =
                 CommonResponse.success(PRODUCT_LIST_BY_SALE_SUCCESS, getProductSaleResponseSlice);
@@ -71,7 +73,7 @@ public class ProductController {
     @PatchMapping("/products/{productId}")
     public ResponseEntity<CommonResponse<UpdateProductResponse>> updateProduct(@AuthenticationPrincipal AuthUser authUser,
                                                                                @PathVariable Long productId,
-                                                                               @RequestBody UpdateProductRequest request) {
+                                                                               @Valid @RequestBody UpdateProductRequest request) {
         UpdateProductResponse updateProductResponse = productService.updateProduct(authUser, productId, request);
 
         CommonResponse<UpdateProductResponse> response =
