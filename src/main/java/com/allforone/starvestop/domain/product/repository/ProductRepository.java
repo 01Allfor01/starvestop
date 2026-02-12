@@ -59,4 +59,31 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
                                     @Param("category")StoreCategory category,
                                     @Param("keyword")String keyword,
                                     Pageable pageable);
+
+    @Query("""
+    select new com.allforone.starvestop.domain.product.dto.ProductSaleDto(
+        p.id,
+        s.id,
+        s.name,
+        p.name,
+        p.description,
+        p.stock,
+        p.price,
+        p.salePrice,
+        p.imageUuid,
+        p.updatedAt
+    )
+    from Product p join Store s on p.store = s
+    where s.id in :ids
+        and s.isDeleted = false
+        and p.isDeleted = false
+        and p.status = 'SALE'
+        and (:category is null or s.category = :category)
+        and (:keyword is null or p.name like concat('%', :keyword, '%'))
+    order by s.id asc, p.id asc
+    """)
+    List<ProductSaleDto> findSaleByStores(@Param("ids") List<Long> ids,
+                                          @Param("category") StoreCategory category,
+                                          @Param("keyword") String keyword,
+                                          Pageable pageable);
 }

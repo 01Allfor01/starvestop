@@ -81,7 +81,43 @@ public class ProductService {
         long lastStoreId = cond.getLastStoreId() != null ? cond.getLastStoreId() : 0L;
         int limitSize = cond.getSize() != null ? cond.getSize() : 10;
 
+        //매장당 최대 몇개
         int perStoreLimit = 5;
+
+        int target = limitSize + 1;
+
+        List<GetProductSaleResponse> result = new ArrayList<>(target);
+
+        //1. lastStoreId 있을 때
+        if (lastStoreId != 0L) {
+            int remain = target - result.size();
+            int pageSize = Math.min(perStoreLimit, remain) + 1;
+
+            Pageable pageable = PageRequest.of(0, pageSize);
+
+            List<ProductSaleDto> first = productRepository.findByCond(
+                    lastStoreId,
+                    cond.getLastId(),
+                    cond.getCategory(),
+                    cond.getKeyword(),
+                    pageable);
+
+            int take = Math.min(first.size(), Math.min(perStoreLimit, remain));
+
+            for (int i = 0; i < take; i++) {
+                ProductSaleDto p = first.get(i);
+
+                String imageUrl = s3Service.createPresignedGetUrl(
+                        p.getId(),
+                        S3BucketStatus.PRODUCT,
+                        p.getImageUuid()
+                );
+                result.add(GetProductSaleResponse.from(p, null, imageUrl))
+            }
+        }
+
+
+
 
         //1. Redis에서 5km이내 매장 거리순으로 매장 id와 거리 가져오기
         List<StoreRedisDto> storeRedisList = storeRedisService.get(

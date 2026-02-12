@@ -1,5 +1,6 @@
 package com.allforone.starvestop.domain.store.repository;
 
+import com.allforone.starvestop.domain.product.dto.ProductSaleDto;
 import com.allforone.starvestop.domain.store.dto.StoreDto;
 import com.allforone.starvestop.domain.store.entity.Store;
 import org.springframework.data.domain.Page;
