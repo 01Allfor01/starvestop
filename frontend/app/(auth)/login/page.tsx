@@ -2,10 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // 페이지 이동을 위한 훅 추가
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { authApi } from '@/lib/api/auth'; // API import (경로 확인 필요)
 
 export default function LoginPage() {
+    const router = useRouter(); // 라우터 초기화
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -15,11 +18,29 @@ export default function LoginPage() {
         e.preventDefault();
         setLoading(true);
 
-        // TODO: 나중에 실제 API 호출로 교체
-        setTimeout(() => {
-            console.log('로그인:', { email, password });
+        try {
+            // 1. API 호출
+            const data = await authApi.signIn({ email, password });
+
+            // 2. 토큰 저장 (백엔드에서 AccessToken 대문자로 줌)
+            if (data.AccessToken) {
+                localStorage.setItem('accessToken', data.AccessToken);
+
+                // 3. 성공 메시지 및 이동
+                // alert('환영합니다!'); // 필요하다면 주석 해제
+                router.push('/');
+            } else {
+                throw new Error("토큰을 받아오지 못했습니다.");
+            }
+
+        } catch (error: any) {
+            console.error('로그인 실패:', error);
+            // 백엔드에서 보내주는 에러 메시지가 있다면 그걸 보여주고, 없으면 기본 메시지
+            const errorMessage = error.response?.data?.message || '이메일 또는 비밀번호를 확인해주세요.';
+            alert(errorMessage);
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
 
     return (
