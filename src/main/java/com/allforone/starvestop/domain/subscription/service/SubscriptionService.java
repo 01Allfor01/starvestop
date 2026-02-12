@@ -82,7 +82,7 @@ public class SubscriptionService {
     public UpdateSubscriptionResponse updateSubscription(UpdateSubscriptionRequest request, Long subscriptionId) {
         Subscription subscription = getSubscriptionOrThrow(subscriptionId);
 
-        subscription.changeIsJoinable(request.isJoinable());
+        subscription.changeIsJoinable(request.getJoinable());
 
         subscriptionRepository.flush();
 

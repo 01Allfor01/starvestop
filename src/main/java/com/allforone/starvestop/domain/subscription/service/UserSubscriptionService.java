@@ -119,7 +119,7 @@ public class UserSubscriptionService {
     @Transactional
     public void activate(Long userId, Long subscriptionId, UserBilling billing) {
         UserSubscription userSubscription = userSubscriptionRepository
-                .findByUserIdAndSubscriptionId(userId, subscriptionId)
+                .findByUserIdAndSubscriptionIdAndIsDeletedFalse(userId, subscriptionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
 
         userSubscription.activate(billing);
