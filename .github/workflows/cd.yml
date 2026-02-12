@@ -6,56 +6,171 @@ on:
     branches:
       - dev
 
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  IMAGE_TAG: ${{ github.sha }}
+
+  BLUE_NAME: starve-stop-blue
+  GREEN_NAME: starve-stop-green
+  BLUE_HOST_PORT: "8080"
+  GREEN_HOST_PORT: "8081"
+  CONTAINER_PORT: "8080"
+
 jobs:
-  deploy:
+  build-and-push:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
+      - run: chmod +x gradlew
+      - run: ./gradlew clean build
 
-      - name: Grant Execute Permission For gradlew
-        run: chmod +x gradlew
-
-      - name: Build Jar
-        run: ./gradlew clean build
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Build and Push Image
-        uses: docker/build-push-action@v3
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Configure AWS credentials (for ALB)
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/starvestop:latest
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Deploy to EC2 via SSH
+      - name: Decide IDLE color (blue or green)
+        id: decide
+        run: |
+          set -e
+
+          CURRENT_TG=$(aws elbv2 describe-listeners \
+            --listener-arn "${{ secrets.ALB_LISTENER_ARN }}" \
+            --query "Listeners[0].DefaultActions[0].TargetGroupArn" \
+            --output text)
+
+          echo "CURRENT_TG=$CURRENT_TG"
+
+          if [ "$CURRENT_TG" = "${{ secrets.TG_BLUE_ARN }}" ]; then
+            echo "IDLE_COLOR=green" >> $GITHUB_OUTPUT
+            echo "IDLE_TG=${{ secrets.TG_GREEN_ARN }}" >> $GITHUB_OUTPUT
+            echo "IDLE_NAME=${{ env.GREEN_NAME }}" >> $GITHUB_OUTPUT
+            echo "IDLE_PORT=${{ env.GREEN_HOST_PORT }}" >> $GITHUB_OUTPUT
+          elif [ "$CURRENT_TG" = "${{ secrets.TG_GREEN_ARN }}" ]; then
+            echo "IDLE_COLOR=blue" >> $GITHUB_OUTPUT
+            echo "IDLE_TG=${{ secrets.TG_BLUE_ARN }}" >> $GITHUB_OUTPUT
+            echo "IDLE_NAME=${{ env.BLUE_NAME }}" >> $GITHUB_OUTPUT
+            echo "IDLE_PORT=${{ env.BLUE_HOST_PORT }}" >> $GITHUB_OUTPUT
+          else
+            echo "Unknown current target group: $CURRENT_TG"
+            exit 1
+          fi
+
+      - name: Deploy to IDLE on EC2-1
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}
+          host: ${{ secrets.EC2_HOST_1 }}
           username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.PEM_KEY }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG,CONTAINER_PORT
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/starvestop:latest
-            
-            docker stop starvestop || true
-            docker rm starvestop || true
-            
+            set -e
+
+            IDLE_NAME="${{ steps.decide.outputs.IDLE_NAME }}"
+            IDLE_PORT="${{ steps.decide.outputs.IDLE_PORT }}"
+
             echo "${{ secrets.APPLICATION }}" > .env
-            
-            docker run -d --name starvestop \
-            --env-file .env \
-            -p 8080:8080 \
-            ${{ secrets.DOCKER_USERNAME }}/starvestop:latest
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+            docker stop "$IDLE_NAME" || true
+            docker rm "$IDLE_NAME" || true
+
+            docker run -d \
+              --name "$IDLE_NAME" \
+              --env-file .env \
+              -v /home/ubuntu/fcm/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro \
+              -p "${IDLE_PORT}:${CONTAINER_PORT}" \
+              $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+            for i in {1..30}; do
+              if curl -fsS "http://localhost:${IDLE_PORT}/actuator/health" > /dev/null; then
+                echo "EC2-1 ${IDLE_NAME} health OK"
+                exit 0
+              fi
+              sleep 2
+            done
+
+            echo "EC2-1 ${IDLE_NAME} health FAILED"
+            exit 1
+
+      - name: Deploy to IDLE on EC2-2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST_2 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG,CONTAINER_PORT
+          script: |
+            set -e
+
+            IDLE_NAME="${{ steps.decide.outputs.IDLE_NAME }}"
+            IDLE_PORT="${{ steps.decide.outputs.IDLE_PORT }}"
+
+            echo "${{ secrets.APPLICATION }}" > .env
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+            docker stop "$IDLE_NAME" || true
+            docker rm "$IDLE_NAME" || true
+
+            docker run -d \
+              --name "$IDLE_NAME" \
+              --env-file .env \
+              -v /home/ubuntu/fcm/firebase-adminsdk.json:/app/firebase-adminsdk.json:ro \
+              -p "${IDLE_PORT}:${CONTAINER_PORT}" \
+              $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+            for i in {1..30}; do
+              if curl -fsS "http://localhost:${IDLE_PORT}/actuator/health" > /dev/null; then
+                echo "EC2-2 ${IDLE_NAME} health OK"
+                exit 0
+              fi
+              sleep 2
+            done
+
+            echo "EC2-2 ${IDLE_NAME} health FAILED"
+            exit 1
+
+      - name: Switch ALB to IDLE target group
+        run: |
+          aws elbv2 modify-listener \
+            --listener-arn "${{ secrets.ALB_LISTENER_ARN }}" \
+            --default-actions Type=forward,TargetGroupArn="${{ steps.decide.outputs.IDLE_TG }}"
+
+      - name: Rollback ALB to previous target group
+        if: failure()
+        run: |
+          CURRENT_TG=$(aws elbv2 describe-listeners \
+            --listener-arn "${{ secrets.ALB_LISTENER_ARN }}" \
+            --query "Listeners[0].DefaultActions[0].TargetGroupArn" \
+            --output text)
+
+          aws elbv2 modify-listener \
+            --listener-arn "${{ secrets.ALB_LISTENER_ARN }}" \
+            --default-actions Type=forward,TargetGroupArn="${{ secrets.TG_BLUE_ARN }}"

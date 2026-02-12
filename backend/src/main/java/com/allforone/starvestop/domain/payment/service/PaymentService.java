@@ -9,6 +9,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -50,20 +52,22 @@ public class PaymentService {
                 .orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
     }
 
-    public List<Payment> findByOrderUserId(Long userId) {
-        return paymentRepository.findAllByOrderUserIdAndIsDeletedIsFalseOrderByCreatedAtDesc(userId);
+    public Page<Payment> findByOrderUserId(Long userId, Pageable pageable) {
+        return paymentRepository.findAllByOrderUserIdAndIsDeletedIsFalse(userId, pageable);
     }
 
     public Payment findById(Long paymentId) {
         return paymentRepository.findById(paymentId).orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
     }
 
-
     public int checkClaimed(Payment payment) {
-        return paymentRepository.markFailedAndClaimStockRelease(
+        return paymentRepository.markClaimStockRelease(
                 payment.getId(),
-                PaymentStatus.FAILED,
-                List.of(PaymentStatus.REQUESTED, PaymentStatus.PENDING)
+                List.of(
+                        PaymentStatus.REQUESTED,
+                        PaymentStatus.PENDING,
+                        PaymentStatus.FAILED_NON_RETRYABLE
+                )
         );
     }
 

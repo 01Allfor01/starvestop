@@ -139,14 +139,12 @@ public class ProductService {
     //상품 재고 차감(-)
     @Transactional
     public void decreaseById(Long id, Integer count) {
-        Product product = getProduct(id);
-        product.decrease(count);
+        productRepository.findByIdAndDecreaseStock(id, count);
     }
 
     //상품 재고 가산(+)
     @Transactional
     public void increaseById(Long id, Integer count) {
-        Product product = getProduct(id);
-        product.increase(count);
+        productRepository.findByIdAndIncreaseStock(id, count);
     }
 }

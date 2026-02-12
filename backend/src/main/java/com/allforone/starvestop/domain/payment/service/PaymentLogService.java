@@ -9,11 +9,11 @@ import com.allforone.starvestop.domain.payment.entity.PaymentLog;
 import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
 import com.allforone.starvestop.domain.payment.repository.PaymentLogRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,9 +23,10 @@ public class PaymentLogService {
 
     // 결제로그 전체 조회
     @Transactional(readOnly = true)
-    public List<GetPaymentLogResponse> getPaymentLogResponseList() {
-        List<PaymentLog> paymentLogList = paymentLogRepository.findAll();
-        return paymentLogList.stream().map(GetPaymentLogResponse::from).toList();
+    public Page<GetPaymentLogResponse> getPaymentLogResponseList(Pageable pageable) {
+        Page<PaymentLog> paymentLogList =
+                paymentLogRepository.findAll(pageable);
+        return paymentLogList.map(GetPaymentLogResponse::from);
     }
 
     // 결제로그 상세 조회
@@ -44,8 +45,8 @@ public class PaymentLogService {
     }
 
     @Transactional(readOnly = true)
-    public List<SearchPaymentLogResponse> searchPaymentLog(String orderKey, Long userId) {
+    public Page<SearchPaymentLogResponse> searchPaymentLog(String orderKey, Long userId, Pageable pageable) {
 
-        return paymentLogRepository.search(orderKey, userId);
+        return paymentLogRepository.search(orderKey, userId, pageable);
     }
 }
