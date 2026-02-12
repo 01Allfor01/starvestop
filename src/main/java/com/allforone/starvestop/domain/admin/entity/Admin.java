@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.admin;
+package com.allforone.starvestop.domain.admin.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

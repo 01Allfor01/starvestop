@@ -1,8 +1,12 @@
-package com.allforone.starvestop.domain.admin;
+package com.allforone.starvestop.domain.admin.controller;
 
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.common.enums.SuccessMessage;
+import com.allforone.starvestop.domain.admin.service.AdminService;
+import com.allforone.starvestop.domain.admin.dto.GetAdminResponse;
+import com.allforone.starvestop.domain.admin.dto.UpdateAdminRequest;
+import com.allforone.starvestop.domain.admin.dto.UpdateAdminResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

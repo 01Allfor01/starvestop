@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.admin;
+package com.allforone.starvestop.domain.admin.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
