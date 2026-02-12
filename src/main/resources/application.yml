@@ -60,3 +60,6 @@ payment:
 
 fcm:
   secret-file: ${FCM_SECRET_FILE}
+
+signup:
+  admin: ${ADMIN_KEY}

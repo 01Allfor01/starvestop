@@ -19,6 +19,9 @@ public enum ErrorCode {
     // 판매자
     OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을수 없습니다"),
 
+    // 관리자
+    ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND,"관리자를 찾을 수 없습니다"),
+
     //장바구니
     CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니를 찾을 수 없습니다"),
 
