@@ -9,7 +9,8 @@ import java.math.BigDecimal;
 
 @Getter
 @NoArgsConstructor
-public class CreateProductRequest {
+@ValidSalePrice
+public class CreateProductRequest implements PriceComparableRequest {
     @NotNull(message = "매장 아이디를 적어주세요")
     private Long storeId;
 
@@ -26,11 +27,13 @@ public class CreateProductRequest {
     private Integer stock;
 
     @NotNull(message = "상품 가격을 적어주세요")
-    @DecimalMin(value = "0.0", inclusive = true, message = "상품 가격은 0 이상이어야 합니다")
+    @DecimalMin(value = "0.0", message = "상품 가격은 0 이상이어야 합니다")
+    @DecimalMax(value = "1000000", message = "상품 가격은 1000000원 이하여야 합니다")
     private BigDecimal price;
 
     @NotNull(message = "상품 세일 가격을 적어주세요")
-    @DecimalMin(value = "0.0", inclusive = true, message = "상품 세일 가격은 0 이상이어야 합니다")
+    @DecimalMin(value = "0.0", message = "상품 세일 가격은 0 이상이어야 합니다")
+    @DecimalMax(value = "1000000", message = "상품 가격은 1000000원 이하여야 합니다")
     private BigDecimal salePrice;
 
     @NotNull(message = "상품 상태를 적어주세요")
