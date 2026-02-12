@@ -1,10 +1,7 @@
 package com.allforone.starvestop.domain.notification.entity;
 
 
-import com.allforone.starvestop.domain.notification.enums.DayBit;
 import com.allforone.starvestop.domain.notification.enums.MealTimeBit;
-import com.allforone.starvestop.domain.subscription.entity.Subscription;
-import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

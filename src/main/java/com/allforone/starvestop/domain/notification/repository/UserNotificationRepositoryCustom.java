@@ -1,9 +1,9 @@
 package com.allforone.starvestop.domain.notification.repository;
 
-import com.allforone.starvestop.domain.notification.entity.NotificationToken;
+import com.allforone.starvestop.domain.notification.entity.UserNotification;
 
 public interface UserNotificationRepositoryCustom {
 //    List<SendMealTimeNotificationDto> findByMealTime(Integer day, Integer mealTime);
 
-    NotificationToken findOwnerTokenByOrderId(Long orderId);
+    UserNotification findOwnerTokenByOrderId(Long orderId);
 }

@@ -6,7 +6,7 @@ import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.notification.dto.NotificationDto;
 import com.allforone.starvestop.domain.notification.dto.NotificationMulticastRequest;
 import com.allforone.starvestop.domain.notification.dto.SendMealTimeNotificationDto;
-import com.allforone.starvestop.domain.notification.entity.NotificationToken;
+import com.allforone.starvestop.domain.notification.entity.UserNotification;
 import com.allforone.starvestop.domain.notification.enums.NotificationPlatformType;
 import com.allforone.starvestop.domain.notification.repository.UserNotificationRepository;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
@@ -36,7 +36,7 @@ public class UserNotificationService {
     private final UserService userService;
     private final OwnerService ownerService;
     private final PaymentService paymentService;
-    private final ClearNotificationTokenService clearNotificationTokenService;
+    private final ClearNotificationTokenService clearTokenService;
     private final OrderProductService orderProductService;
 
 
@@ -52,8 +52,8 @@ public class UserNotificationService {
             ownerService.getById(userId);
         }
 
-        NotificationToken notificationToken = NotificationToken.createToken(userId, token, platform, role);
-        userNotificationRepository.save(notificationToken);
+        UserNotification userNotification = UserNotification.createToken(userId, token, platform, role);
+        userNotificationRepository.save(userNotification);
 
     }
 
@@ -101,14 +101,14 @@ public class UserNotificationService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void sendPaymentUserNotification(Long userId, PaymentStatus status) {
 
-        NotificationToken notificationToken = userNotificationRepository.findByUserId(userId);
+        UserNotification userNotification = userNotificationRepository.findByUserId(userId);
 
-        if (notificationToken == null) {
+        if (userNotification == null) {
             return;
         }
 
         Message message = Message.builder()
-                .setToken(notificationToken.getToken())
+                .setToken(userNotification.getToken())
                 .setNotification(Notification.builder()
                         .setTitle("Starve stop")
                         .setBody(status.equals(PaymentStatus.SUCCEEDED)
@@ -120,7 +120,7 @@ public class UserNotificationService {
 
             FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
-            invalidToken(notificationToken.getToken(), e);
+            invalidToken(userNotification.getToken(), e);
         }
     }
 
@@ -135,14 +135,14 @@ public class UserNotificationService {
                 .map(p -> "%s(%d)".formatted(p.getProductName(), p.getQuantity()))
                 .collect(Collectors.joining("\n"));
 
-        NotificationToken notificationToken = userNotificationRepository.findOwnerTokenByOrderId(orderId);
+        UserNotification userNotification = userNotificationRepository.findOwnerTokenByOrderId(orderId);
 
-        if (notificationToken == null) {
+        if (userNotification == null) {
             return;
         }
 
         Message message = Message.builder()
-                .setToken(notificationToken.getToken())
+                .setToken(userNotification.getToken())
                 .setNotification(Notification.builder()
                         .setTitle("주문 들어왔습니다")
                         .setBody(body)
@@ -152,7 +152,7 @@ public class UserNotificationService {
 
             FirebaseMessaging.getInstance().send(message);
         } catch (FirebaseMessagingException e) {
-            invalidToken(notificationToken.getToken(), e);
+            invalidToken(userNotification.getToken(), e);
         }
     }
 

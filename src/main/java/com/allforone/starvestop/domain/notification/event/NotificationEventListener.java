@@ -17,7 +17,8 @@ public class NotificationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onPaymentStatusSuccess(PaymentStatusChangedEvent event) {
 
-        if (event.status() == PaymentStatus.FAILED) {
+        if (event.status() == PaymentStatus.FAILED_NON_RETRYABLE
+            ||event.status() == PaymentStatus.FAILED_RETRYABLE) {
             userNotificationService.sendPaymentUserNotification(event.userId(), event.status());
             return;
         }

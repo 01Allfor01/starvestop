@@ -23,7 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RequestMapping("/notifications")
 @RestController
-public class NotificationController {
+public class UserNotificationController {
 
     private final UserNotificationService userNotificationService;
     private final NotificationTokenSet tokens;

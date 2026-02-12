@@ -14,12 +14,14 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationJobService {
 
+    ClearNotificationTokenService clearTokenService;
     UserNotificationRepository userNotificationRepository;
     NotificationJobJdbcRepository notificationJobJdbcRepository;
 
@@ -62,7 +64,7 @@ public class NotificationJobService {
 
     @Transactional
     public void sendNotificationJob(DayBit dayBit, MealTimeBit mealTimeBit) {
-        List<SendMealTimeNotificationDto> dtoList = userNotificationRepository.findByTargetList(dayBit);
+        List<SendMealTimeNotificationDto> dtoList = userNotificationRepository.findByTargetList(dayBit.getBit());
 
         if (dtoList.isEmpty()) {
             return;
@@ -81,10 +83,18 @@ public class NotificationJobService {
         try {
             BatchResponse response = FirebaseMessaging.getInstance().sendEach(messageList);
             int i = 0;
+            List<String> tokenList = new ArrayList<>();
+
             for (SendResponse r : response.getResponses()) {
                 if (!r.isSuccessful()) {
                     FirebaseMessagingException e = r.getException();
-                    invalidToken(dtoList.get(i).token(), e);
+                    MessagingErrorCode code = e.getMessagingErrorCode();
+
+                    if (code.equals(MessagingErrorCode.UNREGISTERED)
+                            || code.equals(MessagingErrorCode.INVALID_ARGUMENT)) {
+                        tokenList.add(dtoList.get(i).token());
+                    }
+                    clearTokenService.invalidToken(tokenList);
                 }
                 ++i;
             }

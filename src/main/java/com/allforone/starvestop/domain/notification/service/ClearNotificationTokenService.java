@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ClearNotificationTokenService {
@@ -15,12 +17,13 @@ public class ClearNotificationTokenService {
     private final UserNotificationRepository userNotificationRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void invalidToken(String token, FirebaseMessagingException e) {
-        MessagingErrorCode code = e.getMessagingErrorCode();
+    public void invalidToken(String token) {
 
-        if (code.equals(MessagingErrorCode.UNREGISTERED)
-                || code.equals(MessagingErrorCode.INVALID_ARGUMENT)) {
-            userNotificationRepository.deleteByToken(token);
-        }
+        userNotificationRepository.deleteByToken(token);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void invalidToken(List<String> tokenList) {
+        userNotificationRepository.deleteAllByToken(tokenList);
     }
 }
