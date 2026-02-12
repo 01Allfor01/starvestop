@@ -1,6 +1,7 @@
 package com.allforone.starvestop.common.utils;
 
-import com.allforone.starvestop.domain.user.enums.UserRole;
+import com.allforone.starvestop.common.dto.AuthUser;
+import com.allforone.starvestop.common.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
@@ -8,12 +9,15 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtUtil {
@@ -87,5 +91,22 @@ public class JwtUtil {
         String userRoleString = extractAllClaims(token).get("userRole", String.class);
 
         return UserRole.valueOf(userRoleString);
+    }
+
+    public Authentication getAuthentication(String token) {
+        if (token.startsWith(BEARER_PREFIX)) {
+            token = token.substring(BEARER_PREFIX.length());
+        }
+
+        Long userId = extractUserId(token);
+        String userEmail = extractUserEmail(token);
+        String username = extractUsername(token);
+        UserRole userRole = extractUserRole(token);
+
+        AuthUser authUser = new AuthUser(userId, userEmail, username, userRole);
+
+        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(userRole.name()));
+
+        return new UsernamePasswordAuthenticationToken(authUser, null, authorities);
     }
 }

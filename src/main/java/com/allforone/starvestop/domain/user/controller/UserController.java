@@ -7,6 +7,7 @@ import com.allforone.starvestop.domain.user.dto.response.GetUserResponse;
 import com.allforone.starvestop.domain.user.dto.request.UpdateUserRequest;
 import com.allforone.starvestop.domain.user.dto.response.UpdateUserResponse;
 import com.allforone.starvestop.domain.user.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class UserController {
     @PatchMapping
     public ResponseEntity<CommonResponse<UpdateUserResponse>> updateUser(
             @AuthenticationPrincipal AuthUser authUser,
-            @RequestBody UpdateUserRequest request
+            @Valid @RequestBody UpdateUserRequest request
     ) {
         Long userId = authUser.getUserId();
         UpdateUserResponse response = userService.updateUser(userId, request);

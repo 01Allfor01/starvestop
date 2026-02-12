@@ -41,7 +41,7 @@ public class ImageService {
     //매장 이미지 업로드 완료
     @Transactional
     public void uploadStoreImage(AuthUser authUser, UploadImageRequest request) {
-        Store store = storeService.getStore(request.getId());
+        Store store = storeService.getById(request.getId());
 
         storeService.idMismatchCheck(authUser, store);
 

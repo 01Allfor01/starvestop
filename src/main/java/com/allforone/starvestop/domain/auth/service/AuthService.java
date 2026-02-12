@@ -1,10 +1,14 @@
 package com.allforone.starvestop.domain.auth.service;
 
+import com.allforone.starvestop.common.enums.UserRole;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.JwtUtil;
 import com.allforone.starvestop.common.utils.PasswordEncoder;
+import com.allforone.starvestop.domain.admin.Admin;
+import com.allforone.starvestop.domain.admin.AdminService;
 import com.allforone.starvestop.domain.auth.dto.request.SignInRequest;
+import com.allforone.starvestop.domain.auth.dto.request.SignUpAdminRequest;
 import com.allforone.starvestop.domain.auth.dto.request.SignUpOwnerRequest;
 import com.allforone.starvestop.domain.auth.dto.request.SignUpRequest;
 import com.allforone.starvestop.domain.auth.dto.response.SignInResponse;
@@ -14,9 +18,9 @@ import com.allforone.starvestop.domain.owner.service.OwnerService;
 import com.allforone.starvestop.domain.user.entity.User;
 import com.allforone.starvestop.domain.user.enums.AuthProvider;
 import com.allforone.starvestop.domain.user.service.UserService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +29,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
+    @Value(value = "${signup.admin}")
+    private String adminKey;
 
     private final UserService userService;
     private final OwnerService ownerService;
+    private final AdminService adminService;
     private final PasswordEncoder passwordEncoder;
 
     private final JwtUtil jwtUtil;
@@ -43,7 +50,7 @@ public class AuthService {
 
         User savedUser = userService.save(userEmail, passwordEncoder.encode(password), userName, nickname);
 
-        String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
+        String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), UserRole.USER);
 
         return new SignUpResponse(token);
     }
@@ -62,13 +69,13 @@ public class AuthService {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
         }
 
-        String token = jwtUtil.generateToken(foundUser.getUsername(), foundUser.getEmail(), foundUser.getId(), foundUser.getRole());
+        String token = jwtUtil.generateToken(foundUser.getUsername(), foundUser.getEmail(), foundUser.getId(), UserRole.USER);
 
         return new SignInResponse(token);
     }
 
     @Transactional
-    public SignUpResponse signUpOwner(@Valid SignUpOwnerRequest request) {
+    public SignUpResponse signUpOwner(SignUpOwnerRequest request) {
         String userEmail = request.getEmail();
         String userName = request.getUsername();
         String password = request.getPassword();
@@ -77,7 +84,7 @@ public class AuthService {
 
         Owner savedOwner = ownerService.save(userEmail, passwordEncoder.encode(password), userName);
 
-        String token = jwtUtil.generateToken(savedOwner.getUsername(), savedOwner.getEmail(), savedOwner.getId(), savedOwner.getRole());
+        String token = jwtUtil.generateToken(savedOwner.getUsername(), savedOwner.getEmail(), savedOwner.getId(), UserRole.OWNER);
 
         return new SignUpResponse(token);
     }
@@ -93,7 +100,41 @@ public class AuthService {
             throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
         }
 
-        String token = jwtUtil.generateToken(foundOwner.getUsername(), foundOwner.getEmail(), foundOwner.getId(), foundOwner.getRole());
+        String token = jwtUtil.generateToken(foundOwner.getUsername(), foundOwner.getEmail(), foundOwner.getId(), UserRole.OWNER);
+
+        return new SignInResponse(token);
+    }
+
+    @Transactional
+    public SignUpResponse signUpAdmin(SignUpAdminRequest request) {
+        String email = request.getEmail();
+        String password = request.getPassword();
+
+        if (!adminKey.equals(request.getAdminKey())) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
+        adminService.existsByEmail(email);
+
+        Admin savedAdmin = adminService.save(email, passwordEncoder.encode(password));
+
+        String token = jwtUtil.generateToken("관리자", savedAdmin.getEmail(), savedAdmin.getId(), UserRole.ADMIN);
+
+        return new SignUpResponse(token);
+    }
+
+    @Transactional(readOnly = true)
+    public SignInResponse signInAdmin(SignInRequest request) {
+        String userEmail = request.getEmail();
+        String password = request.getPassword();
+
+        Admin foundAdmin = adminService.findByEmail(userEmail);
+
+        if (!passwordEncoder.matches(password, foundAdmin.getPassword())) {
+            throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
+        }
+
+        String token = jwtUtil.generateToken("관리자", foundAdmin.getEmail(), foundAdmin.getId(), UserRole.ADMIN);
 
         return new SignInResponse(token);
     }

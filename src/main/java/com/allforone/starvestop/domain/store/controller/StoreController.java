@@ -8,11 +8,16 @@ import com.allforone.starvestop.domain.store.dto.request.CreateStoreRequest;
 import com.allforone.starvestop.domain.store.dto.request.UpdateStoreRequest;
 import com.allforone.starvestop.domain.store.dto.response.CreateStoreResponse;
 import com.allforone.starvestop.domain.store.dto.response.GetStoreDetailResponse;
+import com.allforone.starvestop.domain.store.dto.response.GetStoreForOwnerResponse;
 import com.allforone.starvestop.domain.store.dto.response.StoreResponse;
+import com.allforone.starvestop.domain.store.service.StoreForOwnerUseCase;
 import com.allforone.starvestop.domain.store.service.StoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,11 +31,13 @@ import static com.allforone.starvestop.common.enums.SuccessMessage.*;
 public class StoreController {
 
     private final StoreService storeService;
+    private final StoreForOwnerUseCase storeForOwnerUseCase;
 
     //매장 추가
     @PostMapping
-    public ResponseEntity<CommonResponse<CreateStoreResponse>> createStore(@Valid @RequestBody CreateStoreRequest request) {
-        CreateStoreResponse response = storeService.createStore(request);
+    public ResponseEntity<CommonResponse<CreateStoreResponse>> createStore(@AuthenticationPrincipal AuthUser authUser,
+                                                                           @Valid @RequestBody CreateStoreRequest request) {
+        CreateStoreResponse response = storeService.createStore(authUser.getUserId(), authUser.getUserRole(), request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(STORE_CREATE_SUCCESS, response));
     }
@@ -64,6 +71,17 @@ public class StoreController {
         SliceResponse<StoreResponse> result = SliceResponse.from(response);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_LIST_GET_SUCCESS, result));
+    }
+
+    //내 매장 조회
+    @GetMapping("/my")
+    public ResponseEntity<CommonResponse<Page<GetStoreForOwnerResponse>>> getStorePageForOwner(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PageableDefault(page = 0, size = 10) Pageable pageable
+    ) {
+        Page<GetStoreForOwnerResponse> response = storeForOwnerUseCase.getStorePageForOwner(authUser, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_LIST_GET_SUCCESS, response));
     }
 
     //매장 상세 조회

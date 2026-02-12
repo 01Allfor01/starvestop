@@ -19,6 +19,9 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+    web:
+      pageable:
+        max-page-size: 100
 
   security:
     oauth2:
@@ -57,3 +60,6 @@ payment:
 
 fcm:
   secret-file: ${FCM_SECRET_FILE}
+
+signup:
+  admin: ${ADMIN_KEY}

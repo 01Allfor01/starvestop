@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.auth.controller;
 
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.domain.auth.dto.request.SignInRequest;
+import com.allforone.starvestop.domain.auth.dto.request.SignUpAdminRequest;
 import com.allforone.starvestop.domain.auth.dto.request.SignUpOwnerRequest;
 import com.allforone.starvestop.domain.auth.dto.request.SignUpRequest;
 import com.allforone.starvestop.domain.auth.dto.response.SignInResponse;
@@ -59,6 +60,26 @@ public class AuthController {
     @PostMapping("/signin/owner")
     public ResponseEntity<CommonResponse<SignInResponse>> signInOwner(@Valid @RequestBody SignInRequest request) {
         SignInResponse response = authService.signInOwner(request);
+
+        CommonResponse<SignInResponse> result = CommonResponse.success(SIGN_IN_SUCCESS, response);
+
+        return ResponseEntity.ok(result);
+    }
+
+    // 회원가입 - 관리자
+    @PostMapping("/signup/admin")
+    public ResponseEntity<CommonResponse<SignUpResponse>> signUpAdmin(@Valid @RequestBody SignUpAdminRequest request) {
+        SignUpResponse response = authService.signUpAdmin(request);
+
+        CommonResponse<SignUpResponse> result = CommonResponse.success(SIGN_UP_ADMIN_SUCCESS, response);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    }
+
+    // 로그인 - 관리자
+    @PostMapping("/signin/admin")
+    public ResponseEntity<CommonResponse<SignInResponse>> signInAdmin(@Valid @RequestBody SignInRequest request) {
+        SignInResponse response = authService.signInAdmin(request);
 
         CommonResponse<SignInResponse> result = CommonResponse.success(SIGN_IN_SUCCESS, response);
 

@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.annotation.PostConstruct;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -17,16 +18,20 @@ import java.io.IOException;
 public class FcmConfig {
 
     @Value("${fcm.secret-file}")
-    private String secretFileName;
+    private String secretFile;
 
     @PostConstruct
     public void initialize() {
         try{
+            FileInputStream fis = new FileInputStream(secretFile);
+
             GoogleCredentials googleCredentials = GoogleCredentials
-                    .fromStream(new ClassPathResource(secretFileName).getInputStream());
+                    .fromStream(fis);
+
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(googleCredentials)
                     .build();
+
             FirebaseApp.initializeApp(options);
         } catch (FileNotFoundException e) {
             throw new CustomException(ErrorCode.SECRET_FILE_NOT_FOUND);

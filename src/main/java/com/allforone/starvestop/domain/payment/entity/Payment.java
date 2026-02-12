@@ -92,7 +92,7 @@ public class Payment extends BaseEntity {
     }
 
     public void pending() {
-        requireStatus(PaymentStatus.REQUESTED);
+        requireStatus(PaymentStatus.REQUESTED, PaymentStatus.FAILED_RETRYABLE);
         this.status = PaymentStatus.PENDING;
 
         domainEvents.add(PaymentStatusChangedEvent.of(
@@ -101,13 +101,39 @@ public class Payment extends BaseEntity {
         ));
     }
 
-    public void fail() {
-        requireStatus(PaymentStatus.REQUESTED, PaymentStatus.PENDING);
-        this.status = PaymentStatus.FAILED;
+    public void failRetryable(String pgStatus, String payload) {
+        requireStatus(PaymentStatus.PENDING);
+        this.status = PaymentStatus.FAILED_RETRYABLE;
 
         domainEvents.add(PaymentStatusChangedEvent.of(
                 this.id, this.orderKey, this.userId,
-                PaymentStatus.FAILED, null, null
+                PaymentStatus.FAILED_RETRYABLE, pgStatus, payload
+        ));
+    }
+
+    public void failNonRetryable(String pgStatus, String payload) {
+        requireStatus(PaymentStatus.PENDING);
+        this.status = PaymentStatus.FAILED_NON_RETRYABLE;
+
+        domainEvents.add(PaymentStatusChangedEvent.of(
+                this.id, this.orderKey, this.userId,
+                PaymentStatus.FAILED_NON_RETRYABLE, pgStatus, payload
+        ));
+    }
+
+    public void markStockReleased() {
+        if (this.stockReleased) return;
+        this.stockReleased = true;
+    }
+
+    @Deprecated
+    public void fail() {
+        requireStatus(PaymentStatus.REQUESTED, PaymentStatus.PENDING);
+        this.status = PaymentStatus.FAILED_NON_RETRYABLE;
+
+        domainEvents.add(PaymentStatusChangedEvent.of(
+                this.id, this.orderKey, this.userId,
+                PaymentStatus.FAILED_NON_RETRYABLE, null, null
         ));
     }
 

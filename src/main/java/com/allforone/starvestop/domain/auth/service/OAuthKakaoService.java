@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.auth.service;
 
 import com.allforone.starvestop.common.dto.KakaoToken;
+import com.allforone.starvestop.common.enums.UserRole;
 import com.allforone.starvestop.common.utils.JwtUtil;
 import com.allforone.starvestop.common.utils.PasswordEncoder;
 import com.allforone.starvestop.domain.auth.dto.response.SignInResponse;
@@ -79,11 +80,11 @@ public class OAuthKakaoService {
             String nickname = accountJson.get("profile").get("nickname").asText();
             String password = passwordEncoder.encode(UUID.randomUUID().toString());
             User savedUser = userService.saveKakao(providerId, email, password, nickname, nickname);
-            String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), savedUser.getRole());
+            String token = jwtUtil.generateToken(savedUser.getUsername(), savedUser.getEmail(), savedUser.getId(), UserRole.USER);
             return new SignInResponse(token);
         }
 
-        String token = jwtUtil.generateToken(foundUser.getUsername(), foundUser.getEmail(), foundUser.getId(), foundUser.getRole());
+        String token = jwtUtil.generateToken(foundUser.getUsername(), foundUser.getEmail(), foundUser.getId(), UserRole.USER);
         return new SignInResponse(token);
     }
 }
