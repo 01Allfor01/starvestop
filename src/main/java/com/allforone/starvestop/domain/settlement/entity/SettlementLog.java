@@ -4,7 +4,10 @@ import com.allforone.starvestop.domain.settlement.enums.SettlementStatus;
 import com.allforone.starvestop.domain.settlement.event.SettlementCreatedEvent;
 import com.allforone.starvestop.domain.settlement.event.SettlementStatusChangedEvent;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -31,10 +34,10 @@ public class SettlementLog {
     @Column(name = "event_id", nullable = false, length = 64)
     private String eventId;
 
-    @Column(nullable = false)
+    @Column
     private Long actorAdminId;
 
-    @Column(nullable = false, length = 20)
+    @Column(length = 20)
     private String fromStatus;
 
     @Column(nullable = false, length = 20)
@@ -54,7 +57,7 @@ public class SettlementLog {
                 null,
                 e.settlementId(),
                 e.eventId(),
-                null,
+                e.actorAdminId(),
                 null,
                 SettlementStatus.CREATED.name(),
                 "SETTLEMENT_CREATED",

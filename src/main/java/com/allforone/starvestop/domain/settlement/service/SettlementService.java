@@ -29,7 +29,7 @@ public class SettlementService {
     private final ApplicationEventPublisher publisher;
 
     @Transactional
-    public CreateSettlementResponse createMonthly(Long storeId, YearMonth period, BigDecimal feeRate) {
+    public CreateSettlementResponse createMonthly(Long storeId, YearMonth period, BigDecimal feeRate, Long actorAdminId) {
         String periodYm = period.toString(); // "2026-02"
 
         if (settlementRepository.existsByStoreIdAndPeriodYm(storeId, periodYm)) {
@@ -65,6 +65,7 @@ public class SettlementService {
 
             publisher.publishEvent(SettlementCreatedEvent.of(
                     result.getId(),
+                    actorAdminId,
                     result.getStoreId(),
                     result.getPeriodYm()
             ));
