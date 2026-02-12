@@ -109,13 +109,16 @@ public class OrderUseCase {
             // 1. 주문 취소 (이미 PENDING인 것만 조회되므로 안전)
             order.cancel();
 
-            // 2. 쿠폰 복구
+            // 2. 재고 반환
+
+
+            // 3. 쿠폰 복구
             UserCoupon userCoupon = order.getUserCoupon();
             if (userCoupon != null) {
                 userCoupon.restore();
             }
 
-            // 3. 결제 취소 (주문키 1개 = 결제 1개)
+            // 4. 결제 취소 (주문키 1개 = 결제 1개)
             Optional<Payment> optionalPayment =
                     paymentService.findByOrderKey(order.getOrderKey());
 
