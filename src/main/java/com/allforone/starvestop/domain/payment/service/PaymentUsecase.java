@@ -36,8 +36,6 @@ public class PaymentUsecase {
     private final OrderService orderService;
     private final OrderProductService orderProductService;
     private final PaymentService paymentService;
-    private final PaymentLogService paymentLogService;
-    private final ReceiptService receiptService;
     private final PaymentEventRelay paymentEventRelay;
 
     // 결제 생성
@@ -52,7 +50,6 @@ public class PaymentUsecase {
         String orderKey = order.getOrderKey();
         BigDecimal amount = order.getAmount();
 
-        // 2. 이미 결제하는 주문키인 경우에 그대로 반환
         Optional<Payment> existing = paymentService.findByOrderKey(orderKey);
         if (existing.isPresent()) {
             return CreatePaymentResponse.from(existing.get());
@@ -61,6 +58,7 @@ public class PaymentUsecase {
         try {
             Payment payment = Payment.request(userId, order, orderKey, amount);
             paymentService.save(payment);
+
             payment.markRequestedEvent();
             paymentEventRelay.relayFrom(payment);
 
@@ -73,13 +71,13 @@ public class PaymentUsecase {
     }
 
     @Transactional
-    public String confirmSuccess(String paymentKey, String orderId, Long amount) {
-        LocalDateTime now = LocalDateTime.now();
-        // 1. 비관적락 걸고 payment 조회
-        Payment payment = paymentService.findByOrderKeyForUpdate(orderId);
+    public String confirmSuccess(String paymentKey, String orderKey, Long amount) {
+        Payment payment = paymentService.findByOrderKeyForUpdate(orderKey);
         Order order = orderService.getForPayment(payment.getOrder().getId());
 
-        // 2. 이미 성공한 요청에 대해서 바로 반환
+        LocalDateTime now = LocalDateTime.now();
+
+        // 이미 성공
         if (order.getStatus() == OrderStatus.PAID ||
                 payment.getStatus() == PaymentStatus.SUCCEEDED) {
             return "/success.html?orderKey=" + payment.getOrderKey()
@@ -134,7 +132,6 @@ public class PaymentUsecase {
 
             payment.success(paymentKey);
             order.paid(now);
-            order.paid();
 
             // 성공 이벤트(상태변경/영수증) 발행
             paymentEventRelay.relayFrom(payment);
@@ -173,7 +170,6 @@ public class PaymentUsecase {
         return paymentList.map(GetPaymentResponse::from);
     }
 
-
     @Transactional(readOnly = true)
     public GetPaymentDetailsResponse getPayment(Long userId, Long paymentId) {
         Payment payment = paymentService.findById(paymentId);
@@ -185,28 +181,40 @@ public class PaymentUsecase {
         return GetPaymentDetailsResponse.from(payment);
     }
 
-    private void failAndReleaseReservedStockExactlyOnce(Payment payment, String pgStatus, String payload) {
+    private boolean isRetryable(WebClientResponseException e) {
+        return e.getStatusCode().is5xxServerError();
+    }
 
+    private void failAndMaybeReleaseReservedStockExactlyOnce(
+            Payment payment,
+            PaymentStatus failStatus,
+            String pgStatus,
+            String payload,
+            boolean releaseStock
+    ) {
         int claimed = paymentService.checkClaimed(payment);
-
         if (claimed != 1) {
             return;
         }
-        List<OrderProduct> orderProducts =
-                orderProductService.findListByOrderId(payment.getOrder().getId());
 
-        for (OrderProduct op : orderProducts) {
-            productService.increaseById(op.getProductId(), op.getQuantity());
+        // 1) 상태 확정 + 이벤트 생성
+        if (failStatus == PaymentStatus.FAILED_RETRYABLE) {
+            payment.failRetryable(pgStatus, payload);
+        } else {
+            payment.failNonRetryable(pgStatus, payload);
         }
 
-        paymentLogService.save(
-                payment.getId(),
-                payment.getUserId(),
-                payment.getOrderKey(),
-                PaymentStatus.FAILED,
-                pgStatus,
-                payload
-        );
+        // 2) 재고 반환(선택) + stockReleased 표시
+        if (releaseStock) {
+            List<OrderProduct> orderProducts =
+                    orderProductService.findListByOrderId(payment.getOrder().getId());
+
+            for (OrderProduct op : orderProducts) {
+                productService.increaseById(op.getProductId(), op.getQuantity());
+            }
+
+            payment.markStockReleased();
+        }
     }
 
 }
