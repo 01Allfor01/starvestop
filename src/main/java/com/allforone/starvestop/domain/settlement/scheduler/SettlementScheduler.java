@@ -47,7 +47,7 @@ public class SettlementScheduler {
 
         for (Long storeId : storeIds) {
             try {
-                settlementService.createMonthly(storeId, lastMonth, FEE_RATE);
+                settlementService.createMonthly(storeId, lastMonth, FEE_RATE, null);
                 created++;
             } catch (CustomException e) {
                 ErrorCode code = e.getErrorCode();
