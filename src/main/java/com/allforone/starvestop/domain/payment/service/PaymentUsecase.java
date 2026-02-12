@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -73,6 +74,7 @@ public class PaymentUsecase {
 
     @Transactional
     public String confirmSuccess(String paymentKey, String orderId, Long amount) {
+        LocalDateTime now = LocalDateTime.now();
         // 1. 비관적락 걸고 payment 조회
         Payment payment = paymentService.findByOrderKeyForUpdate(orderId);
         Order order = orderService.getForPayment(payment.getOrder().getId());
@@ -116,7 +118,7 @@ public class PaymentUsecase {
             Map response = paymentService.tossApiConfirm(requestPayload);
 
             payment.success(paymentKey);
-            order.paid();
+            order.paid(now);
             paymentEventRelay.relayFrom(payment);
             // 7. 영수증 생성
             receiptService.save(payment.getUserId(), payment);

@@ -41,6 +41,7 @@ public enum ErrorCode {
     SUBSCRIPTION_BILLING_REQUIRED(HttpStatus.CONFLICT, "자동 결제를 위해 결제 수단 등록이 필요합니다"),
     // 주문
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다"),
+    INVALID_ORDER_STATE(HttpStatus.CONFLICT,"잘못된 주문 상태입니다"),
 
     // 결제
     PAYMENT_TARGET_REQUIRED(HttpStatus.BAD_REQUEST, "결제 대상이 필요합니다"),
