@@ -6,7 +6,6 @@ import com.allforone.starvestop.domain.payment.dto.response.GetPaymentLogDetailR
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentLogResponse;
 import com.allforone.starvestop.domain.payment.dto.response.SearchPaymentLogResponse;
 import com.allforone.starvestop.domain.payment.service.PaymentLogService;
-import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/paymentLogs")
+@RequestMapping("/payment-logs")
 public class PaymentLogController {
     private final PaymentLogService paymentLogService;
 
