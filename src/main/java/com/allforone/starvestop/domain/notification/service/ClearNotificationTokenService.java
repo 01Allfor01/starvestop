@@ -1,6 +1,6 @@
 package com.allforone.starvestop.domain.notification.service;
 
-import com.allforone.starvestop.domain.notification.repository.NotificationTokenRepository;
+import com.allforone.starvestop.domain.notification.repository.UserNotificationRepository;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.MessagingErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ClearNotificationTokenService {
 
-    private final NotificationTokenRepository notificationTokenRepository;
+    private final UserNotificationRepository userNotificationRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void invalidToken(String token, FirebaseMessagingException e) {
@@ -20,7 +20,7 @@ public class ClearNotificationTokenService {
 
         if (code.equals(MessagingErrorCode.UNREGISTERED)
                 || code.equals(MessagingErrorCode.INVALID_ARGUMENT)) {
-            notificationTokenRepository.deleteByToken(token);
+            userNotificationRepository.deleteByToken(token);
         }
     }
 }

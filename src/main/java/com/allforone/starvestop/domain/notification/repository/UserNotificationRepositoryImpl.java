@@ -13,7 +13,7 @@ import static com.allforone.starvestop.domain.owner.entity.QOwner.owner;
 
 @Repository
 @RequiredArgsConstructor
-public class NotificationTokenRepositoryImpl implements NotificationTokenRepositoryCustom {
+public class UserNotificationRepositoryImpl implements UserNotificationRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 

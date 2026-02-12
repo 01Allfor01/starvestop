@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface NotificationTokenRepository extends JpaRepository<NotificationToken, Long>, NotificationTokenRepositoryCustom {
+public interface UserNotificationRepository extends JpaRepository<NotificationToken, Long>, UserNotificationRepositoryCustom {
     @Query("SELECT un FROM NotificationToken un WHERE un.userId = :userId AND un.role = 'USER'")
     NotificationToken findByUserId(Long userId);
 

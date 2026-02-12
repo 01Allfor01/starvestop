@@ -6,7 +6,7 @@ import com.allforone.starvestop.common.enums.SuccessMessage;
 import com.allforone.starvestop.common.utils.NotificationTokenSet;
 import com.allforone.starvestop.domain.notification.dto.NotificationDto;
 import com.allforone.starvestop.domain.notification.dto.NotificationMulticastRequest;
-import com.allforone.starvestop.domain.notification.service.NotificationService;
+import com.allforone.starvestop.domain.notification.service.UserNotificationService;
 import com.allforone.starvestop.domain.notification.dto.NotificationTokenRequest;
 import com.google.firebase.messaging.BatchResponse;
 import com.google.firebase.messaging.SendResponse;
@@ -25,18 +25,18 @@ import java.util.Map;
 @RestController
 public class NotificationController {
 
-    private final NotificationService notificationService;
+    private final UserNotificationService userNotificationService;
     private final NotificationTokenSet tokens;
 
     @PostMapping("/save/token")
     public ResponseEntity<CommonResponse<Void>> saveToken(@AuthenticationPrincipal AuthUser authUser, @RequestBody NotificationTokenRequest request) {
-        notificationService.saveToken(authUser.getUserId(), authUser.getUserRole(), request.getFcmToken(), request.getPlatform());
+        userNotificationService.saveToken(authUser.getUserId(), authUser.getUserRole(), request.getFcmToken(), request.getPlatform());
         return ResponseEntity.ok(CommonResponse.successNoData(SuccessMessage.NOTIFICATION_SEND_SUCCESS));
     }
 
     @PostMapping("/send/subscription/{subscriptionId}")
     public ResponseEntity<CommonResponse<Map<String, Object>>> sendMultiNotification(@PathVariable Long subscriptionId, @RequestBody NotificationMulticastRequest notification) {
-            BatchResponse response = notificationService.sendMultiNotification(subscriptionId, notification, tokens.getAll());
+            BatchResponse response = userNotificationService.sendMultiNotification(subscriptionId, notification, tokens.getAll());
 
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("response", response.getResponses());
@@ -56,7 +56,7 @@ public class NotificationController {
 
     @PostMapping("/send")
     public ResponseEntity<CommonResponse<Map<String, Object>>> sendNotification(@RequestBody NotificationDto notification) {
-        String response = notificationService.sendNotification(notification);
+        String response = userNotificationService.sendNotification(notification);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("response", response);
@@ -66,6 +66,6 @@ public class NotificationController {
 
     @PostMapping("/test")
     public void test(@RequestParam Integer bit,@RequestParam Integer bit2) {
-        notificationService.sendSubscriptionTimeNotification(bit,bit2);
+        userNotificationService.sendSubscriptionTimeNotification(bit,bit2);
     }
 }

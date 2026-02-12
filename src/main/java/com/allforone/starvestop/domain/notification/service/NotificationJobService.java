@@ -7,24 +7,20 @@ import com.allforone.starvestop.domain.notification.entity.NotificationJob;
 import com.allforone.starvestop.domain.notification.enums.DayBit;
 import com.allforone.starvestop.domain.notification.enums.MealTimeBit;
 import com.allforone.starvestop.domain.notification.repository.NotificationJobJdbcRepository;
-import com.allforone.starvestop.domain.notification.repository.NotificationTokenRepository;
-import com.allforone.starvestop.domain.subscription.enums.Day;
+import com.allforone.starvestop.domain.notification.repository.UserNotificationRepository;
 import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class NotificationJobService {
 
-    NotificationTokenRepository notificationTokenRepository;
+    UserNotificationRepository userNotificationRepository;
     NotificationJobJdbcRepository notificationJobJdbcRepository;
 
     @Transactional
@@ -41,7 +37,7 @@ public class NotificationJobService {
         int mealBit = mealTime.getBit();
 
         List<SendMealTimeNotificationDto> targets =
-                notificationTokenRepository.findByTargetList(dayBit);
+                userNotificationRepository.findByTargetList(dayBit);
 
         if (targets.isEmpty()) return;
 
@@ -66,7 +62,7 @@ public class NotificationJobService {
 
     @Transactional
     public void sendNotificationJob(DayBit dayBit, MealTimeBit mealTimeBit) {
-        List<SendMealTimeNotificationDto> dtoList = notificationTokenRepository.findByTargetList(dayBit);
+        List<SendMealTimeNotificationDto> dtoList = userNotificationRepository.findByTargetList(dayBit);
 
         if (dtoList.isEmpty()) {
             return;
