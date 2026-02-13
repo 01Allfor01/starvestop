@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.subscription.dto.response;
 
 import com.allforone.starvestop.domain.subscription.entity.UserSubscription;
 import com.allforone.starvestop.domain.subscription.enums.UserSubscriptionStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -14,6 +15,7 @@ public class CreateUserSubscriptionResponse {
     private final Long userId;
     private final Long subscriptionId;
     private final Long storeId;
+    @Schema(example = "ACTIVE")
     private final UserSubscriptionStatus status;
     private final LocalDateTime createdAt;
     private final LocalDateTime expiresAt;
