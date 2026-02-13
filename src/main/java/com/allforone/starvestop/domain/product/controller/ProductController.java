@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,7 +68,7 @@ public class ProductController {
     @Operation(summary = "마감 세일 상품 목록 조회" + ApiRoleLabels.AUTH)
     @GetMapping("/products/sale")
     public ResponseEntity<CommonResponse<SliceResponse<GetProductSaleResponse>>> getProductSaleSlice(
-            @Valid SearchProductCond request
+            @ParameterObject @ModelAttribute @Valid SearchProductCond request
     ) {
         Slice<GetProductSaleResponse> getProductSaleResponseSlice = productService.getProductSaleSlice(request);
 
