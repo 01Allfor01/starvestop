@@ -10,7 +10,9 @@ import com.allforone.starvestop.domain.product.dto.response.*;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,18 +40,13 @@ public class ProductController {
 
     //특정 매장 상품 목록 조회
     @GetMapping("/stores/{storeId}/products")
-    public ResponseEntity<CommonResponse<SliceResponse<GetProductResponse>>> getProductStoreSlice(
-            @PathVariable Long storeId,
-            @RequestParam(required = false) Long lastId,
-            @RequestParam(required = false) Integer size) {
-        Slice<GetProductResponse> getProductResponseSlice = productService.getProductStoreSlice(storeId, lastId, size);
+    public ResponseEntity<CommonResponse<Slice<GetProductResponse>>> getProductStoreSlice(@PathVariable Long storeId, @PageableDefault(size = 10) Pageable pageable) {
+        Slice<GetProductResponse> getProductResponseSlice = productService.getProductStoreSlice(storeId, pageable);
 
-        SliceResponse<GetProductResponse> response = SliceResponse.from(getProductResponseSlice);
+        CommonResponse<Slice<GetProductResponse>> response =
+                CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseSlice);
 
-        CommonResponse<SliceResponse<GetProductResponse>> result =
-                CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, response);
-
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     //마감 세일 상품 목록 조회
@@ -82,7 +79,7 @@ public class ProductController {
     @PatchMapping("/products/{productId}")
     public ResponseEntity<CommonResponse<UpdateProductResponse>> updateProduct(@AuthenticationPrincipal AuthUser authUser,
                                                                                @PathVariable Long productId,
-                                                                               @RequestBody UpdateProductRequest request) {
+                                                                               @Valid @RequestBody UpdateProductRequest request) {
         UpdateProductResponse updateProductResponse = productService.updateProduct(authUser, productId, request);
 
         CommonResponse<UpdateProductResponse> response =

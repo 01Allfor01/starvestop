@@ -22,5 +22,5 @@ public interface UserSubscriptionRepository extends JpaRepository<UserSubscripti
 
     List<UserSubscription> findAllByStatusAndExpiresAtLessThanEqual(UserSubscriptionStatus status, LocalDateTime now);
 
-    Optional<UserSubscription> findByUserIdAndSubscriptionId(Long userId, Long subscriptionId);
+    Optional<UserSubscription> findByUserIdAndSubscriptionIdAndIsDeletedFalse(Long userId, Long subscriptionId);
 }

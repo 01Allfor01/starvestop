@@ -1,6 +1,6 @@
 //package com.allforone.starvestop.config;
 //
-//import com.allforone.starvestop.domain.user.enums.UserRole;
+//import com.allforone.starvestop.common.enums.UserRole;
 //import org.springframework.security.test.context.support.WithSecurityContext;
 //
 //import java.lang.annotation.*;

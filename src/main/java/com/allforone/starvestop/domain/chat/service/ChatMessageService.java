@@ -9,7 +9,7 @@ import com.allforone.starvestop.domain.chat.entity.ChatMessage;
 import com.allforone.starvestop.domain.chat.entity.ChatRoom;
 import com.allforone.starvestop.domain.chat.enums.SenderType;
 import com.allforone.starvestop.domain.chat.repository.ChatMessageRepository;
-import com.allforone.starvestop.domain.user.enums.UserRole;
+import com.allforone.starvestop.common.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;

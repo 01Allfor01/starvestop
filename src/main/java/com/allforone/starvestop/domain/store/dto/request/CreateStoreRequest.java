@@ -12,9 +12,6 @@ import java.time.LocalTime;
 @NoArgsConstructor
 public class CreateStoreRequest {
 
-    @NotNull(message = "판매자 아이디를 적어주세요")
-    private Long ownerId;
-
     @Size(max = 255, message = "매장 이름은 255자 이하로 입력해주세요")
     @NotBlank(message = "매장 이름을 적어주세요")
     private String name;

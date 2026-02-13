@@ -2,7 +2,6 @@ package com.allforone.starvestop.domain.user.entity;
 
 import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.domain.user.enums.AuthProvider;
-import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -26,9 +25,6 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private UserRole role;
 
     @Column(nullable = false, length = 15)
     private String nickname;
@@ -36,6 +32,7 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 30)
     private String username;
 
+    //유저 고유키 ( 자동 결제에 필요한 키 )
     @Column(nullable = false, unique = true, updatable = false, length = 36)
     private String userKey;
 
@@ -50,7 +47,6 @@ public class User extends BaseEntity {
     private User(String email, String password, String nickname, String username, AuthProvider provider, Long providerId) {
         this.email = email;
         this.password = password;
-        this.role = UserRole.USER;
         this.nickname = nickname;
         this.username = username;
         this.provider = provider;

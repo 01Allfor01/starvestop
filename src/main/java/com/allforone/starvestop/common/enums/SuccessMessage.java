@@ -7,8 +7,10 @@ public enum SuccessMessage {
     //인증인가
     SIGN_UP_SUCCESS("회원가입 성공"),
     SIGN_UP_OWNER_SUCCESS("판매자 회원가입 성공"),
+    SIGN_UP_ADMIN_SUCCESS("관리자 회원가입 성공"),
     SIGN_IN_SUCCESS("로그인 성공"),
     URL_RETURN_SUCCESS("로그인 URL 반환 성공"),
+
 
     //사용자
     USER_GET_SUCCESS("회원 조회 성공"),
@@ -18,6 +20,11 @@ public enum SuccessMessage {
     //판매자
     OWNER_UPDATE_SUCCESS("판매자 정보 수정 성공"),
     OWNER_DELETE_SUCCESS("회원 탈퇴 성공"),
+
+    //관리자
+    ADMIN_GET_SUCCESS("관리자 조회 성공"),
+    ADMIN_UPDATE_SUCCESS("관리자 정보 수정 성공"),
+    ADMIN_DELETE_SUCCESS("관리자 탈퇴 성공"),
 
     //장바구니
     CART_CREATE_SUCCESS("장바구니 생성 성공"),
@@ -107,7 +114,7 @@ public enum SuccessMessage {
 
     // 정산
     SETTLEMENT_CREATE_SUCCESS("정산 생성 성공");
-    ;
+
 
     private final String message;
 

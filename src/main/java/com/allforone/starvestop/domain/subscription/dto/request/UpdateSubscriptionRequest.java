@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateSubscriptionRequest {
     @NotNull(message = "구독 가입 가능 여부를 선택해주세요")
-    private boolean isJoinable;
+    private Boolean joinable;
 }
