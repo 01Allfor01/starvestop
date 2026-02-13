@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.cart.controller;
 
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
+import com.allforone.starvestop.domain.cart.dto.CartListResponse;
 import com.allforone.starvestop.domain.cart.dto.CartRequest;
 import com.allforone.starvestop.domain.cart.dto.CartResponse;
 import com.allforone.starvestop.domain.cart.dto.UpdateCartRequest;
@@ -38,14 +39,14 @@ public class CartController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<List<CartResponse>>> getCartList(@AuthenticationPrincipal AuthUser authUser) {
-        List<CartResponse> response = cartService.getCartList(authUser.getUserId());
+    public ResponseEntity<CommonResponse<CartListResponse>> getCartList(@AuthenticationPrincipal AuthUser authUser) {
+        CartListResponse response = cartService.getCartList(authUser.getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_GET_SUCCESS, response));
     }
 
     @PatchMapping
-    public ResponseEntity<CommonResponse<CartResponse>> updateCart(@Valid @RequestBody UpdateCartRequest request) {
-        CartResponse response = cartService.updateCart(request);
+    public ResponseEntity<CommonResponse<CartResponse>> updateCart(@AuthenticationPrincipal AuthUser authUser, @Valid @RequestBody UpdateCartRequest request) {
+        CartResponse response = cartService.updateCart(authUser.getUserId(), request);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_UPDATE_SUCCESS, response));
     }
 
