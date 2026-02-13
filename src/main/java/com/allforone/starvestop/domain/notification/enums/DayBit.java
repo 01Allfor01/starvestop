@@ -1,11 +1,13 @@
 package com.allforone.starvestop.domain.notification.enums;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
+@Schema(description = "요일 비트(1,2,4,8,16,32,64)")
 @Getter
 @RequiredArgsConstructor
 public enum DayBit {
