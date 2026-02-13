@@ -9,7 +9,6 @@ public record PaymentStatusChangedEvent(
         String orderKey,
         Long userId,
         PaymentStatus status,
-        String pgStatus,
         String payload,
         LocalDateTime createdAt
 ) implements DomainEvent {
@@ -18,11 +17,10 @@ public record PaymentStatusChangedEvent(
             String orderKey,
             Long userId,
             PaymentStatus status,
-            String pgStatus,
             String payload
     ) {
         return new PaymentStatusChangedEvent(
-                paymentId, orderKey, userId, status, pgStatus, payload, LocalDateTime.now()
+                paymentId, orderKey, userId, status, payload, LocalDateTime.now()
         );
     }
 }

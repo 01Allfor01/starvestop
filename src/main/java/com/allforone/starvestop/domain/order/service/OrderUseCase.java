@@ -8,6 +8,9 @@ import com.allforone.starvestop.domain.coupon.entity.UserCoupon;
 import com.allforone.starvestop.domain.coupon.service.UserCouponService;
 import com.allforone.starvestop.domain.order.dto.OrderResponse;
 import com.allforone.starvestop.domain.order.entity.Order;
+import com.allforone.starvestop.domain.payment.entity.Payment;
+import com.allforone.starvestop.domain.payment.enums.PaymentStatus;
+import com.allforone.starvestop.domain.payment.service.PaymentService;
 import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import com.allforone.starvestop.domain.product.service.ProductService;
@@ -20,7 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +38,7 @@ public class OrderUseCase {
     private final StoreService storeService;
     private final ProductService productService;
     private final OrderProductService orderProductService;
+    private final PaymentService paymentService;
 
     @Transactional
     public OrderResponse order(Long userId, Long storeId, Long userCouponId) {
@@ -94,5 +100,45 @@ public class OrderUseCase {
             return userCoupon.getCoupon().getDiscountAmount();
         }
         return BigDecimal.valueOf(0);
+    }
+
+    @Transactional
+    public int cancelExpiredOrders(LocalDateTime now) {
+
+        List<Order> expired = orderService.getExpiredOrder(now);
+        int processed = 0;
+
+        for (Order order : expired) {
+
+            // 1. 주문 취소 (이미 PENDING인 것만 조회되므로 안전)
+            order.cancel();
+
+            // 2. 재고 반환
+
+
+            // 3. 쿠폰 복구
+            UserCoupon userCoupon = order.getUserCoupon();
+            if (userCoupon != null) {
+                userCoupon.restore();
+            }
+
+            // 4. 결제 취소 (주문키 1개 = 결제 1개)
+            Optional<Payment> optionalPayment =
+                    paymentService.findByOrderKey(order.getOrderKey());
+
+            if (optionalPayment.isPresent()) {
+                Payment payment = optionalPayment.get();
+
+                if (payment.getStatus() == PaymentStatus.REQUESTED
+                        || payment.getStatus() == PaymentStatus.PENDING) {
+
+                    payment.cancel(); // 내부에서 requireStatus + 이벤트 적재
+                }
+            }
+
+            processed++;
+        }
+
+        return processed;
     }
 }

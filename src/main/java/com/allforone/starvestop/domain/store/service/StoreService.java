@@ -45,14 +45,8 @@ public class StoreService {
 
     //매장 추가
     @Transactional
-    public CreateStoreResponse createStore(Long ownerId, UserRole role, CreateStoreRequest request) {
-
-        if (role.equals(UserRole.OWNER)) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
-
+    public CreateStoreResponse createStore(Long ownerId, CreateStoreRequest request) {
         Owner owner = ownerService.getById(ownerId);
-
         StoreStatus status = getStatus(request.getStatus());
         Point location = getLocation(request.getLongitude(), request.getLatitude());
 

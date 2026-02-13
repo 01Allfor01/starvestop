@@ -53,7 +53,7 @@ public class PaymentService {
     }
 
     public Page<Payment> findByOrderUserId(Long userId, Pageable pageable) {
-        return paymentRepository.findAllByOrderUserIdAndIsDeletedIsFalse(userId, pageable);
+        return paymentRepository.findAllByOrderUserId(userId, pageable);
     }
 
     public Payment findById(Long paymentId) {
