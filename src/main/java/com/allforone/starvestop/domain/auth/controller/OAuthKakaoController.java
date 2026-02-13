@@ -17,7 +17,7 @@ import static com.allforone.starvestop.common.enums.SuccessMessage.URL_RETURN_SU
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/login/oauth/kakao")
+@RequestMapping("auth/login/oauth/kakao")
 public class OAuthKakaoController {
 
     private final OAuthKakaoService oAuthKakaoService;
