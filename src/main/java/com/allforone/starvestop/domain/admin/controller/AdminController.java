@@ -24,7 +24,7 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    // 회원 조회
+    // 관리자 정보 조회
     @GetMapping
     public ResponseEntity<CommonResponse<GetAdminResponse>> getAdmin(@AuthenticationPrincipal AuthUser authUser) {
         Long adminId = authUser.getUserId();
