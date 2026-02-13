@@ -19,7 +19,6 @@ import com.allforone.starvestop.domain.store.service.StoreService;
 import com.allforone.starvestop.common.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
@@ -61,10 +60,12 @@ public class ProductService {
 
     //특정 매장 상품 목록 조회
     @Transactional(readOnly = true)
-    public Slice<GetProductResponse> getProductStoreSlice(Long storeId, Pageable pageable) {
+    public Slice<GetProductResponse> getProductStoreSlice(Long storeId, Long lastId, Integer size) {
         Store store = storeService.getById(storeId);
 
-        Slice<Product> productSlice = productRepository.findAllByStoreIdAndIsDeletedIsFalseOrderById(store.getId());
+        int limitSize = size != null ? size : 10;
+
+        Slice<Product> productSlice = productRepository.findSliceByCursor(store.getId(), lastId, limitSize);
 
         return productSlice.map(product -> {
 
@@ -116,7 +117,7 @@ public class ProductService {
                 perStoreLimit
         );
 
-        // 응답 만들기 (storeIds 순서 유지하고 싶으면 storeId 기준으로 다시 정렬/그룹)
+        //response 만들기
         Map<Long, List<ProductSaleDto>> grouped = dtoList.stream()
                 .collect(Collectors.groupingBy(ProductSaleDto::storeId));
 

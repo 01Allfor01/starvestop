@@ -10,9 +10,7 @@ import com.allforone.starvestop.domain.product.dto.response.*;
 import com.allforone.starvestop.domain.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -40,13 +38,18 @@ public class ProductController {
 
     //특정 매장 상품 목록 조회
     @GetMapping("/stores/{storeId}/products")
-    public ResponseEntity<CommonResponse<Slice<GetProductResponse>>> getProductStoreSlice(@PathVariable Long storeId, @PageableDefault(size = 10) Pageable pageable) {
-        Slice<GetProductResponse> getProductResponseSlice = productService.getProductStoreSlice(storeId, pageable);
+    public ResponseEntity<CommonResponse<SliceResponse<GetProductResponse>>> getProductStoreSlice(
+            @PathVariable Long storeId,
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(required = false) Integer size) {
+        Slice<GetProductResponse> getProductResponseSlice = productService.getProductStoreSlice(storeId, lastId, size);
 
-        CommonResponse<Slice<GetProductResponse>> response =
-                CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, getProductResponseSlice);
+        SliceResponse<GetProductResponse> response = SliceResponse.from(getProductResponseSlice);
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        CommonResponse<SliceResponse<GetProductResponse>> result =
+                CommonResponse.success(PRODUCT_LIST_BY_STORE_SUCCESS, response);
+
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     //마감 세일 상품 목록 조회
