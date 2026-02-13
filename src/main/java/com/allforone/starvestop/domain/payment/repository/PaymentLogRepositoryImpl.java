@@ -33,7 +33,6 @@ public class PaymentLogRepositoryImpl implements PaymentLogRepositoryCustom {
                         pl.paymentId,
                         pl.userId,
                         pl.orderKey,
-                        pl.pgStatus,
                         pl.timestamp
                 ))
                 .from(pl)

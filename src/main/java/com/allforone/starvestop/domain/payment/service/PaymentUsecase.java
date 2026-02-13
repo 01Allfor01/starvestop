@@ -199,9 +199,9 @@ public class PaymentUsecase {
 
         // 1) 상태 확정 + 이벤트 생성
         if (failStatus == PaymentStatus.FAILED_RETRYABLE) {
-            payment.failRetryable(pgStatus, payload);
+            payment.failRetryable(payload);
         } else {
-            payment.failNonRetryable(pgStatus, payload);
+            payment.failNonRetryable(payload);
         }
 
         // 2) 재고 반환(선택) + stockReleased 표시

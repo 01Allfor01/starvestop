@@ -1,5 +1,7 @@
 package com.allforone.starvestop.domain.payment.controller;
 
+import com.allforone.starvestop.common.config.OpenApiConfig;
+import com.allforone.starvestop.common.docs.ApiRoleLabels;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
 import com.allforone.starvestop.common.enums.SuccessMessage;
@@ -8,6 +10,10 @@ import com.allforone.starvestop.domain.payment.dto.response.CreatePaymentRespons
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentDetailsResponse;
 import com.allforone.starvestop.domain.payment.dto.response.GetPaymentResponse;
 import com.allforone.starvestop.domain.payment.service.PaymentUsecase;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+@Tag(name = "Payments", description = "결제 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/payments")
@@ -28,9 +35,11 @@ public class PaymentController {
 
     private final PaymentUsecase paymentUsecase;
 
+    @SecurityRequirement(name = OpenApiConfig.BEARER)
+    @Operation(summary = "결제 생성" + ApiRoleLabels.USER)
     @PostMapping
     public ResponseEntity<CommonResponse<CreatePaymentResponse>> create(
-            @AuthenticationPrincipal AuthUser authUser,
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser authUser,
             @RequestBody CreatePaymentRequest request
     ) {
         Long userId = authUser.getUserId();
@@ -41,6 +50,7 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success(SuccessMessage.PAYMENT_REQUIRE_SUCCESS, result));
     }
 
+    @Operation(summary = "결제 성공 콜백 (Redirect)" + ApiRoleLabels.AUTH)
     @GetMapping("/success")
     public ResponseEntity<Void> success(
             @RequestParam String paymentType,
@@ -54,6 +64,7 @@ public class PaymentController {
                 .build();
     }
 
+    @Operation(summary = "결제 실패 콜백 (Redirect)" + ApiRoleLabels.AUTH)
     @GetMapping("/fail")
     public ResponseEntity<Void> fail(
             @RequestParam(required = false) String code,
@@ -65,9 +76,12 @@ public class PaymentController {
                 .build();
     }
 
+    @SecurityRequirement(name = OpenApiConfig.BEARER)
+    @Operation(summary = "내 결제 내역 조회" + ApiRoleLabels.USER)
     @GetMapping
     public ResponseEntity<CommonResponse<Page<GetPaymentResponse>>> getMyPaymentList(
-            @AuthenticationPrincipal AuthUser authUser, @RequestParam int pageNum, @RequestParam int pageSize
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser authUser,
+            @RequestParam int pageNum, @RequestParam int pageSize
     ) {
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by("createdAt").descending());
 
@@ -78,9 +92,11 @@ public class PaymentController {
         return ResponseEntity.ok(result);
     }
 
+    @SecurityRequirement(name = OpenApiConfig.BEARER)
+    @Operation(summary = "내 결제 상세 조회" + ApiRoleLabels.USER)
     @GetMapping("/{paymentId}")
     public ResponseEntity<CommonResponse<GetPaymentDetailsResponse>> getPaymentDetail(
-            @AuthenticationPrincipal AuthUser authUser,
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long paymentId
     ) {
         Long userId = authUser.getUserId();
