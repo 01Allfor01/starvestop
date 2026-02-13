@@ -100,4 +100,10 @@ public class UserCouponService {
                 () -> new CustomException(ErrorCode.USER_COUPON_NOT_FOUND)
         );
     }
+
+    public UserCoupon getById(Long userCouponId) {
+        return userCouponRepository.findById(userCouponId).orElseThrow(
+                () -> new CustomException(ErrorCode.USER_COUPON_NOT_FOUND)
+        );
+    }
 }

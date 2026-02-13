@@ -19,6 +19,9 @@ public enum ErrorCode {
     // 판매자
     OWNER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을수 없습니다"),
 
+    // 관리자
+    ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND,"관리자를 찾을 수 없습니다"),
+
     //장바구니
     CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니를 찾을 수 없습니다"),
 
@@ -42,6 +45,7 @@ public enum ErrorCode {
 
     // 주문
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다"),
+    INVALID_ORDER_STATE(HttpStatus.CONFLICT,"잘못된 주문 상태입니다"),
 
     // 결제
     PAYMENT_TARGET_REQUIRED(HttpStatus.BAD_REQUEST, "결제 대상이 필요합니다"),

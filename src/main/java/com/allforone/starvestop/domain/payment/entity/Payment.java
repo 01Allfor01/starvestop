@@ -1,6 +1,5 @@
 package com.allforone.starvestop.domain.payment.entity;
 
-import com.allforone.starvestop.common.entity.BaseEntity;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.order.entity.Order;
@@ -11,6 +10,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ import java.util.List;
 @Entity
 @Table(name = "payments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Payment extends BaseEntity {
+public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -53,6 +54,12 @@ public class Payment extends BaseEntity {
     @Column
     private LocalDateTime canceledAt;
 
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updated_at;
+
     @Transient
     private final List<DomainEvent> domainEvents = new ArrayList<>();
 
@@ -76,7 +83,7 @@ public class Payment extends BaseEntity {
 
         domainEvents.add(PaymentStatusChangedEvent.of(
                 this.id, this.orderKey, this.userId,
-                PaymentStatus.REQUESTED, null, null
+                PaymentStatus.REQUESTED,  null
         ));
     }
 
@@ -97,27 +104,27 @@ public class Payment extends BaseEntity {
 
         domainEvents.add(PaymentStatusChangedEvent.of(
                 this.id, this.orderKey, this.userId,
-                PaymentStatus.PENDING, null, null
+                PaymentStatus.PENDING,  null
         ));
     }
 
-    public void failRetryable(String pgStatus, String payload) {
+    public void failRetryable(String payload) {
         requireStatus(PaymentStatus.PENDING);
         this.status = PaymentStatus.FAILED_RETRYABLE;
 
         domainEvents.add(PaymentStatusChangedEvent.of(
                 this.id, this.orderKey, this.userId,
-                PaymentStatus.FAILED_RETRYABLE, pgStatus, payload
+                PaymentStatus.FAILED_RETRYABLE,  payload
         ));
     }
 
-    public void failNonRetryable(String pgStatus, String payload) {
+    public void failNonRetryable(String payload) {
         requireStatus(PaymentStatus.PENDING);
         this.status = PaymentStatus.FAILED_NON_RETRYABLE;
 
         domainEvents.add(PaymentStatusChangedEvent.of(
                 this.id, this.orderKey, this.userId,
-                PaymentStatus.FAILED_NON_RETRYABLE, pgStatus, payload
+                PaymentStatus.FAILED_NON_RETRYABLE,payload
         ));
     }
 
@@ -133,7 +140,7 @@ public class Payment extends BaseEntity {
 
         domainEvents.add(PaymentStatusChangedEvent.of(
                 this.id, this.orderKey, this.userId,
-                PaymentStatus.FAILED_NON_RETRYABLE, null, null
+                PaymentStatus.FAILED_NON_RETRYABLE, null
         ));
     }
 
@@ -144,7 +151,7 @@ public class Payment extends BaseEntity {
 
         domainEvents.add(PaymentStatusChangedEvent.of(
                 this.id, this.orderKey, this.userId,
-                PaymentStatus.CANCELED, null, null
+                PaymentStatus.CANCELED, null
         ));
     }
 
@@ -156,7 +163,7 @@ public class Payment extends BaseEntity {
 
         domainEvents.add(PaymentStatusChangedEvent.of(
                 this.id, this.orderKey, this.userId,
-                PaymentStatus.SUCCEEDED, null, null
+                PaymentStatus.SUCCEEDED, null
         ));
     }
 }

@@ -14,7 +14,6 @@ public class GetPaymentLogDetailResponse {
     private final Long userId;
     private final String orderKey;
     private final PaymentStatus paymentStatus;
-    private final String pgStatus;
     private String payload;
     private LocalDateTime timestamp;
 
@@ -25,7 +24,6 @@ public class GetPaymentLogDetailResponse {
                 paymentLog.getUserId(),
                 paymentLog.getOrderKey(),
                 paymentLog.getPaymentStatus(),
-                paymentLog.getPgStatus(),
                 paymentLog.getPayload(),
                 paymentLog.getTimestamp()
         );

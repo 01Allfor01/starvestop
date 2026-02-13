@@ -19,7 +19,7 @@ import com.allforone.starvestop.domain.store.dto.response.StoreResponse;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
-import com.allforone.starvestop.domain.user.enums.UserRole;
+import com.allforone.starvestop.common.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
@@ -46,13 +46,8 @@ public class StoreService {
 
     //매장 추가
     @Transactional
-    public CreateStoreResponse createStore(CreateStoreRequest request) {
-        Owner owner = ownerService.getById(request.getOwnerId());
-
-        if (!UserRole.OWNER.equals(owner.getRole())) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
-
+    public CreateStoreResponse createStore(Long ownerId, CreateStoreRequest request) {
+        Owner owner = ownerService.getById(ownerId);
         StoreStatus status = getStatus(request.getStatus());
         Point location = getLocation(request.getLongitude(), request.getLatitude());
 
@@ -144,7 +139,7 @@ public class StoreService {
                 .map(StoreRedisDto::getId)
                 .toList();
 
-        List<StoreDto> list = null;
+        List<StoreDto> list;
 
         if (cond.getKeyword() == null) {
             list = storeRepository.findStoreDtoList(ids, cond.getCategory());
