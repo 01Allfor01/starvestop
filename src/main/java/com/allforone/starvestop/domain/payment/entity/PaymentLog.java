@@ -28,25 +28,22 @@ public class PaymentLog {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
-    private String pgStatus;
-
     @Lob
     private String payload;
 
     @Column(nullable = false)
     private LocalDateTime timestamp;
 
-    private PaymentLog(Long paymentId, Long userId, String orderKey, PaymentStatus paymentStatus, String pgStatus, String payload) {
+    private PaymentLog(Long paymentId, Long userId, String orderKey, PaymentStatus paymentStatus, String payload) {
         this.paymentId = paymentId;
         this.userId = userId;
         this.orderKey = orderKey;
         this.paymentStatus = paymentStatus;
-        this.pgStatus = pgStatus;
         this.payload = payload;
         this.timestamp = LocalDateTime.now();
     }
 
-    public static PaymentLog create(Long paymentId, Long userId, String orderKey, PaymentStatus paymentStatus, String pgStatus, String payload) {
-        return new PaymentLog(paymentId, userId, orderKey, paymentStatus, pgStatus, payload);
+    public static PaymentLog create(Long paymentId, Long userId, String orderKey, PaymentStatus paymentStatus, String payload) {
+        return new PaymentLog(paymentId, userId, orderKey, paymentStatus, payload);
     }
 }

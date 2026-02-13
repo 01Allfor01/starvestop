@@ -30,7 +30,6 @@ public class PaymentLogEventHandler {
                 e.userId(),
                 e.orderKey(),
                 e.status(),
-                e.pgStatus(),
                 e.payload()
         );
     }
