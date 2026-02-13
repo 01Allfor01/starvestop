@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = OpenApiConfig.BEARER)
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/paymentLogs")
+@RequestMapping("/payment-logs")
 public class PaymentLogController {
     private final PaymentLogService paymentLogService;
 

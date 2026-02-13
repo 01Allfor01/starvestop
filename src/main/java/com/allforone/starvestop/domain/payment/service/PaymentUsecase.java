@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -73,6 +74,8 @@ public class PaymentUsecase {
     public String confirmSuccess(String paymentKey, String orderKey, Long amount) {
         Payment payment = paymentService.findByOrderKeyForUpdate(orderKey);
         Order order = orderService.getForPayment(payment.getOrder().getId());
+
+        LocalDateTime now = LocalDateTime.now();
 
         // 이미 성공
         if (order.getStatus() == OrderStatus.PAID ||
@@ -128,7 +131,7 @@ public class PaymentUsecase {
             paymentService.tossApiConfirm(requestPayload);
 
             payment.success(paymentKey);
-            order.paid();
+            order.paid(now);
 
             // 성공 이벤트(상태변경/영수증) 발행
             paymentEventRelay.relayFrom(payment);
@@ -196,9 +199,9 @@ public class PaymentUsecase {
 
         // 1) 상태 확정 + 이벤트 생성
         if (failStatus == PaymentStatus.FAILED_RETRYABLE) {
-            payment.failRetryable(pgStatus, payload);
+            payment.failRetryable(payload);
         } else {
-            payment.failNonRetryable(pgStatus, payload);
+            payment.failNonRetryable(payload);
         }
 
         // 2) 재고 반환(선택) + stockReleased 표시
