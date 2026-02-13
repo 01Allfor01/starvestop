@@ -69,7 +69,9 @@ public class SecurityConfig {
                         .requestMatchers("/owners/**").hasRole("OWNER")
                         .requestMatchers(HttpMethod.POST, "/products/**").hasRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH, "/products/**").hasRole("OWNER")
-
+                        .requestMatchers(HttpMethod.POST, "/stores/**").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.PATCH, "/stores/**").hasRole("OWNER")
+                        .requestMatchers("stores/my").hasRole("OWNER")
 
                         //ADMIN
                         .requestMatchers("/admins/**").hasRole("ADMIN")
@@ -86,8 +88,6 @@ public class SecurityConfig {
                         .requestMatchers("/notifications/save/token").hasAnyRole("USER", "OWNER")
 
                         //OWNER & ADMIN
-                        .requestMatchers(HttpMethod.POST, "/stores/**").hasAnyRole("OWNER", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/stores/**").hasAnyRole("OWNER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/stores/**").hasAnyRole("OWNER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasAnyRole("OWNER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
