@@ -1,5 +1,6 @@
 package com.allforone.starvestop.domain.store.repository;
 
+import com.allforone.starvestop.domain.product.dto.ProductSaleDto;
 import com.allforone.starvestop.domain.store.dto.StoreDto;
 import com.allforone.starvestop.domain.store.entity.Store;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ public interface StoreRepository extends JpaRepository<Store, Long>, StoreReposi
     Optional<Store> findByIdAndIsDeletedIsFalse(Long id);
 
     Page<Store> findByOwnerIdAndIsDeletedIsFalseOrderByName(Long ownerId, Pageable pageable);
+
     @Query("""
     select distinct new com.allforone.starvestop.domain.store.dto.StoreDto(
         s.id,

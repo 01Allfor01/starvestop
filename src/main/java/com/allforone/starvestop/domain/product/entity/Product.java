@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 
 @Getter
 @Entity
-@Table(name = "products")
+@Table(name = "products", indexes = {@Index(name = "idx_product_sale_filter", columnList = "status, isDeleted, storeId")})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 
