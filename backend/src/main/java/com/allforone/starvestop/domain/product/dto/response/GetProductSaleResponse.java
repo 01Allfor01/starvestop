@@ -6,6 +6,7 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @AllArgsConstructor
@@ -19,6 +20,7 @@ public class GetProductSaleResponse {
     private final BigDecimal price;
     private final BigDecimal salePrice;
     private final String imageUrl;
+    private final LocalTime endTime;
     private final LocalDateTime updatedAt;
 
     public static GetProductSaleResponse from(Product product, String imageUrl) {
@@ -32,6 +34,7 @@ public class GetProductSaleResponse {
                 product.getPrice(),
                 product.getSalePrice(),
                 imageUrl,
+                product.getStore().getCloseTime(),
                 product.getUpdatedAt()
         );
     }

@@ -1,58 +1,251 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
-import { ArrowLeft, Heart, MapPin, Clock, Minus, Plus, ShoppingCart, Store, MessageCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, Heart, MapPin, Clock, Minus, Plus, ShoppingCart, Store, MessageCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import { productsApi } from '@/lib/api/products';
+import { cartApi } from '@/lib/api/cart';
+import { calculateDistance, getCurrentLocation } from '@/lib/utils/location';
 
 export default function ProductDetailPage() {
     const params = useParams();
+    const router = useRouter();
     const productId = params.id;
 
     const [quantity, setQuantity] = useState(1);
     const [isFavorite, setIsFavorite] = useState(false);
 
-    // TODO: 나중에 실제 API에서 상품 데이터 가져오기
-    const product = {
-        id: productId,
-        name: '프리미엄 크루아상 3입',
-        storeName: '파리바게뜨 강남점',
-        storeId: 1,
-        originalPrice: 6000,
-        salePrice: 3000,
-        discount: 3000,
-        stock: 5,
-        distance: 1.2,
-        description: '갓 구운 신선한 크루아상입니다. 바삭한 겉면과 부드러운 속살이 일품입니다.',
-        expiryTime: '2:34:12',
-        image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
-        category: '베이커리',
-    };
+    // 상품 데이터 및 상태
+    const [product, setProduct] = useState<any>(null);
+    const [distance, setDistance] = useState<string>('-');
+    const [loading, setLoading] = useState(true);
+    const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+    // ✅ 타이머 및 영업 상태 관리
+    const [timeLeft, setTimeLeft] = useState<string>('');
+    const [isClosed, setIsClosed] = useState<boolean>(false);
+
+    // 1️⃣ 내 위치 가져오기
+    useEffect(() => {
+        const fetchLocation = async () => {
+            const loc = await getCurrentLocation();
+            if (loc) {
+                setMyLocation(loc);
+            }
+        };
+        fetchLocation();
+    }, []);
+
+    // 2️⃣ 상품 정보 API 호출
+    useEffect(() => {
+        const fetchProduct = async () => {
+            if (!productId) return;
+
+            try {
+                setLoading(true);
+                const data = await productsApi.getProduct(Number(productId));
+
+                // ✅ 시간 파싱 함수 (마감 세일 페이지와 동일 로직)
+                const parseEndTime = (timeData: any) => {
+                    const now = new Date();
+
+                    // 데이터가 없으면 오늘 밤 23:59:59로 설정
+                    if (!timeData) {
+                        return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+                    }
+
+                    let hours = 23;
+                    let minutes = 59;
+                    let seconds = 59;
+
+                    if (typeof timeData === 'string') {
+                        const parts = timeData.split(':').map(Number);
+                        hours = parts[0];
+                        minutes = parts[1];
+                        seconds = parts[2] || 0;
+                    } else if (Array.isArray(timeData)) {
+                        hours = timeData[0];
+                        minutes = timeData[1];
+                        seconds = timeData[2] || 0;
+                    }
+
+                    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
+                };
+
+                // 백엔드 데이터에서 시간 찾기
+                const rawTime = data.endTime || data.closeTime || data.closingTime || (data as any).store?.closeTime;
+
+                const mappedProduct = {
+                    id: data.id,
+                    name: data.name,
+                    storeName: data.storeName,
+                    storeId: data.storeId,
+                    location: data.location,
+                    originalPrice: data.price,
+                    salePrice: data.salePrice,
+                    discount: data.price - data.salePrice,
+                    stock: data.stock,
+                    description: data.description,
+                    // ✅ 파싱된 Date 객체 저장
+                    endTime: parseEndTime(rawTime),
+                    image: data.imageUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
+                    category: data.status === 'SALE' ? '마감세일' : '일반상품',
+                };
+
+                setProduct(mappedProduct);
+            } catch (error) {
+                console.error("상품 상세 불러오기 실패:", error);
+                alert("상품 정보를 찾을 수 없습니다.");
+                router.back();
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProduct();
+    }, [productId, router]);
+
+    // 3️⃣ 거리 계산
+    useEffect(() => {
+        if (myLocation && product?.location) {
+            let storeLat = 0;
+            let storeLng = 0;
+            const loc = product.location;
+
+            if ('y' in loc && 'x' in loc) {
+                storeLat = loc.y;
+                storeLng = loc.x;
+            } else if ('coordinates' in loc) {
+                storeLat = loc.coordinates[1];
+                storeLng = loc.coordinates[0];
+            } else if ('lat' in loc && 'lng' in loc) {
+                storeLat = loc.lat;
+                storeLng = loc.lng;
+            }
+
+            if (storeLat && storeLng) {
+                const dist = calculateDistance(myLocation.lat, myLocation.lng, storeLat, storeLng);
+                setDistance(dist);
+            }
+        }
+    }, [myLocation, product]);
+
+    // 4️⃣ ✅ 실시간 타이머 로직 (버튼 상태 제어용)
+    useEffect(() => {
+        if (!product?.endTime) return;
+
+        const calculateTime = () => {
+            const now = new Date().getTime();
+            const end = new Date(product.endTime).getTime();
+            const distance = end - now;
+
+            if (distance < 0) {
+                setTimeLeft('영업종료');
+                setIsClosed(true); // 영업 종료 상태로 변경
+                return;
+            }
+
+            // 아직 영업 중이면 상태 초기화 (혹시 모를 에러 방지)
+            setIsClosed(false);
+
+            const hours = Math.floor(distance / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            setTimeLeft(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+        };
+
+        calculateTime(); // 즉시 실행
+        const timer = setInterval(calculateTime, 1000);
+
+        return () => clearInterval(timer);
+    }, [product]);
+
 
     const handleQuantityChange = (delta: number) => {
+        if (!product) return;
         const newQuantity = quantity + delta;
         if (newQuantity >= 1 && newQuantity <= product.stock) {
             setQuantity(newQuantity);
         }
     };
 
-    const handleAddToCart = () => {
-        console.log('장바구니 담기:', { productId, quantity });
-        alert('장바구니에 담았습니다!');
+    const handleAddToCart = async () => {
+        if (!product) return;
+        // 안전장치: 영업 종료시 함수 실행 막기
+        if (isClosed) {
+            alert("영업이 종료되어 주문할 수 없습니다.");
+            return;
+        }
+
+        try {
+            await cartApi.addToCart({
+                productId: product.id,
+                quantity: quantity
+            });
+
+            if (confirm(`${product.name} ${quantity}개를 장바구니에 담았습니다!\n장바구니로 이동하시겠습니까?`)) {
+                router.push('/cart');
+            }
+        } catch (error: any) {
+            console.error("장바구니 담기 실패:", error);
+            const msg = error.response?.data?.message || "장바구니 담기에 실패했습니다.";
+            alert(msg);
+        }
     };
+
+    const handleBuyNow = async () => {
+        if (!product) return;
+        // 안전장치: 영업 종료시 함수 실행 막기
+        if (isClosed) {
+            alert("영업이 종료되어 주문할 수 없습니다.");
+            return;
+        }
+
+        if (!confirm("바로 구매 시 장바구니의 다른 상품은 제외하고 이 상품만 주문합니다. 진행하시겠습니까?")) return;
+
+        try {
+            setLoading(true);
+            await cartApi.clearCart();
+            await cartApi.addToCart({
+                productId: product.id,
+                quantity: quantity
+            });
+            router.push('/order');
+        } catch (error) {
+            console.error("바로 구매 처리 실패:", error);
+            alert("구매 진행 중 오류가 발생했습니다.");
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+                <Loader2 className="w-10 h-10 text-primary-500 animate-spin mb-4" />
+                <p className="text-gray-500">맛있는 상품 정보를 가져오는 중...</p>
+            </div>
+        );
+    }
+
+    if (!product) return null;
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* 헤더 */}
             <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-                    <Link href="/" className="flex items-center text-gray-600 hover:text-gray-900">
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                    >
                         <ArrowLeft className="w-5 h-5 mr-2" />
                         <span>뒤로</span>
-                    </Link>
+                    </button>
                     <button
                         onClick={() => setIsFavorite(!isFavorite)}
                         className="p-2 rounded-full hover:bg-gray-100 transition"
@@ -68,21 +261,22 @@ export default function ProductDetailPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* 왼쪽: 이미지 */}
                     <div>
-                        {/* 메인 이미지 */}
-                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-white">
+                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-white shadow-sm">
                             <img
                                 src={product.image}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                             />
-                            {/* 할인 배지 */}
                             <Badge variant="sale" className="absolute top-4 left-4 text-base px-3 py-1">
-                                {product.discount.toLocaleString()}원 할인
+                                {Math.round(product.discount).toLocaleString()}원 할인
                             </Badge>
-                            {/* 타이머 */}
-                            <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center space-x-2 shadow-lg">
-                                <Clock className="w-5 h-5 text-red-500" />
-                                <span className="font-semibold text-gray-900">{product.expiryTime}</span>
+
+                            {/* 타이머 표시 (영업 종료 시 스타일 변경) */}
+                            <div className={`absolute bottom-4 left-4 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center space-x-2 shadow-lg ${
+                                isClosed ? 'bg-gray-800/90 text-white' : 'bg-white/95 text-gray-900'
+                            }`}>
+                                <Clock className={`w-5 h-5 ${isClosed ? 'text-gray-400' : 'text-red-500'}`} />
+                                <span className="font-semibold">{timeLeft}</span>
                             </div>
                         </div>
                     </div>
@@ -91,13 +285,17 @@ export default function ProductDetailPage() {
                     <div className="space-y-6">
                         {/* 가게 정보 */}
                         <Link href={`/stores/${product.storeId}`}>
-                            <Card hover padding="sm" className="flex items-center space-x-3">
-                                <Store className="w-10 h-10 text-primary-500" />
+                            <Card hover padding="sm" className="flex items-center space-x-3 cursor-pointer">
+                                <div className="p-2 bg-primary-50 rounded-full">
+                                    <Store className="w-6 h-6 text-primary-500" />
+                                </div>
                                 <div className="flex-1">
                                     <h3 className="font-semibold text-gray-900">{product.storeName}</h3>
                                     <div className="flex items-center text-sm text-gray-600">
-                                        <MapPin className="w-4 h-4 mr-1" />
-                                        {product.distance}km
+                                        <MapPin className="w-4 h-4 mr-1 text-primary-500" />
+                                        <span className="font-medium text-primary-600">
+                                            {distance !== '-' ? `${distance}km` : (myLocation ? '가게 위치 정보 없음' : '위치 권한 필요')}
+                                        </span>
                                     </div>
                                 </div>
                             </Card>
@@ -107,44 +305,45 @@ export default function ProductDetailPage() {
                         <div>
                             <Badge variant="default" className="mb-2">{product.category}</Badge>
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-                            <p className="text-gray-600">{product.description}</p>
+                            <p className="text-gray-600 line-clamp-2">{product.description}</p>
                         </div>
 
                         {/* 가격 정보 */}
                         <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl p-6">
                             <div className="flex items-baseline space-x-3 mb-2">
-                <span className="text-2xl text-gray-400 line-through">
-                  {product.originalPrice.toLocaleString()}원
-                </span>
-                                <Badge variant="sale" className="text-lg px-3 py-1">
-                                    {product.discount.toLocaleString()}원 할인
+                                <span className="text-2xl text-gray-400 line-through">
+                                  {Math.round(product.originalPrice).toLocaleString()}원
+                                </span>
+                                <Badge variant="sale" className="text-lg px-3 py-1 bg-red-500 text-white border-none">
+                                    {Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100)}% 할인
                                 </Badge>
                             </div>
                             <div className="text-4xl font-bold text-primary-600">
                                 {product.salePrice.toLocaleString()}원
                             </div>
-                            <p className="text-sm text-gray-600 mt-2">
-                                재고: <span className="font-semibold text-primary-600">{product.stock}개</span> 남음
+                            <p className="text-sm text-gray-600 mt-2 flex items-center">
+                                재고: <span className="font-bold text-primary-600 ml-1 text-lg">{product.stock}개</span>
+                                <span className="ml-1">남음</span>
                             </p>
                         </div>
 
-                        {/* 수량 선택 */}
+                        {/* 수량 선택 (영업 종료 시 비활성화는 안 함, 버튼에서 막음) */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">수량</label>
                             <div className="flex items-center space-x-4">
-                                <div className="flex items-center border border-gray-300 rounded-lg">
+                                <div className="flex items-center border border-gray-300 rounded-lg bg-white">
                                     <button
                                         onClick={() => handleQuantityChange(-1)}
-                                        disabled={quantity <= 1}
-                                        className="p-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                        disabled={quantity <= 1 || isClosed}
+                                        className="p-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition rounded-l-lg"
                                     >
                                         <Minus className="w-5 h-5" />
                                     </button>
-                                    <span className="px-6 text-lg font-semibold">{quantity}</span>
+                                    <span className="px-6 text-lg font-semibold min-w-[3rem] text-center">{quantity}</span>
                                     <button
                                         onClick={() => handleQuantityChange(1)}
-                                        disabled={quantity >= product.stock}
-                                        className="p-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                        disabled={quantity >= product.stock || isClosed}
+                                        className="p-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition rounded-r-lg"
                                     >
                                         <Plus className="w-5 h-5" />
                                     </button>
@@ -158,19 +357,28 @@ export default function ProductDetailPage() {
                             </div>
                         </div>
 
-                        {/* 버튼 */}
+                        {/* 버튼 영역 */}
                         <div className="flex space-x-3">
                             <Button
                                 variant="outline"
                                 size="lg"
                                 className="flex-1"
                                 onClick={handleAddToCart}
+                                // ✅ 품절이거나 영업 종료 시 비활성화
+                                disabled={product.stock <= 0 || isClosed}
                             >
                                 <ShoppingCart className="w-5 h-5 mr-2" />
-                                장바구니
+                                {isClosed ? '영업 종료' : '장바구니'}
                             </Button>
-                            <Button size="lg" className="flex-1">
-                                바로 구매
+
+                            <Button
+                                size="lg"
+                                className="flex-1"
+                                // ✅ 품절이거나 영업 종료 시 비활성화
+                                disabled={product.stock <= 0 || isClosed}
+                                onClick={handleBuyNow}
+                            >
+                                {product.stock <= 0 ? '품절' : isClosed ? '영업 종료' : '바로 구매'}
                             </Button>
                         </div>
 
@@ -193,20 +401,13 @@ export default function ProductDetailPage() {
                     <div className="py-8">
                         <Card>
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">상품 설명</h3>
-                            <div className="prose max-w-none text-gray-600">
-                                <p>
-                                    {product.description}
+                            <div className="prose max-w-none text-gray-600 whitespace-pre-wrap">
+                                {product.description}
+                                <br /><br />
+                                <p className="text-sm text-gray-500">
+                                    * 본 상품은 마감 임박 상품으로 환불이 어려울 수 있습니다.<br/>
+                                    * 매장 방문 수령 시간을 꼭 확인해주세요.
                                 </p>
-                                <p className="mt-4">
-                                    매일 아침 신선하게 구워내는 프리미엄 크루아상입니다.
-                                    최상급 프랑스산 버터를 사용하여 풍부한 풍미와 바삭한 식감을 자랑합니다.
-                                </p>
-                                <ul className="mt-4 space-y-2">
-                                    <li>✓ 당일 제조</li>
-                                    <li>✓ 프랑스산 프리미엄 버터 사용</li>
-                                    <li>✓ 인공 첨가물 무첨가</li>
-                                    <li>✓ 냉동 보관 가능 (최대 7일)</li>
-                                </ul>
                             </div>
                         </Card>
                     </div>

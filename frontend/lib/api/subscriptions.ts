@@ -1,25 +1,29 @@
 import { apiClient } from './client';
 
-// 구독 타입
+// 구독 타입 (백엔드 Response에 정확히 맞춤)
 export interface Subscription {
     id: number;
-    name: string;
-    description: string;
-    price: number;
-    period: string;
     storeId: number;
     storeName: string;
+    name: string;
+    description: string;
+    dayList: string[]; // ["MONDAY", "WEDNESDAY", "FRIDAY"] 등
+    mealTimeList: string[]; // ["BREAKFAST", "LUNCH", "DINNER"] 등
+    price: number;
+    stock: number;
+    isJoinable: boolean; // 가입 가능 여부
 }
 
 export interface UserSubscription {
     id: number;
     subscriptionId: number;
     subscriptionName: string;
+    storeId: number;
     storeName: string;
     price: number;
-    status: string;
-    startDate: string;
-    nextPaymentDate: string;
+    status: string; // UserSubscriptionStatus enum
+    createdAt: string; // 구독 시작일
+    expiresAt: string; // 만료일
 }
 
 export const subscriptionsApi = {
@@ -41,9 +45,9 @@ export const subscriptionsApi = {
         return response.data;
     },
 
-    // 구독하기
+    // 구독하기 (정확한 엔드포인트!)
     subscribe: async (subscriptionId: number) => {
-        const response = await apiClient.post(`/subscriptions/${subscriptionId}`);
+        const response = await apiClient.post(`/user-subscriptions/subscriptions/${subscriptionId}`);
         return response.data;
     },
 

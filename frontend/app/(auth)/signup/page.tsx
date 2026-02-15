@@ -44,27 +44,22 @@ export default function SignupPage() {
         setLoading(true);
 
         try {
-            const response: any = await authApi.signUp({
+            // 회원가입 (토큰 바로 반환됨!)
+            const response = await authApi.signUp({
                 email: formData.email,
                 password: formData.password,
                 nickname: formData.nickname,
                 username: formData.username,
             });
 
-            console.log('✅ 백엔드 응답 데이터:', response);
+            console.log('✅ 회원가입 성공:', response);
 
-            const token = response.AccessToken;
+            // 토큰 저장
+            localStorage.setItem('accessToken', response.accessToken);
 
-            if (token) {
-                localStorage.setItem('accessToken', token);
-                alert('회원가입 완료! 로그인되었습니다.');
-                router.push('/');
-            } else {
-                // 토큰이 없는 경우 (로그로 확인 필요)
-                console.error('토큰 없음. 응답 전체:', response);
-                alert('회원가입은 성공했으나 토큰을 찾을 수 없습니다. 콘솔을 확인해주세요.');
-                router.push('/login');
-            }
+            // 메인으로 이동
+            alert('회원가입 완료! 자동 로그인되었습니다.');
+            router.push('/');
 
         } catch (error: any) {
             console.error('회원가입 에러:', error);

@@ -8,6 +8,7 @@ import org.locationtech.jts.geom.Point;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @AllArgsConstructor
@@ -23,6 +24,7 @@ public class GetProductDetailResponse {
     private final BigDecimal salePrice;
     private final ProductStatus status;
     private final String imageUrl;
+    private final LocalTime endTime;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
@@ -39,6 +41,7 @@ public class GetProductDetailResponse {
                 product.getSalePrice(),
                 product.getStatus(),
                 imageUrl,
+                product.getStore().getCloseTime(),
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         );

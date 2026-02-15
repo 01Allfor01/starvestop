@@ -50,6 +50,7 @@ public enum ErrorCode {
     INVALID_PAYMENT_STATE(HttpStatus.CONFLICT, "잘못된 결제 상태입니다"),
     DUPLICATE_ORDER_ID(HttpStatus.CONFLICT, "이미 존재하는 주문 번호입니다"),
     BILLING_KEY_ISSUE_FAILED(HttpStatus.BAD_GATEWAY, "결제 수단 등록에 실패 하였습니다"),
+    PAYMENT_FAIL(HttpStatus.BAD_REQUEST, "결제에 실패하였습니다"),
 
     // 구매
     PURCHASE_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품 유형입니다"),

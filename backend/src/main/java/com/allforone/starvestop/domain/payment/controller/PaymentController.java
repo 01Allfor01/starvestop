@@ -18,8 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/payments")
@@ -41,27 +39,22 @@ public class PaymentController {
     }
 
     @GetMapping("/success")
-    public ResponseEntity<Void> success(
-            @RequestParam String paymentType,
+    public ResponseEntity<CommonResponse<Long>> success(
             @RequestParam String paymentKey,
             @RequestParam String orderId,
             @RequestParam Long amount
     ) {
-        String redirectPath = paymentUsecase.confirmSuccess(paymentKey, orderId, amount);
-        return ResponseEntity.status(HttpStatus.FOUND) // 302
-                .location(URI.create(redirectPath))
-                .build();
+        Long dbOrderId = paymentUsecase.confirmSuccess(paymentKey, orderId, amount);
+        return ResponseEntity.ok(CommonResponse.success(SuccessMessage.PAYMENT_REQUIRE_SUCCESS, dbOrderId));
     }
 
     @GetMapping("/fail")
-    public ResponseEntity<Void> fail(
+    public ResponseEntity<CommonResponse<Void>> fail(
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String orderId
     ) {
-        String redirectPath = paymentUsecase.failRedirect(code, orderId);
-        return ResponseEntity.status(HttpStatus.FOUND) // 302
-                .location(URI.create(redirectPath))
-                .build();
+        paymentUsecase.failRedirect(code, orderId);
+        return ResponseEntity.ok(CommonResponse.exception("결제에 실패했습니다."));
     }
 
     @GetMapping

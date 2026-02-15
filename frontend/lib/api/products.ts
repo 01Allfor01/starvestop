@@ -1,45 +1,40 @@
 import { apiClient } from './client';
 
-// 상품 타입 (백엔드 Response에 맞춤)
-export interface Product {
-    id: number;
-    name: string;
-    description: string;
-    price: number;
-    discountRate: number;
-    image: string;
-    stock: number;
-    storeId: number;
-    storeName: string;
-}
-
+// 마감세일 목록용 타입 (GetProductSaleResponse 대응)
 export interface ProductSale {
     id: number;
-    name: string;
-    price: number;
-    discountRate: number;
-    saleEndTime: string;
-    stock: number;
-    image: string;
     storeId: number;
     storeName: string;
-}
-
-export interface ProductDetail {
-    id: number;
     name: string;
     description: string;
-    price: number;
-    discountRate: number;
-    image: string;
     stock: number;
+    price: number;
+    salePrice: number;
+    imageUrl: string;
+    endTime: string;
+    updatedAt: string;
+}
+
+// 상세 조회용 타입 (GetProductDetailResponse 대응)
+export interface ProductDetail {
+    id: number;
     storeId: number;
     storeName: string;
-    saleEndTime?: string;
+    location: { x: number, y: number } | null;
+    name: string;
+    description: string;
+    stock: number;
+    price: number;
+    salePrice: number;
+    status: string;
+    imageUrl: string;
+    endTime: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export const productsApi = {
-    // 마감세일 상품 목록
+    // 마감세일 목록
     getSaleProducts: async () => {
         const response = await apiClient.get<{ content: ProductSale[] }>('/products/sale');
         return response.data.content;
@@ -51,9 +46,9 @@ export const productsApi = {
         return response.data;
     },
 
-    // 특정 매장의 상품 목록
+    // (선택) 특정 매장 상품 목록
     getStoreProducts: async (storeId: number) => {
-        const response = await apiClient.get<{ content: Product[] }>(`/stores/${storeId}/products`);
+        const response = await apiClient.get<{ content: ProductSale[] }>(`/stores/${storeId}/products`);
         return response.data.content;
-    },
+    }
 };

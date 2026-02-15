@@ -1,54 +1,66 @@
 import { apiClient } from './client';
 
-// 주문 타입
+// 주문 생성 요청 DTO
 export interface CreateOrderRequest {
-    // 백엔드 DTO 확인 필요
     storeId: number;
-    productIds: number[];
-    couponId?: number;
-    request?: string;
+    userCouponId?: number | null;
 }
 
-export interface Order {
+// 주문 응답 DTO (OrderResponse)
+export interface OrderResponse {
     id: number;
-    orderNumber: string;
-    status: string;
     storeId: number;
-    storeName: string;
-    totalAmount: number;
-    discountAmount: number;
-    finalAmount: number;
+    userId: number;
+    orderKey: string;
+    status: string;
+    amount: number;
     createdAt: string;
+    updatedAt: string;
+}
+
+// 주문 상품 응답 DTO (OrderProductResponse)
+export interface OrderProductResponse {
+    id: number;
+    orderId: number;
+    productName: string;
+    quantity: number;
+    productPrice: number;
 }
 
 export const ordersApi = {
     // 주문 생성
     createOrder: async (data: CreateOrderRequest) => {
-        const response = await apiClient.post<Order>('/orders', data);
+        const response = await apiClient.post('/orders', data);
         return response.data;
     },
 
-    // 주문 목록
+    // 주문 목록 조회
     getOrders: async () => {
-        const response = await apiClient.get<Order[]>('/orders');
+        const response = await apiClient.get('/orders');
         return response.data;
     },
 
-    // 주문 상세
+    // 주문 상세 조회
     getOrder: async (orderId: number) => {
-        const response = await apiClient.get<Order>(`/orders/${orderId}`);
+        const response = await apiClient.get(`/orders/${orderId}`);
         return response.data;
     },
 
-    // 주문 취소
-    cancelOrder: async () => {
-        const response = await apiClient.patch('/orders/cancel');
+    // 주문 상품 목록 조회 (OrderProductController)
+    getOrderProducts: async (orderId: number) => {
+        const response = await apiClient.get(`/order-products/${orderId}`);
+        return response.data;
+    },
+
+    // 주문 취소 (URL 오타 수정됨: /cacel -> /cancel)
+    cancelOrder: async (orderId: number) => {
+        const response = await apiClient.patch('/orders/cancel', { id: orderId });
         return response.data;
     },
 
     // 주문 삭제
     deleteOrder: async (orderId: number) => {
         const response = await apiClient.delete(`/orders/${orderId}`);
-        return response.data;
+        return response.data; // data 없음 (Void)
     },
 };

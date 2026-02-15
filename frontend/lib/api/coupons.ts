@@ -1,28 +1,26 @@
 import { apiClient } from './client';
 
-// 쿠폰 타입
+// 쿠폰 타입 (백엔드 Response에 정확히 맞춤)
 export interface Coupon {
     id: number;
     name: string;
-    description: string;
-    discount: number;
-    discountType: string; // FIXED, RATE
-    minAmount: number;
-    maxDiscount?: number;
-    expiryDate: string;
-    quantity: number;
+    discountAmount: number; // 할인 금액
+    minAmount: number; // 최소 주문 금액
+    validDays: number; // 유효 기간 (일)
+    expiresAt: string; // 발급 종료일
+    status: string; // CouponStatus enum
+    stock: number; // 남은 수량
 }
 
 export interface UserCoupon {
     id: number;
+    userId: number;
     couponId: number;
     couponName: string;
-    discount: number;
-    discountType: string;
+    discountAmount: number;
     minAmount: number;
-    expiryDate: string;
-    isUsed: boolean;
-    usedDate?: string;
+    startedAt: string; // 발급일
+    expiresAt: string; // 만료일
 }
 
 export const couponsApi = {

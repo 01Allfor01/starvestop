@@ -1,16 +1,22 @@
 import { apiClient } from './client';
 
-// 장바구니 타입
-export interface CartItem {
-    id: number;
+// 백엔드 CartResponse DTO
+export interface CartItemResponse {
+    id: number;          // 장바구니 ID (Cart ID)
     productId: number;
     productName: string;
-    price: number;
-    discountRate: number;
     quantity: number;
+}
+
+// 프론트엔드에서 사용할 UI용 타입 (상품 상세 정보 포함)
+export interface CartItemDetail extends CartItemResponse {
+    price: number;       // 판매가 (salePrice)
+    originalPrice: number; // 정가
     image: string;
-    storeId: number;
+    stock: number;
     storeName: string;
+    storeId: number;
+    discount: number;
 }
 
 export interface AddToCartRequest {
@@ -19,44 +25,39 @@ export interface AddToCartRequest {
 }
 
 export interface UpdateCartRequest {
-    cartId: number;
+    id: number; // Cart ID
     quantity: number;
 }
 
 export const cartApi = {
-    // 장바구니 조회
+    // 장바구니 목록 조회
     getCart: async () => {
-        const response = await apiClient.get<CartItem[]>('/cart');
-        return response.data;
-    },
-
-    // 특정 매장 장바구니 조회
-    getStoreCart: async (storeId: number) => {
-        const response = await apiClient.get<CartItem[]>(`/cart/stores/${storeId}`);
+        // 백엔드가 CommonResponse<List<CartResponse>> 형태이므로 data.data로 접근
+        const response = await apiClient.get<{ data: CartItemResponse[] }>('/carts');
         return response.data;
     },
 
     // 장바구니 추가
     addToCart: async (data: AddToCartRequest) => {
-        const response = await apiClient.post('/cart', data);
+        const response = await apiClient.post('/carts', data);
         return response.data;
     },
 
-    // 장바구니 수량 변경
+    // 수량 변경
     updateCart: async (data: UpdateCartRequest) => {
-        const response = await apiClient.patch('/cart', data);
+        const response = await apiClient.patch('/carts', data);
         return response.data;
     },
 
-    // 장바구니 아이템 삭제
+    // 삭제
     removeCartItem: async (cartId: number) => {
-        const response = await apiClient.delete(`/cart/${cartId}`);
+        const response = await apiClient.delete(`/carts/${cartId}`);
         return response.data;
     },
 
-    // 장바구니 전체 비우기
+    // 전체 삭제
     clearCart: async () => {
-        const response = await apiClient.delete('/cart');
+        const response = await apiClient.delete('/carts');
         return response.data;
     },
 };

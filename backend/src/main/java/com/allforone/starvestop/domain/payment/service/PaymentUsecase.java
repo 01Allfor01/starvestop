@@ -70,27 +70,25 @@ public class PaymentUsecase {
     }
 
     @Transactional
-    public String confirmSuccess(String paymentKey, String orderKey, Long amount) {
+    public Long confirmSuccess(String paymentKey, String orderKey, Long amount) {
         Payment payment = paymentService.findByOrderKeyForUpdate(orderKey);
         Order order = orderService.getForPayment(payment.getOrder().getId());
 
         // 이미 성공
         if (order.getStatus() == OrderStatus.PAID ||
                 payment.getStatus() == PaymentStatus.SUCCEEDED) {
-            return "/success.html?orderKey=" + payment.getOrderKey()
-                    + "&amount=" + payment.getAmount();
+            return payment.getOrder().getId();
         }
 
         // 진행 중(연타/중복)
         if (payment.getStatus() == PaymentStatus.PENDING) {
-            return "/fail.html?orderId=" + payment.getOrderKey()
-                    + "&reason=ALREADY_PENDING";
+            throw new CustomException(ErrorCode.PAYMENT_FAIL);
         }
 
         // 재시도 불가
         if (payment.getStatus() == PaymentStatus.CANCELED ||
                 payment.getStatus() == PaymentStatus.FAILED_NON_RETRYABLE) {
-            return "/fail.html";
+            throw new CustomException(ErrorCode.PAYMENT_FAIL);
         }
 
         // 금액 불일치 -> non-retryable + 재고 반환
@@ -111,8 +109,7 @@ public class PaymentUsecase {
             // 실패 이벤트 발행 보장
             paymentEventRelay.relayFrom(payment);
 
-            return "/fail.html?orderId=" + payment.getOrderKey()
-                    + "&reason=AMOUNT_MISMATCH";
+            throw new CustomException(ErrorCode.PAYMENT_FAIL);
         }
 
         // confirm 진행 선점 (REQUESTED/FAILED_RETRYABLE -> PENDING)
@@ -130,11 +127,9 @@ public class PaymentUsecase {
             payment.success(paymentKey);
             order.paid();
 
-            // 성공 이벤트(상태변경/영수증) 발행
             paymentEventRelay.relayFrom(payment);
 
-            return "/success.html?orderKey=" + payment.getOrderKey()
-                    + "&amount=" + payment.getAmount();
+            return order.getId();
 
         } catch (WebClientResponseException e) {
             // 8. 실패시 재고 반환
@@ -144,18 +139,13 @@ public class PaymentUsecase {
                 failAndMaybeReleaseReservedStockExactlyOnce(payment, PaymentStatus.FAILED_NON_RETRYABLE, "PG_CONFIRM_FAILED", paymentService.toJson(e), true);
             }
 
-
-            return "/fail.html?orderId=" + payment.getOrderKey()
-                    + "&reason=PG_CONFIRM_FAILED";
+            throw new CustomException(ErrorCode.PAYMENT_FAIL);
         }
     }
 
     @Transactional(readOnly = true)
-    public String failRedirect(String code, String orderId) {
-        if (orderId != null) {
-            return "/fail.html?orderId=" + orderId + "&reason=" + (code != null ? code : "FAILED");
-        }
-        return "/fail.html?reason=" + (code != null ? code : "FAILED");
+    public void failRedirect(String code, String orderId) {
+        throw new CustomException(ErrorCode.PAYMENT_FAIL);
     }
 
     @Transactional(readOnly = true)

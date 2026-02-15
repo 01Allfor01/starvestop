@@ -1,131 +1,83 @@
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
-import { CheckCircle, Package, Clock, Home } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { CheckCircle, Loader2 } from 'lucide-react';
+import { paymentsApi } from '@/lib/api/payments'; // 결제 승인 API
+import { cartApi } from '@/lib/api/cart';         // 장바구니 초기화 API
 import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
 
 export default function PaymentSuccessPage() {
-    const searchParams = useSearchParams();
     const router = useRouter();
+    const searchParams = useSearchParams();
 
-    const orderId = searchParams.get('orderId') || '20260210001';
-    const amount = searchParams.get('amount') || '0';
+    // 상태 관리: 'READY' (로딩 중) | 'SUCCESS' (승인 완료)
+    const [status, setStatus] = useState<'READY' | 'SUCCESS'>('READY');
+
+    useEffect(() => {
+        const confirm = async () => {
+            const paymentKey = searchParams.get('paymentKey');
+            const orderIdUUID = searchParams.get('orderId'); // 토스에서 온 UUID
+            const amount = searchParams.get('amount');
+            const paymentType = searchParams.get('paymentType');
+
+            if (!paymentKey || !orderIdUUID || !amount) return;
+
+            try {
+                // 1. 백엔드 승인 요청 (결과로 실제 DB ID인 PK를 받아옵니다)
+                // response 구조가 CommonResponse<Long> 이므로 response.data에 ID가 들어있을 겁니다.
+                const response = await paymentsApi.confirmPayment({
+                    paymentKey,
+                    orderId: orderIdUUID,
+                    amount: Number(amount),
+                    paymentType: paymentType || 'NORMAL'
+                });
+
+                // 백엔드에서 준 실제 숫자 ID (예: 18)
+                const realDbOrderId = response.data;
+
+                await cartApi.clearCart();
+                setStatus('SUCCESS');
+
+                // 2. 2초 후 'UUID'가 아닌 '진짜 숫자 ID'를 들고 이동합니다.
+                setTimeout(() => {
+                    router.push(`/order/complete?orderId=${realDbOrderId}`);
+                }, 2000);
+
+            } catch (error) {
+                console.error('결제 승인 실패:', error);
+                router.push('/payment/fail?message=결제 승인에 실패했습니다');
+            }
+        };
+
+        confirm();
+    }, [searchParams, router]);
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-                {/* 성공 메시지 */}
-                <Card className="text-center mb-6">
-                    <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-4" />
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">결제 완료!</h1>
-                    <p className="text-gray-600 mb-6">
-                        주문이 성공적으로 완료되었습니다
-                    </p>
-
-                    <div className="inline-flex items-center justify-center bg-primary-50 px-6 py-3 rounded-lg mb-6">
-                        <span className="text-sm text-gray-600 mr-2">결제 금액</span>
-                        <span className="text-2xl font-bold text-primary-600">
-                            {parseInt(amount).toLocaleString()}원
-                        </span>
-                    </div>
-
-                    <div className="pt-6 border-t border-gray-200">
-                        <div className="flex items-center justify-center text-gray-600 mb-2">
-                            <Package className="w-5 h-5 mr-2" />
-                            <span>주문번호</span>
-                        </div>
-                        <p className="text-xl font-semibold text-gray-900">{orderId}</p>
-                    </div>
-                </Card>
-
-                {/* 픽업 안내 */}
-                <Card className="mb-6">
-                    <div className="flex items-start">
-                        <div className="flex-shrink-0">
-                            <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
-                                <Clock className="w-6 h-6 text-primary-600" />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <Card className="max-w-md w-full text-center py-16 px-8 shadow-lg">
+                {status === 'READY' ? (
+                    // 단계 1: 백엔드 승인 대기 중
+                    <>
+                        <Loader2 className="w-20 h-20 text-primary-500 mx-auto mb-6 animate-spin" />
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">결제 승인 중</h2>
+                        <p className="text-gray-600">잠시만 기다려주세요...</p>
+                    </>
+                ) : (
+                    // 단계 2: 승인 성공 후 2초간 보여줄 화면
+                    <>
+                        <div className="flex justify-center mb-6">
+                            <div className="p-4 bg-green-100 rounded-full">
+                                <CheckCircle className="w-20 h-20 text-green-500" />
                             </div>
                         </div>
-                        <div className="ml-4 flex-1">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">픽업 안내</h3>
-                            <div className="space-y-2 text-gray-600">
-                                <p className="flex items-center">
-                                    <span className="w-2 h-2 bg-primary-500 rounded-full mr-2"></span>
-                                    30분 이내에 픽업 부탁드립니다
-                                </p>
-                                <p className="flex items-center">
-                                    <span className="w-2 h-2 bg-primary-500 rounded-full mr-2"></span>
-                                    주문번호를 가게에 알려주세요
-                                </p>
-                                <p className="flex items-center">
-                                    <span className="w-2 h-2 bg-primary-500 rounded-full mr-2"></span>
-                                    준비 완료 시 알림을 보내드립니다
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </Card>
-
-                {/* 주문 상태 */}
-                <Card className="mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">주문 상태</h3>
-                    <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                            <div className="flex items-center mb-2">
-                                <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                                    1
-                                </div>
-                                <span className="ml-3 font-medium text-gray-900">주문 접수</span>
-                            </div>
-                        </div>
-                        <div className="w-12 h-0.5 bg-gray-300 mx-2"></div>
-                        <div className="flex-1">
-                            <div className="flex items-center mb-2">
-                                <div className="w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                                    2
-                                </div>
-                                <span className="ml-3 text-gray-500">준비 중</span>
-                            </div>
-                        </div>
-                        <div className="w-12 h-0.5 bg-gray-300 mx-2"></div>
-                        <div className="flex-1">
-                            <div className="flex items-center mb-2">
-                                <div className="w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                                    3
-                                </div>
-                                <span className="ml-3 text-gray-500">픽업 대기</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                        <p className="text-sm text-green-800 text-center">
-                            ✅ 주문이 접수되었습니다
+                        <h2 className="text-3xl font-bold text-gray-900 mb-4">결제 완료!</h2>
+                        <p className="text-gray-600 mb-8 text-lg">
+                            곧 주문 상세 페이지로 이동합니다.
                         </p>
-                    </div>
-                </Card>
-
-                {/* 버튼 */}
-                <div className="space-y-3">
-                    <Button
-                        fullWidth
-                        size="lg"
-                        onClick={() => router.push(`/mypage/orders/${orderId}`)}
-                    >
-                        <Package className="w-5 h-5 mr-2" />
-                        주문 상세 보기
-                    </Button>
-                    <Button
-                        variant="outline"
-                        fullWidth
-                        onClick={() => router.push('/')}
-                    >
-                        <Home className="w-5 h-5 mr-2" />
-                        홈으로 가기
-                    </Button>
-                </div>
-            </div>
+                    </>
+                )}
+            </Card>
         </div>
     );
 }
