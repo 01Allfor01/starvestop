@@ -17,10 +17,15 @@ public class NotificationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onPaymentStatusSuccess(PaymentStatusChangedEvent event) {
 
-        if (event.status() != PaymentStatus.SUCCEEDED) {
+        if (event.status() == PaymentStatus.FAILED_NON_RETRYABLE
+            ||event.status() == PaymentStatus.FAILED_RETRYABLE) {
+            userNotificationService.sendPaymentUserNotification(event.userId(), event.status());
             return;
         }
 
-        userNotificationService.sendPaymentNotification(event.userId());
+        if (event.status() == PaymentStatus.SUCCEEDED) {
+            userNotificationService.sendPaymentOwnerNotification(event.orderKey());
+            userNotificationService.sendPaymentUserNotification(event.userId(), event.status());
+        }
     }
 }

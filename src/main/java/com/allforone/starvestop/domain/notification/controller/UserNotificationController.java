@@ -8,6 +8,7 @@ import com.allforone.starvestop.common.enums.SuccessMessage;
 import com.allforone.starvestop.common.utils.NotificationTokenSet;
 import com.allforone.starvestop.domain.notification.dto.NotificationDto;
 import com.allforone.starvestop.domain.notification.dto.NotificationMulticastRequest;
+import com.allforone.starvestop.domain.notification.service.NotificationJobService;
 import com.allforone.starvestop.domain.notification.service.UserNotificationService;
 import com.allforone.starvestop.domain.notification.dto.NotificationTokenRequest;
 import com.google.firebase.messaging.BatchResponse;
@@ -34,13 +35,13 @@ import java.util.Map;
 public class UserNotificationController {
 
     private final UserNotificationService userNotificationService;
+    private final NotificationJobService notificationJobService;
     private final NotificationTokenSet tokens;
 
     @Operation(summary = "FCM 토큰 저장" + ApiRoleLabels.USER_OWNER)
     @PostMapping("/save/token")
-    public ResponseEntity<CommonResponse<Void>> saveToken(
-            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser authUser, @RequestBody NotificationTokenRequest request) {
-        userNotificationService.saveToken(authUser.getUserId(), request.getFcmToken(), request.getPlatform());
+    public ResponseEntity<CommonResponse<Void>> saveToken(@Parameter(hidden = true) @AuthenticationPrincipal AuthUser authUser, @RequestBody NotificationTokenRequest request) {
+        userNotificationService.saveToken(authUser.getUserId(), authUser.getUserRole(), request.getFcmToken(), request.getPlatform());
         return ResponseEntity.ok(CommonResponse.successNoData(SuccessMessage.NOTIFICATION_SEND_SUCCESS));
     }
 
@@ -80,5 +81,10 @@ public class UserNotificationController {
     @PostMapping("/test")
     public void test(@RequestParam Integer bit,@RequestParam Integer bit2) {
         userNotificationService.sendSubscriptionTimeNotification(bit,bit2);
+    }
+
+    @PostMapping("/test/scheduler")
+    public void testScheduler() {
+        notificationJobService.preload();
     }
 }

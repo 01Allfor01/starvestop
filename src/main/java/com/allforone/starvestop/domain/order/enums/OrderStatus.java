@@ -5,5 +5,5 @@ import lombok.Getter;
 @Getter
 public enum OrderStatus {
 
-    PENDING, PAID, CANCELED;
+    PENDING, PAID, FAILED, CANCELED;
 }
