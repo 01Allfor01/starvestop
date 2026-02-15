@@ -29,5 +29,5 @@ public interface UserNotificationRepository extends JpaRepository<UserNotificati
 
     void deleteByToken(String token);
 
-    void deleteAllByToken(List<String> tokenList);
+    void deleteAllByTokenIn(List<String> tokenList);
 }

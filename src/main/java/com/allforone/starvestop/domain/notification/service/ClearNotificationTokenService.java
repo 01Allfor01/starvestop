@@ -24,6 +24,6 @@ public class ClearNotificationTokenService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void invalidToken(List<String> tokenList) {
-        userNotificationRepository.deleteAllByToken(tokenList);
+        userNotificationRepository.deleteAllByTokenIn(tokenList);
     }
 }

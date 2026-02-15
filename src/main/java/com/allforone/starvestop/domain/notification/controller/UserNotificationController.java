@@ -6,6 +6,7 @@ import com.allforone.starvestop.common.enums.SuccessMessage;
 import com.allforone.starvestop.common.utils.NotificationTokenSet;
 import com.allforone.starvestop.domain.notification.dto.NotificationDto;
 import com.allforone.starvestop.domain.notification.dto.NotificationMulticastRequest;
+import com.allforone.starvestop.domain.notification.service.NotificationJobService;
 import com.allforone.starvestop.domain.notification.service.UserNotificationService;
 import com.allforone.starvestop.domain.notification.dto.NotificationTokenRequest;
 import com.google.firebase.messaging.BatchResponse;
@@ -26,6 +27,7 @@ import java.util.Map;
 public class UserNotificationController {
 
     private final UserNotificationService userNotificationService;
+    private final NotificationJobService notificationJobService;
     private final NotificationTokenSet tokens;
 
     @PostMapping("/save/token")
@@ -67,5 +69,10 @@ public class UserNotificationController {
     @PostMapping("/test")
     public void test(@RequestParam Integer bit,@RequestParam Integer bit2) {
         userNotificationService.sendSubscriptionTimeNotification(bit,bit2);
+    }
+
+    @PostMapping("/test/scheduler")
+    public void testScheduler() {
+        notificationJobService.preload();
     }
 }
