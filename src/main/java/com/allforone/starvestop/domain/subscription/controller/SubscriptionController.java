@@ -4,9 +4,12 @@ import com.allforone.starvestop.common.config.OpenApiConfig;
 import com.allforone.starvestop.common.docs.ApiRoleLabels;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
+import com.allforone.starvestop.common.dto.SliceResponse;
+import com.allforone.starvestop.domain.subscription.dto.condition.SearchSubscriptionCond;
 import com.allforone.starvestop.domain.subscription.dto.request.CreateSubscriptionRequest;
 import com.allforone.starvestop.domain.subscription.dto.request.UpdateSubscriptionRequest;
 import com.allforone.starvestop.domain.subscription.dto.response.CreateSubscriptionResponse;
+import com.allforone.starvestop.domain.subscription.dto.response.GetSubscriptionDistanceResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.GetSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.dto.response.UpdateSubscriptionResponse;
 import com.allforone.starvestop.domain.subscription.service.SubscriptionService;
@@ -15,6 +18,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Slice;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,10 +53,14 @@ public class SubscriptionController {
     // 전체 구독 목록 조회
     @Operation(summary = "전체 구독 목록 조회" + ApiRoleLabels.AUTH)
     @GetMapping("/subscriptions")
-    public ResponseEntity<CommonResponse<List<GetSubscriptionResponse>>> getSubscriptionList() {
-        List<GetSubscriptionResponse> responseList = subscriptionService.getSubscriptionList();
+    public ResponseEntity<CommonResponse<SliceResponse<GetSubscriptionDistanceResponse>>> getSubscriptionList(
+            @ModelAttribute @Valid SearchSubscriptionCond request
+    ) {
+        Slice<GetSubscriptionDistanceResponse> responseSlice = subscriptionService.getSubscriptionSlice(request);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, responseList));
+        SliceResponse<GetSubscriptionDistanceResponse> response = SliceResponse.from(responseSlice);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_GET_SUCCESS, response));
     }
 
     // 특정 매장 구독 목록 조회
@@ -85,7 +93,6 @@ public class SubscriptionController {
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(SUBSCRIPTION_UPDATE_SUCCESS, response));
     }
-
 
     // 구독 삭제
     @Operation(summary = "구독 삭제" + ApiRoleLabels.OWNER_ADMIN)
