@@ -9,6 +9,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.List;
 
 import static com.allforone.starvestop.domain.cart.entity.QCart.cart;
@@ -23,8 +24,6 @@ public class CartRepositoryImpl implements CartRepositoryCustom {
 
     @Override
     public CartListResponse findCartListAndStoreIdByUserId(Long userId) {
-        QCart cart2 = new QCart("cart2");
-        QCart cart3 = new QCart("cart3");
 
         Long lastVisitStoreId = queryFactory
                 .select(cart.product.store.id)
@@ -32,6 +31,10 @@ public class CartRepositoryImpl implements CartRepositoryCustom {
                 .where(cart.user.id.eq(userId))
                 .orderBy(cart.createdAt.desc())
                 .fetchFirst();
+
+        if (lastVisitStoreId == null) {
+            return new CartListResponse(null, Collections.emptyList());
+        }
 
         List<CartResponse> cartList = queryFactory
                 .select(Projections.constructor(CartResponse.class,
