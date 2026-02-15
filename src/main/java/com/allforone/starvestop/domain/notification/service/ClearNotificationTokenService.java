@@ -1,8 +1,6 @@
 package com.allforone.starvestop.domain.notification.service;
 
 import com.allforone.starvestop.domain.notification.repository.UserNotificationRepository;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.MessagingErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
