@@ -4,6 +4,8 @@ import com.allforone.starvestop.common.config.OpenApiConfig;
 import com.allforone.starvestop.common.docs.ApiRoleLabels;
 import com.allforone.starvestop.common.dto.AuthUser;
 import com.allforone.starvestop.common.dto.CommonResponse;
+import com.allforone.starvestop.domain.cart.dto.CartListResponse;
+import com.allforone.starvestop.domain.cart.dto.CartListResponse;
 import com.allforone.starvestop.domain.cart.dto.CartRequest;
 import com.allforone.starvestop.domain.cart.dto.CartResponse;
 import com.allforone.starvestop.domain.cart.dto.UpdateCartRequest;
@@ -51,16 +53,16 @@ public class CartController {
 
     @Operation(summary = "내 장바구니 조회" + ApiRoleLabels.USER)
     @GetMapping
-    public ResponseEntity<CommonResponse<List<CartResponse>>> getCartList(
+    public ResponseEntity<CommonResponse<CartListResponse>> getCartList(
             @Parameter(hidden = true) @AuthenticationPrincipal AuthUser authUser) {
-        List<CartResponse> response = cartService.getCartList(authUser.getUserId());
+        CartListResponse response = cartService.getCartList(authUser.getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_GET_SUCCESS, response));
     }
 
     @Operation(summary = "장바구니 수량 수정" + ApiRoleLabels.USER)
     @PatchMapping
-    public ResponseEntity<CommonResponse<CartResponse>> updateCart(@Valid @RequestBody UpdateCartRequest request) {
-        CartResponse response = cartService.updateCart(request);
+    public ResponseEntity<CommonResponse<CartResponse>> updateCart(@AuthenticationPrincipal AuthUser authUser, @Valid @RequestBody UpdateCartRequest request) {
+        CartResponse response = cartService.updateCart(authUser.getUserId(), request);
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(CART_UPDATE_SUCCESS, response));
     }
 

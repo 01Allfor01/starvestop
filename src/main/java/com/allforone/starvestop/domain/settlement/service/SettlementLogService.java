@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -18,7 +17,7 @@ public class SettlementLogService {
 
     private final SettlementLogRepository settlementLogRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void logStatusChange(SettlementStatusChangedEvent event) {
         if (settlementLogRepository.existsByEventId(event.eventId())) {
             return;
@@ -30,7 +29,7 @@ public class SettlementLogService {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void logCreated(SettlementCreatedEvent event) {
         if (settlementLogRepository.existsByEventId(event.eventId())) {
             return;

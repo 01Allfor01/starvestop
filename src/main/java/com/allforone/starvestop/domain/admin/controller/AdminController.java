@@ -32,7 +32,7 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    // 회원 조회
+    // 관리자 정보 조회
     @Operation(summary = "관리자 조회" + ApiRoleLabels.ADMIN)
     @GetMapping
     public ResponseEntity<CommonResponse<GetAdminResponse>> getAdmin(

@@ -75,33 +75,6 @@ public class OrderUseCase {
         return userCouponService.getByIdAndNotUsed(userCouponId);
     }
 
-    private void cartListEmptyCheck(List<Cart> cartList) {
-        if (cartList.isEmpty()) {
-            throw new CustomException(ErrorCode.CART_NOT_FOUND);
-        }
-    }
-
-    private BigDecimal calculateAmount(List<Cart> cartList, UserCoupon userCoupon) {
-        return cartList.stream()
-                .map(cart -> {
-                    Product product = cart.getProduct();
-                    BigDecimal unitPrice = product.getStatus() == ProductStatus.GENERAL
-                            ? product.getPrice()
-                            : product.getSalePrice();
-
-                    return unitPrice.multiply(BigDecimal.valueOf(cart.getQuantity()));
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private BigDecimal getDiscountPrice(BigDecimal amount, UserCoupon userCoupon) {
-        if (userCoupon != null && amount.compareTo(userCoupon.getCoupon().getMinAmount()) >= 0) {
-            userCoupon.use();
-            return userCoupon.getCoupon().getDiscountAmount();
-        }
-        return BigDecimal.valueOf(0);
-    }
-
     @Transactional
     public int cancelExpiredOrders(LocalDateTime now) {
 
@@ -114,6 +87,8 @@ public class OrderUseCase {
             order.cancel();
 
             // 2. 재고 반환
+            orderProductService.getOrderProductQuantityList(order.getId())
+                    .forEach(dto -> productService.increaseById(dto.getId(), dto.getQuantity()));
 
 
             // 3. 쿠폰 복구
@@ -140,5 +115,43 @@ public class OrderUseCase {
         }
 
         return processed;
+    }
+
+    @Transactional
+    public void rollbackStocks() {
+        String sql = """
+                UPDATE products
+                SET stock = stock + ?
+                WHERE id = ?
+                """;
+
+
+    }
+
+    private void cartListEmptyCheck(List<Cart> cartList) {
+        if (cartList.isEmpty()) {
+            throw new CustomException(ErrorCode.CART_NOT_FOUND);
+        }
+    }
+
+    private BigDecimal calculateAmount(List<Cart> cartList, UserCoupon userCoupon) {
+        return cartList.stream()
+                .map(cart -> {
+                    Product product = cart.getProduct();
+                    BigDecimal unitPrice = product.getStatus() == ProductStatus.GENERAL
+                            ? product.getPrice()
+                            : product.getSalePrice();
+
+                    return unitPrice.multiply(BigDecimal.valueOf(cart.getQuantity()));
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal getDiscountPrice(BigDecimal amount, UserCoupon userCoupon) {
+        if (userCoupon != null && amount.compareTo(userCoupon.getCoupon().getMinAmount()) >= 0) {
+            userCoupon.use();
+            return userCoupon.getCoupon().getDiscountAmount();
+        }
+        return BigDecimal.valueOf(0);
     }
 }

@@ -48,6 +48,10 @@ public class Cart {
         return new Cart(user, product, quantity);
     }
 
+    public void increaseQuantity(Integer quantity) {
+        this.quantity += quantity;
+    }
+
     public void update(Integer quantity) {
         this.quantity = quantity;
     }

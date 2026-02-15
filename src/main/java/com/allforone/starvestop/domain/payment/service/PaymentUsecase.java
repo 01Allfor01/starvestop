@@ -57,8 +57,9 @@ public class PaymentUsecase {
 
         try {
             Payment payment = Payment.request(userId, order, orderKey, amount);
-            paymentService.save(payment);
+            paymentService.saveAndFlush(payment);
 
+            // REQUESTED 상태변화 로그(커밋 성공시에만 DB에 남기려면, 이후 핸들러를 AFTER_COMMIT로)
             payment.markRequestedEvent();
             paymentEventRelay.relayFrom(payment);
 
@@ -96,12 +97,11 @@ public class PaymentUsecase {
             return "/fail.html";
         }
 
-        // 금액 불일치 -> non-retryable + 재고 반환
+        // 금액 불일치 -> non-retryable + 재고 반환 (handled==true일 때만 이벤트 발행)
         if (payment.getAmount().compareTo(BigDecimal.valueOf(amount)) != 0) {
-            failAndMaybeReleaseReservedStockExactlyOnce(
+            boolean handled = failAndMaybeReleaseReservedStockExactlyOnce(
                     payment,
                     PaymentStatus.FAILED_NON_RETRYABLE,
-                    "PAYMENT_AMOUNT_MISMATCH",
                     paymentService.toJson(Map.of(
                             "code", "PAYMENT_AMOUNT_MISMATCH",
                             "message", "결제 금액이 올바르지 않습니다.",
@@ -111,14 +111,15 @@ public class PaymentUsecase {
                     true
             );
 
-            // 실패 이벤트 발행 보장
-            paymentEventRelay.relayFrom(payment);
+            if (handled) {
+                paymentEventRelay.relayFrom(payment);
+            }
 
             return "/fail.html?orderId=" + payment.getOrderKey()
                     + "&reason=AMOUNT_MISMATCH";
         }
 
-        // confirm 진행 선점 (REQUESTED/FAILED_RETRYABLE -> PENDING)
+        // confirm 진행 (REQUESTED/FAILED_RETRYABLE -> PENDING) : PENDING 상태변화도 로깅 대상
         payment.pending();
 
         Map<String, Object> requestPayload = Map.of(
@@ -133,20 +134,34 @@ public class PaymentUsecase {
             payment.success(paymentKey);
             order.paid(now);
 
-            // 성공 이벤트(상태변경/영수증) 발행
+            // PENDING + SUCCEEDED 이벤트를 한 번에 발행(둘 다 pullDomainEvents로 나감)
             paymentEventRelay.relayFrom(payment);
 
             return "/success.html?orderKey=" + payment.getOrderKey()
                     + "&amount=" + payment.getAmount();
 
         } catch (WebClientResponseException e) {
-            // 8. 실패시 재고 반환
+            boolean handled;
             if (isRetryable(e)) {
-                failAndMaybeReleaseReservedStockExactlyOnce(payment, PaymentStatus.FAILED_RETRYABLE, "PG_CONFIRM_FAILED", paymentService.toJson(e), false);
+                handled = failAndMaybeReleaseReservedStockExactlyOnce(
+                        payment,
+                        PaymentStatus.FAILED_RETRYABLE,
+                        paymentService.toJson(e),
+                        false
+                );
             } else {
-                failAndMaybeReleaseReservedStockExactlyOnce(payment, PaymentStatus.FAILED_NON_RETRYABLE, "PG_CONFIRM_FAILED", paymentService.toJson(e), true);
+                handled = failAndMaybeReleaseReservedStockExactlyOnce(
+                        payment,
+                        PaymentStatus.FAILED_NON_RETRYABLE,
+                        paymentService.toJson(e),
+                        true
+                );
             }
 
+            // PG 실패도 상태변화이므로 로깅 대상: handled==true일 때만 이벤트 발행
+            if (handled) {
+                paymentEventRelay.relayFrom(payment);
+            }
 
             return "/fail.html?orderId=" + payment.getOrderKey()
                     + "&reason=PG_CONFIRM_FAILED";
@@ -163,10 +178,7 @@ public class PaymentUsecase {
 
     @Transactional(readOnly = true)
     public Page<GetPaymentResponse> getMyPaymentList(Long userId, Pageable pageable) {
-
-        Page<Payment> paymentList =
-                paymentService.findByOrderUserId(userId, pageable);
-
+        Page<Payment> paymentList = paymentService.findByOrderUserId(userId, pageable);
         return paymentList.map(GetPaymentResponse::from);
     }
 
@@ -185,19 +197,18 @@ public class PaymentUsecase {
         return e.getStatusCode().is5xxServerError();
     }
 
-    private void failAndMaybeReleaseReservedStockExactlyOnce(
+    private boolean failAndMaybeReleaseReservedStockExactlyOnce(
             Payment payment,
             PaymentStatus failStatus,
-            String pgStatus,
             String payload,
             boolean releaseStock
     ) {
         int claimed = paymentService.checkClaimed(payment);
         if (claimed != 1) {
-            return;
+            return false;
         }
 
-        // 1) 상태 확정 + 이벤트 생성
+        // 1) 상태 확정 + 이벤트 생성 (PENDING -> FAILED_*)
         if (failStatus == PaymentStatus.FAILED_RETRYABLE) {
             payment.failRetryable(payload);
         } else {
@@ -215,6 +226,7 @@ public class PaymentUsecase {
 
             payment.markStockReleased();
         }
-    }
 
+        return true;
+    }
 }
