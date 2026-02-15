@@ -1,7 +1,12 @@
-package com.allforone.starvestop.domain.admin;
+package com.allforone.starvestop.domain.admin.service;
 
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.domain.admin.dto.GetAdminResponse;
+import com.allforone.starvestop.domain.admin.dto.UpdateAdminRequest;
+import com.allforone.starvestop.domain.admin.dto.UpdateAdminResponse;
+import com.allforone.starvestop.domain.admin.entity.Admin;
+import com.allforone.starvestop.domain.admin.repository.AdminRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

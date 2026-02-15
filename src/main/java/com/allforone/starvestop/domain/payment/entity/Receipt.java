@@ -37,7 +37,7 @@ public class Receipt extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ReceiptStatus receiptStatus;
+    private ReceiptStatus status;
 
     @Column(nullable = false)
     private BigDecimal amount;
@@ -47,7 +47,7 @@ public class Receipt extends BaseEntity {
         this.order = order;
         this.orderKey = orderKey;
         this.paymentKey = paymentKey;
-        this.receiptStatus = ReceiptStatus.VALID_PAYMENT;
+        this.status = ReceiptStatus.VALID_PAYMENT;
         this.amount = amount;
     }
 
@@ -61,16 +61,16 @@ public class Receipt extends BaseEntity {
     }
 
     public void requestRefund() {
-        if (this.receiptStatus.equals(ReceiptStatus.VALID_PAYMENT)) {
-            this.receiptStatus = ReceiptStatus.REFUND_IN_PROGRESS;
+        if (this.status.equals(ReceiptStatus.VALID_PAYMENT)) {
+            this.status = ReceiptStatus.REFUND_IN_PROGRESS;
             return;
         }
         throw new CustomException(ErrorCode.INVALID_RECEIPT_STATE);
     }
 
     public void refunded() {
-        if (this.receiptStatus.equals(ReceiptStatus.REFUND_IN_PROGRESS)) {
-            this.receiptStatus = ReceiptStatus.REFUNDED;
+        if (this.status.equals(ReceiptStatus.REFUND_IN_PROGRESS)) {
+            this.status = ReceiptStatus.REFUNDED;
             return;
         }
         throw new CustomException(ErrorCode.INVALID_RECEIPT_STATE);

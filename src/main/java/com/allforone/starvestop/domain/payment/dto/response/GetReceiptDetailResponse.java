@@ -26,7 +26,7 @@ public class GetReceiptDetailResponse {
                 receipt.getId(),
                 receipt.getOrder().getId(),
                 receipt.getOrderKey(),
-                receipt.getReceiptStatus(),
+                receipt.getStatus(),
                 receipt.getAmount(),
                 receipt.getCreatedAt(),
                 orderProducts

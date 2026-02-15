@@ -1,4 +1,4 @@
-package com.allforone.starvestop.domain.admin;
+package com.allforone.starvestop.domain.admin.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
