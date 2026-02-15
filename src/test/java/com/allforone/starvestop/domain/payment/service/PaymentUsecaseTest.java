@@ -59,7 +59,7 @@ class PaymentUsecaseTest {
                 () -> paymentUsecase.createPayment(userId, orderId));
 
         assertEquals(ErrorCode.FORBIDDEN, ex.getErrorCode());
-        verify(paymentService, never()).save(any());
+        verify(paymentService, never()).saveAndFlush(any());
         verify(paymentEventRelay, never()).relayFrom(any());
     }
 
@@ -81,7 +81,7 @@ class PaymentUsecaseTest {
         CreatePaymentResponse res = paymentUsecase.createPayment(userId, orderId);
 
         assertNotNull(res);
-        verify(paymentService, never()).save(any());
+        verify(paymentService, never()).saveAndFlush(any());
         verify(paymentEventRelay, never()).relayFrom(any());
     }
 
@@ -108,7 +108,7 @@ class PaymentUsecaseTest {
             CreatePaymentResponse res = paymentUsecase.createPayment(userId, orderId);
 
             assertNotNull(res);
-            verify(paymentService).save(payment);
+            verify(paymentService).saveAndFlush(payment);
             verify(payment).markRequestedEvent();
             verify(paymentEventRelay).relayFrom(payment);
         }
@@ -135,7 +135,7 @@ class PaymentUsecaseTest {
                     .thenReturn(newPayment);
 
             doThrow(new DataIntegrityViolationException("dup"))
-                    .when(paymentService).save(newPayment);
+                    .when(paymentService).saveAndFlush(newPayment);
 
             when(paymentService.getByOrderKey("ok_123")).thenReturn(found);
 
@@ -143,7 +143,7 @@ class PaymentUsecaseTest {
 
             assertNotNull(res);
             verify(paymentService).getByOrderKey("ok_123");
-            // 저장 실패했으니 릴레이는 호출되면 안 됨(현재 코드상 try 블록 안이라서)
+            // 저장 실패했으니 릴레이는 호출되면 안 됨
             verify(paymentEventRelay, never()).relayFrom(any());
         }
     }
@@ -207,7 +207,7 @@ class PaymentUsecaseTest {
         when(payment.getStatus()).thenReturn(PaymentStatus.REQUESTED);
 
         when(payment.getOrderKey()).thenReturn("ok_123");
-        when(payment.getAmount()).thenReturn(BigDecimal.valueOf(999)); // stored amount
+        when(payment.getAmount()).thenReturn(BigDecimal.valueOf(999));
         when(payment.getOrder().getId()).thenReturn(10L);
 
         when(paymentService.checkClaimed(payment)).thenReturn(1);
@@ -216,7 +216,7 @@ class PaymentUsecaseTest {
         List<OrderProduct> orderProducts = List.of(op(101L, 2), op(202L, 1));
         when(orderProductService.findListByOrderId(10L)).thenReturn(orderProducts);
 
-        String redirect = paymentUsecase.confirmSuccess("pk", "ok_123", 1000L); // request amount
+        String redirect = paymentUsecase.confirmSuccess("pk", "ok_123", 1000L);
 
         assertTrue(redirect.contains("reason=AMOUNT_MISMATCH"));
         verify(payment).failNonRetryable(anyString());
@@ -242,10 +242,8 @@ class PaymentUsecaseTest {
         when(payment.getOrderKey()).thenReturn("ok_123");
         when(payment.getAmount()).thenReturn(BigDecimal.valueOf(1000));
 
-        // tossApiConfirm 성공
         when(paymentService.tossApiConfirm(anyMap()))
                 .thenReturn(Map.of("status", "DONE"));
-
 
         String redirect = paymentUsecase.confirmSuccess("pk_1", "ok_123", 1000L);
 
@@ -340,7 +338,7 @@ class PaymentUsecaseTest {
         when(payment.getAmount()).thenReturn(BigDecimal.valueOf(999));
         when(payment.getOrder().getId()).thenReturn(10L);
 
-        when(paymentService.checkClaimed(payment)).thenReturn(0); // 이미 누가 선점했다고 가정
+        when(paymentService.checkClaimed(payment)).thenReturn(0);
         when(paymentService.toJson(any(Map.class))).thenReturn("{json}");
 
         String redirect = paymentUsecase.confirmSuccess("pk", "ok_123", 1000L);
@@ -349,7 +347,6 @@ class PaymentUsecaseTest {
         verify(payment, never()).failNonRetryable(anyString());
         verify(orderProductService, never()).findListByOrderId(anyLong());
         verify(productService, never()).increaseById(anyLong(), anyInt());
-        // 이 케이스에서는 relayFrom(payment)도 호출되지 않음(현재 코드 구조상)
         verify(paymentEventRelay, never()).relayFrom(any());
     }
 
