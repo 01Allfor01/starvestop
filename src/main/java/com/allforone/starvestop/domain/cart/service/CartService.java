@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.cart.service;
 
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.domain.cart.dto.CartListResponse;
 import com.allforone.starvestop.domain.cart.dto.CartRequest;
 import com.allforone.starvestop.domain.cart.dto.CartResponse;
 import com.allforone.starvestop.domain.cart.dto.UpdateCartRequest;
@@ -31,9 +32,14 @@ public class CartService {
 
         Product product = productService.getProduct(request.getProductId());
 
-        Cart cart = Cart.create(user, product, request.getQuantity());
+        Cart cart = cartRepository.findByUserIdAndProductId(user.getId(), product.getId());
 
-        Cart savedCart = cartRepository.save(cart);
+        if (cart != null) {
+            cart.increaseQuantity(request.getQuantity());
+            return new CartResponse(cart);
+        }
+
+        Cart savedCart = cartRepository.save(Cart.create(user, product, request.getQuantity()));
 
         return new CartResponse(savedCart);
     }
@@ -46,14 +52,18 @@ public class CartService {
     }
 
     @Transactional(readOnly = true)
-    public List<CartResponse> getCartList(Long userId) {
-        List<Cart> cartList = cartRepository.findAllByUserIdAndLastVisitStore(userId);
-        return cartList.stream().map(CartResponse::new).toList();
+    public CartListResponse getCartList(Long userId) {
+        return cartRepository.findCartListAndStoreIdByUserId(userId);
     }
 
     @Transactional
-    public CartResponse updateCart(UpdateCartRequest request) {
+    public CartResponse updateCart(Long userId, UpdateCartRequest request) {
         Cart cart = getCart(request.getId());
+
+        if (!cart.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN);
+        }
+
         cart.update(request.getQuantity());
         cartRepository.flush();
         return new CartResponse(cart);

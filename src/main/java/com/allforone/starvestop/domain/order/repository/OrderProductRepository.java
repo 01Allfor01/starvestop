@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface OrderProductRepository extends JpaRepository<OrderProduct, Long> {
+public interface OrderProductRepository extends JpaRepository<OrderProduct, Long>, OrderProductRepositoryCustom {
     @Query("""
             SELECT op FROM OrderProduct op
             WHERE op.isDeleted = false

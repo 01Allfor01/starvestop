@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.product.service;
 
 import com.allforone.starvestop.common.dto.AuthUser;
+import com.allforone.starvestop.common.enums.UserRole;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.product.dto.ProductSaleDto;
@@ -16,7 +17,6 @@ import com.allforone.starvestop.domain.store.dto.StoreRedisDto;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.service.StoreRedisService;
 import com.allforone.starvestop.domain.store.service.StoreService;
-import com.allforone.starvestop.common.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
