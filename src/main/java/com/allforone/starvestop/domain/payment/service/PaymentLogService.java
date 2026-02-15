@@ -38,7 +38,7 @@ public class PaymentLogService {
         return GetPaymentLogDetailResponse.from(paymentLog);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void save(Long paymentId, Long userId, String orderKey, PaymentStatus paymentStatus, String payload) {
         PaymentLog paymentLog = PaymentLog.create(paymentId, userId, orderKey, paymentStatus, payload);
         paymentLogRepository.save(paymentLog);

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.annotation.Nullable;
@@ -33,6 +34,12 @@ public class PaymentService {
 
     public Optional<Payment> findByOrderKey(String orderKey) {
         return paymentRepository.findPaymentByOrderKey(orderKey);
+    }
+
+
+    @Transactional
+    public Payment saveAndFlush(Payment payment) {
+        return paymentRepository.saveAndFlush(payment);
     }
 
     public void save(Payment payment) {
