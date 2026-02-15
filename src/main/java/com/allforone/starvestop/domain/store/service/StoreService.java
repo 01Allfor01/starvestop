@@ -30,7 +30,6 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -125,7 +124,7 @@ public class StoreService {
                 cursorId,
                 limitSize);
 
-        if (storeRedisList.isEmpty()) {
+        if (storeRedisList == null || storeRedisList.isEmpty()) {
             Pageable pageable = PageRequest.of(
                     (cond.getSize() == null ? 0 : 1),
                     limitSize
