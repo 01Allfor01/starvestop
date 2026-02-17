@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.store.service;
 
 import com.allforone.starvestop.domain.store.dto.StoreRedisDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Metrics;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StoreRedisService {
@@ -45,6 +47,15 @@ public class StoreRedisService {
         if (search == null || search.getContent().isEmpty()) {
             return List.of();
         }
+
+        var first = search.getContent().get(0);
+        log.info("geo first id={}, dist={}, point={}",
+                first.getContent().getName(),
+                first.getDistance() == null ? null : first.getDistance().getValue(),
+                first.getContent().getPoint()
+        );
+
+        log.info("query point lon={}, lat={}", longitude, latitude);
 
         return search.getContent().stream()
                 .filter(

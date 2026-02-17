@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.store.dto.response;
 
 import com.allforone.starvestop.domain.store.dto.StoreDto;
+import com.allforone.starvestop.domain.store.dto.StoreLimitedDto;
 import com.allforone.starvestop.domain.store.dto.StoreRedisDto;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
@@ -42,6 +43,24 @@ public class StoreResponse {
                 imageUrl,
                 redisDto.getDistance(),
                 storeDto.getUpdatedAt()
+        );
+    }
+
+    public static StoreResponse from(StoreLimitedDto storeLimitedDto,
+                                     String imageUrl) {
+        return new StoreResponse(
+                storeLimitedDto.getId(),
+                storeLimitedDto.getName(),
+                storeLimitedDto.getAddress(),
+                storeLimitedDto.getCategory(),
+                storeLimitedDto.getLocation().getY(),
+                storeLimitedDto.getLocation().getX(),
+                storeLimitedDto.getOpenTime(),
+                storeLimitedDto.getCloseTime(),
+                storeLimitedDto.getStatus(),
+                imageUrl,
+                storeLimitedDto.getDistance(),
+                storeLimitedDto.getUpdatedAt()
         );
     }
 }
