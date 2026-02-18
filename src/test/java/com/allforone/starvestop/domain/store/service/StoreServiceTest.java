@@ -16,6 +16,7 @@ import com.allforone.starvestop.domain.store.dto.response.GetStoreDetailResponse
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
+import com.allforone.starvestop.domain.store.event.StoreGeoUpsertedEvent;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +26,7 @@ import org.locationtech.jts.geom.Point;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalTime;
@@ -45,7 +47,7 @@ class StoreServiceTest {
     private StoreRepository storeRepository;
 
     @Mock
-    private StoreRedisService storeRedisService;
+    private ApplicationEventPublisher eventPublisher;
 
     @Mock
     private OwnerService ownerService;
@@ -129,8 +131,6 @@ class StoreServiceTest {
 
         verify(ownerService).getById(1L);
         verify(storeRepository).save(any(Store.class));
-
-        verify(storeRedisService).create(eq(99L), eq(127.1234), eq(37.5678));
     }
 
     @Test
@@ -160,7 +160,6 @@ class StoreServiceTest {
 
         verify(storeRepository).findByIdAndIsDeletedIsFalse(10L);
         verify(storeRepository).flush();
-        verify(storeRedisService).create(eq(10L), eq(128.0001), eq(38.0002));
     }
 
     @Test
@@ -181,7 +180,8 @@ class StoreServiceTest {
 
         verify(storeRepository).findByIdAndIsDeletedIsFalse(10L);
         verify(storeRepository, never()).flush();
-        verify(storeRedisService, never()).create(anyLong(), anyDouble(), anyDouble());
+
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -195,7 +195,6 @@ class StoreServiceTest {
 
         //then
         verify(storeRepository).findByIdAndIsDeletedIsFalse(10L);
-        verify(storeRedisService).delete(10L);
 
         Object isDeleted = ReflectionTestUtils.getField(store, "isDeleted");
         if (isDeleted != null) {
@@ -217,7 +216,7 @@ class StoreServiceTest {
         assertEquals(ErrorCode.FORBIDDEN, ex.getErrorCode());
 
         verify(storeRepository).findByIdAndIsDeletedIsFalse(10L);
-        verify(storeRedisService, never()).delete(anyLong());
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
