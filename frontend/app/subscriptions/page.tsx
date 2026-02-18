@@ -88,17 +88,24 @@ export default function SubscriptionsPage() {
     const [loading, setLoading] = useState(true);
     const { location, denied, gpsLoading } = useGeolocation();
 
+    // useEffect 부분 수정
     useEffect(() => {
         if (gpsLoading) return;
+
+        // ✅ GPS 위치 없으면 로딩 종료
+        if (denied || !location) {
+            setLoading(false);
+            return;
+        }
 
         const fetchSubscriptions = async () => {
             try {
                 setLoading(true);
-                const data = await subscriptionsApi.getSubscriptions();
+                // ✅ 백엔드 API에 위도/경도 전달
+                const data = await subscriptionsApi.getSubscriptions(location.lat, location.lng, 100);
 
                 console.log('📦 정기구독 전체 데이터:', data);
 
-                // ✅ 각 구독의 매장 정보 병렬로 가져오기 + 거리 계산
                 const subscriptionsWithImages = await Promise.all(
                     data.map(async (item: any) => {
                         let storeImageUrl = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c';
@@ -110,21 +117,8 @@ export default function SubscriptionsPage() {
                             console.warn(`⚠️ 매장 ${item.storeId} 이미지 로드 실패`);
                         }
 
-                        // ✅ 거리 계산
-                        let distance = null;
-                        if (location && item.location && item.location.coordinates) {
-                            distance = calculateDistance(
-                                location.lat,
-                                location.lng,
-                                item.location.coordinates[1],  // 위도
-                                item.location.coordinates[0]   // 경도
-                            );
-                        }
-
-                        // 요일 한글 변환
+                        // ✅ 거리 계산 로직 제거, 백엔드에서 받은 distance 사용
                         const days = item.dayList?.map((d: string) => dayMap[d] || d) || [];
-
-                        // 식사시간 (첫 번째 값 사용)
                         const mealTimeKey = item.mealTimeList?.[0] || 'LUNCH';
                         const mealTime = mealTimeMap[mealTimeKey] || '점심';
                         const timeRange = mealTimeRange[mealTimeKey] || '12:00-17:00';
@@ -141,7 +135,7 @@ export default function SubscriptionsPage() {
                             timeRange,
                             pickupSchedule: `${days.join('.')} ${mealTime}`,
                             isJoinable: item.joinable,
-                            distance,
+                            distance: item.distance, // ✅ 백엔드에서 계산된 거리 사용
                         };
                     })
                 );
@@ -155,7 +149,7 @@ export default function SubscriptionsPage() {
         };
 
         fetchSubscriptions();
-    }, [location, gpsLoading]);
+    }, [location, gpsLoading, denied]); // ✅ denied 의존성 추가
 
     if (loading || gpsLoading) {
         return (
@@ -233,7 +227,7 @@ export default function SubscriptionsPage() {
                                     </div>
 
                                     {/* ✅ 거리 표시 추가 */}
-                                    {subscription.distance !== null && (
+                                    {subscription.distance !== undefined && subscription.distance !== null && (
                                         <div className="flex items-center text-sm text-gray-600">
                                             <MapPin className="w-4 h-4 mr-1 text-secondary-600" />
                                             <span>{formatDistance(subscription.distance)}</span>

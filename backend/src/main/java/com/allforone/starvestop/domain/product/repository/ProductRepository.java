@@ -1,6 +1,6 @@
 package com.allforone.starvestop.domain.product.repository;
 
-import com.allforone.starvestop.domain.product.dto.ProductSaleDto;
+import com.allforone.starvestop.domain.product.dto.ProductSaleProjection;
 import com.allforone.starvestop.domain.product.entity.Product;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,16 +29,17 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
 
     @Query(value = """
             select 
-                id,
-                store_id,
-                store_name,
-                name,
-                description,
-                stock,
-                price,
-                sale_price,
-                image_uuid,
-                updated_at
+                t.id            as id,
+                t.store_id      as storeId,     
+                t.store_name    as storeName,
+                t.name          as name,
+                t.description   as description,
+                t.stock         as stock,
+                t.price         as price,
+                t.sale_price    as salePrice,
+                t.image_uuid    as imageUuid,
+                t.close_time    as closeTime,
+                t.updated_at    as updatedAt
             from (
                 select
                     p.id            as id,
@@ -50,6 +51,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
                     p.price         as price,
                     p.sale_price    as sale_price,
                     p.image_uuid    as image_uuid,
+                    s.close_time    as close_time,
                     p.updated_at    as updated_at,
                     row_number() over (partition by s.id order by p.id asc) as rn
                 from products p
@@ -64,7 +66,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
             where t.rn <= :perStoreLimit
             order by t.store_id asc, t.id asc
             """, nativeQuery = true)
-    List<ProductSaleDto> findSaleByCond(
+    List<ProductSaleProjection> findSaleByCond(
             @Param("storeIds") List<Long> storeIds,
             @Param("category") String category,
             @Param("keyword") String keyword,

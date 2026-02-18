@@ -39,7 +39,7 @@
                 log("permission denied");
                 return;
             }
-            const token = localStorage.getItem("accessToken");
+            const token = localStorage.getItem("token");
             const fcmToken = await getToken(messaging, {vapidKey, serviceWorkerRegistration: reg});
             log("token: " + fcmToken);
             const platform = "WEB"

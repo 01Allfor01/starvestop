@@ -37,12 +37,10 @@ export default function ChatRoomPage() {
             try {
                 setLoading(true);
 
-                // 채팅방 정보 조회
                 const roomData = await chatApi.getChatRoom(roomId);
                 setChatRoom(roomData);
                 setCurrentUserId(roomData.userId);
 
-                // 매장 이미지 조회
                 try {
                     const storeData = await storesApi.getStore(roomData.storeId);
                     setStoreImage(storeData.imageUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4');
@@ -51,11 +49,9 @@ export default function ChatRoomPage() {
                     setStoreImage('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4');
                 }
 
-                // 메시지 목록 조회
                 const messagesData = await chatApi.getMessages(roomId);
-                setMessages(messagesData.reverse()); // 최신 메시지가 아래로 가도록 reverse
+                setMessages(messagesData.reverse());
 
-                // WebSocket 연결
                 const accessToken = localStorage.getItem('accessToken');
                 if (!accessToken) {
                     alert('로그인이 필요합니다');
@@ -67,9 +63,16 @@ export default function ChatRoomPage() {
                 chatClientRef.current = chatClient;
 
                 chatClient.connect(accessToken, () => {
-                    // 연결 성공 후 채팅방 구독
                     chatClient.subscribe(roomId, (newMessage: ChatMessage) => {
-                        setMessages((prev) => [...prev, newMessage]);
+                        // ✅ 중복 메시지 방지: ID로 체크
+                        setMessages((prev) => {
+                            const isDuplicate = prev.some(msg => msg.id === newMessage.id);
+                            if (isDuplicate) {
+                                console.log('⚠️ 중복 메시지 무시:', newMessage.id);
+                                return prev;
+                            }
+                            return [...prev, newMessage];
+                        });
                     });
                 });
             } catch (error) {
@@ -83,10 +86,12 @@ export default function ChatRoomPage() {
 
         fetchData();
 
-        // 컴포넌트 언마운트 시 WebSocket 연결 해제
+        // ✅ cleanup 강화
         return () => {
             if (chatClientRef.current) {
+                console.log('🔌 WebSocket 연결 해제');
                 chatClientRef.current.disconnect();
+                chatClientRef.current = null;
             }
         };
     }, [roomId, router]);

@@ -10,6 +10,7 @@ export interface CreateOrderRequest {
 export interface OrderResponse {
     id: number;
     storeId: number;
+    storeName: string;
     userId: number;
     orderKey: string;
     status: string;

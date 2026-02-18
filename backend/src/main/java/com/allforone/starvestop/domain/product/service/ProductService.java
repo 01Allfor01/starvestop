@@ -5,6 +5,7 @@ import com.allforone.starvestop.common.enums.UserRole;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.product.dto.ProductSaleDto;
+import com.allforone.starvestop.domain.product.dto.ProductSaleProjection;
 import com.allforone.starvestop.domain.product.dto.condition.SearchProductCond;
 import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.dto.request.UpdateProductRequest;
@@ -110,12 +111,28 @@ public class ProductService {
                 .collect(Collectors.toMap(StoreRedisDto::getId, StoreRedisDto::getDistance));
 
         //DB 1번 쿼리로 “매장별 3개” 잘린 결과를 한 번에 가져옴
-        List<ProductSaleDto> dtoList = productRepository.findSaleByCond(
+        List<ProductSaleProjection> projections = productRepository.findSaleByCond(
                 storeIds,
                 cond.getCategory() == null ? null : cond.getCategory().name(),
                 cond.getKeyword(),
                 perStoreLimit
         );
+
+        List<ProductSaleDto> dtoList = projections.stream()
+                .map(p -> new ProductSaleDto(
+                        p.getId(),
+                        p.getStoreId(),
+                        p.getStoreName(),
+                        p.getName(),
+                        p.getDescription(),
+                        p.getStock(),
+                        p.getPrice(),
+                        p.getSalePrice(),
+                        p.getImageUuid(), // Record는 필드명 그대로, 일반 Class는 getter 사용
+                        p.getCloseTime(),
+                        p.getUpdatedAt()
+                ))
+                .toList();
 
         //response 만들기
         Map<Long, List<ProductSaleDto>> grouped = dtoList.stream()

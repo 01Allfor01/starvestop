@@ -35,8 +35,9 @@ public class GetProductSaleResponse {
                 productSaleDto.price(),
                 productSaleDto.salePrice(),
                 imageUrl,
+                productSaleDto.closeTime(),
                 distance,
-                productSaleDto.updatedAt().toLocalDateTime()
+                productSaleDto.updatedAt()
         );
     }
 }

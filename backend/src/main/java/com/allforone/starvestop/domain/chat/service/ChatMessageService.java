@@ -95,4 +95,10 @@ public class ChatMessageService {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
     }
+
+    public ChatMessageResponse getChatMessage(Long messageId) {
+        return ChatMessageResponse.from(chatMessageRepository.findById(messageId).orElseThrow(
+                () -> new CustomException(ErrorCode.CHAT_MESSAGE_NOT_FOUND)
+        ));
+    }
 }

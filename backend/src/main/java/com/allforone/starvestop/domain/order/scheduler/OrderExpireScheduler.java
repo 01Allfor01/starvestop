@@ -1,6 +1,5 @@
 package com.allforone.starvestop.domain.order.scheduler;
 
-import com.allforone.starvestop.domain.order.service.OrderService;
 import com.allforone.starvestop.domain.order.service.OrderUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

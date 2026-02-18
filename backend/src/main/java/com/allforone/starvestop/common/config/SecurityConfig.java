@@ -95,6 +95,7 @@ public class SecurityConfig {
                         //USER & OWNER
                         .requestMatchers("/chat-rooms/**").hasAnyRole("USER", "OWNER")
                         .requestMatchers("/notifications/save/token").hasAnyRole("USER", "OWNER")
+                        .requestMatchers(HttpMethod.GET, "/messages/**").hasAnyRole("USER", "OWNER")
 
                         //OWNER & ADMIN
                         .requestMatchers(HttpMethod.DELETE, "/stores/**").hasAnyRole("OWNER", "ADMIN")

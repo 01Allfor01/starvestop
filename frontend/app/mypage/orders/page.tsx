@@ -1,175 +1,155 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Package, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Loader2, FileText, ShoppingBag } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import { ordersApi, OrderResponse, OrderProductResponse } from '@/lib/api/orders';
+
+// 주문 + 상품 요약 타입
+interface OrderWithItems extends OrderResponse {
+    itemsSummary: string;
+}
+
+// 주문 상태 매핑
+const getStatusText = (status: string): string => {
+    const statusMap: Record<string, string> = {
+        PENDING: '결제 미진행',
+        PAID: '주문 완료',
+        FAILED: '결제 실패',
+        CANCELED: '주문 취소',
+    };
+    return statusMap[status] || status;
+};
+
+// 주문 상태별 뱃지 variant
+const getStatusVariant = (status: string): 'default' | 'success' | 'warning' | 'danger' => {
+    const variantMap: Record<string, 'default' | 'success' | 'warning' | 'danger'> = {
+        PENDING: 'warning',
+        PAID: 'success',
+        FAILED: 'danger',
+        CANCELED: 'default',
+    };
+    return variantMap[status] || 'default';
+};
 
 export default function OrdersPage() {
-    const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
+    const [orders, setOrders] = useState<OrderWithItems[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // TODO: 실제 API 데이터로 교체
-    const orders = [
-        {
-            id: 1,
-            orderNumber: '20260209001',
-            date: '2026.02.09 14:30',
-            storeName: '파리바게뜨 강남점',
-            storeId: 1,
-            items: '크루아상 외 2건',
-            totalPrice: 15000,
-            status: 'COMPLETED',
-            statusText: '픽업 완료',
-        },
-        {
-            id: 2,
-            orderNumber: '20260208001',
-            date: '2026.02.08 10:20',
-            storeName: '파리바게뜨 강남점',
-            storeId: 1,
-            items: '바게트 외 1건',
-            totalPrice: 12000,
-            status: 'COMPLETED',
-            statusText: '픽업 완료',
-        },
-        {
-            id: 3,
-            orderNumber: '20260207001',
-            date: '2026.02.07 15:45',
-            storeName: '파리바게뜨 강남점',
-            storeId: 1,
-            items: '소금빵 외 3건',
-            totalPrice: 18500,
-            status: 'COMPLETED',
-            statusText: '픽업 완료',
-        },
-        {
-            id: 4,
-            orderNumber: '20260206001',
-            date: '2026.02.06 12:30',
-            storeName: '파리바게뜨 강남점',
-            storeId: 1,
-            items: '단팥빵 외 2건',
-            totalPrice: 14000,
-            status: 'PENDING',
-            statusText: '주문 완료',
-        },
-    ];
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                setLoading(true);
+                const ordersData = await ordersApi.getOrders();
 
-    const filteredOrders = orders.filter((order) => {
-        if (filter === 'all') return true;
-        if (filter === 'pending') return order.status === 'PENDING';
-        if (filter === 'completed') return order.status === 'COMPLETED';
-        return true;
-    });
+                // 각 주문의 상품 목록을 조회하여 요약 생성
+                const ordersWithItems = await Promise.all(
+                    ordersData.map(async (order) => {
+                        try {
+                            const products = await ordersApi.getOrderProducts(order.id);
+                            let summary = '상품 정보 없음';
+                            if (products.length > 0) {
+                                summary = products.length > 1
+                                    ? `${products[0].productName} 외 ${products.length - 1}건`
+                                    : products[0].productName;
+                            }
+                            return { ...order, itemsSummary: summary };
+                        } catch (e) {
+                            return { ...order, itemsSummary: '상품 정보 로딩 실패' };
+                        }
+                    })
+                );
 
-    const getStatusVariant = (status: string) => {
-        switch (status) {
-            case 'PENDING':
-                return 'default';
-            case 'COMPLETED':
-                return 'success';
-            default:
-                return 'default';
-        }
-    };
+                setOrders(ordersWithItems);
+            } catch (error) {
+                console.error('❌ 주문 목록 로딩 실패:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrders();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-primary-500 animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* 헤더 */}
                 <div className="mb-8">
-                    <Link href="/mypage" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4">
+                    <Link
+                        href="/mypage"
+                        className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+                    >
                         <ArrowLeft className="w-5 h-5 mr-2" />
                         <span>마이페이지로</span>
                     </Link>
                     <h1 className="text-3xl font-bold text-gray-900">주문 내역</h1>
                 </div>
 
-                {/* 필터 */}
-                <div className="mb-6">
-                    <div className="flex space-x-2">
-                        <Button
-                            variant={filter === 'all' ? 'primary' : 'outline'}
-                            size="sm"
-                            onClick={() => setFilter('all')}
-                        >
-                            전체
-                        </Button>
-                        <Button
-                            variant={filter === 'pending' ? 'primary' : 'outline'}
-                            size="sm"
-                            onClick={() => setFilter('pending')}
-                        >
-                            진행중
-                        </Button>
-                        <Button
-                            variant={filter === 'completed' ? 'primary' : 'outline'}
-                            size="sm"
-                            onClick={() => setFilter('completed')}
-                        >
-                            완료
-                        </Button>
-                    </div>
-                </div>
-
                 {/* 주문 목록 */}
-                {filteredOrders.length > 0 ? (
+                {orders.length > 0 ? (
                     <div className="space-y-4">
-                        {filteredOrders.map((order) => (
-                            <Card key={order.id} hover padding="none" className="overflow-hidden">
-                                <div className="p-6">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <div className="flex items-center space-x-3 mb-2">
-                                                <Badge variant={getStatusVariant(order.status) as any}>
-                                                    {order.statusText}
-                                                </Badge>
-                                                <span className="text-sm text-gray-500">{order.date}</span>
-                                            </div>
-                                            <p className="text-sm text-gray-600 mb-1">
-                                                주문번호: {order.orderNumber}
-                                            </p>
-                                            <Link href={`/stores/${order.storeId}`}>
-                                                <h3 className="text-lg font-semibold text-gray-900 hover:text-primary-600">
-                                                    {order.storeName}
-                                                </h3>
-                                            </Link>
-                                            <p className="text-sm text-gray-600 mt-1">{order.items}</p>
+                        {orders.map((order) => (
+                            <Card key={order.id} hover padding="md">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Badge variant={getStatusVariant(order.status)}>
+                                                {getStatusText(order.status)}
+                                            </Badge>
+                                            <span className="text-sm text-gray-500">
+                                                {new Date(order.createdAt).toLocaleDateString('ko-KR', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                })}
+                                            </span>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-2xl font-bold text-gray-900">
-                                                {order.totalPrice.toLocaleString()}원
-                                            </p>
-                                        </div>
+                                        <h3 className="font-semibold text-gray-900 text-lg mb-1">
+                                            {order.storeName}
+                                        </h3>
+                                        <p className="text-sm text-gray-600">{order.itemsSummary}</p>
                                     </div>
+                                </div>
 
-                                    <div className="flex justify-end space-x-2 pt-4 border-t border-gray-100">
-                                        <Link href={`/mypage/order/${order.id}`}>
-                                            <Button variant="outline" size="sm">
-                                                상세보기
-                                                <ChevronRight className="w-4 h-4 ml-1" />
-                                            </Button>
-                                        </Link>
-                                        <Button size="sm">재주문</Button>
+                                <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                                    <div>
+                                        {order.discountedPrice > 0 && (
+                                            <p className="text-sm text-gray-500 line-through mb-1">
+                                                {(order.amount + order.discountedPrice).toLocaleString()}원
+                                            </p>
+                                        )}
+                                        <span className="text-xl font-bold text-gray-900">
+                                            {order.amount.toLocaleString()}원
+                                        </span>
                                     </div>
+                                    <Link href={`/receipts/${order.id}`}>
+                                        <Button variant="outline" size="sm">
+                                            <FileText className="w-4 h-4 mr-1" />
+                                            영수증
+                                        </Button>
+                                    </Link>
                                 </div>
                             </Card>
                         ))}
                     </div>
                 ) : (
                     <Card className="text-center py-16">
-                        <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                            주문 내역이 없습니다
-                        </h3>
-                        <p className="text-gray-600 mb-6">
-                            첫 주문을 시작해보세요!
-                        </p>
+                        <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-4">주문 내역이 없습니다</p>
                         <Link href="/">
-                            <Button>쇼핑 시작하기</Button>
+                            <Button variant="outline">상품 둘러보기</Button>
                         </Link>
                     </Card>
                 )}

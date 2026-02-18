@@ -42,7 +42,7 @@ public class ChatRoomService {
                 });
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Slice<ChatRoomResponse> getChatRoomList(AuthUser authUser, Pageable pageable) {
         if (authUser.getUserRole() == UserRole.USER) {
             return chatRoomRepository.findByUserIdOrderByLastMessageAtDesc(authUser.getUserId(), pageable)
@@ -53,7 +53,7 @@ public class ChatRoomService {
         }
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public ChatRoomResponse getChatRoom(AuthUser authUser, Long roomId) {
         ChatRoom chatRoom = getById(roomId);
 

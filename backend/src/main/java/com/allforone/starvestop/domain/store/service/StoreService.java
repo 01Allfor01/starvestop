@@ -259,16 +259,11 @@ public class StoreService {
     @Transactional(readOnly = true)
     public void syncStoresToRedis() {
         List<Store> stores = storeRepository.findAllByIsDeletedIsFalse();
-        log.info("🔄 Redis 동기화 시작 - 매장 수: {}", stores.size());
 
         for (Store store : stores) {
             org.locationtech.jts.geom.Point location = store.getLocation();
-            log.info("📍 매장 ID: {}, location: {}", store.getId(), location);
             if (location != null) {
                 storeRedisService.create(store.getId(), location.getX(), location.getY());
-                log.info("✅ Redis 저장 완료 - ID: {}", store.getId());
-            } else {
-                log.warn("⚠️ location null - 매장 ID: {}", store.getId());
             }
         }
     }

@@ -10,7 +10,27 @@ import Badge from '@/components/ui/Badge';
 import { productsApi } from '@/lib/api/products';
 import { cartApi } from '@/lib/api/cart';
 import { openOrCreateChatRoom } from '@/lib/helpers/chat';
-import { calculateDistance, getCurrentLocation } from '@/lib/utils/location';
+
+// ✅ 거리 계산 함수 (직접 구현)
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+// ✅ 거리 포맷 함수
+function formatDistance(distanceKm: number): string {
+    if (distanceKm < 1) {
+        return `${Math.round(distanceKm * 1000)}m`;
+    }
+    return `${distanceKm.toFixed(1)}`;
+}
 
 export default function ProductDetailPage() {
     const params = useParams();
@@ -32,13 +52,16 @@ export default function ProductDetailPage() {
 
     // 1️⃣ 내 위치 가져오기
     useEffect(() => {
-        const fetchLocation = async () => {
-            const loc = await getCurrentLocation();
-            if (loc) {
-                setMyLocation(loc);
+        if (!navigator.geolocation) return;
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setMyLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            },
+            (err) => {
+                console.warn('📍 위치 권한 거부:', err.message);
             }
-        };
-        fetchLocation();
+        );
     }, []);
 
     // 2️⃣ 상품 정보 API 호출
@@ -50,11 +73,10 @@ export default function ProductDetailPage() {
                 setLoading(true);
                 const data = await productsApi.getProduct(Number(productId));
 
-                // ✅ 시간 파싱 함수 (마감 세일 페이지와 동일 로직)
+                // ✅ 시간 파싱 함수
                 const parseEndTime = (timeData: any) => {
                     const now = new Date();
 
-                    // 데이터가 없으면 오늘 밤 23:59:59로 설정
                     if (!timeData) {
                         return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
                     }
@@ -77,7 +99,6 @@ export default function ProductDetailPage() {
                     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
                 };
 
-                // 백엔드 데이터에서 시간 찾기
                 const rawTime = data.endTime || data.closeTime || data.closingTime || (data as any).store?.closeTime;
 
                 const mappedProduct = {
@@ -91,7 +112,6 @@ export default function ProductDetailPage() {
                     discount: data.price - data.salePrice,
                     stock: data.stock,
                     description: data.description,
-                    // ✅ 파싱된 Date 객체 저장
                     endTime: parseEndTime(rawTime),
                     image: data.imageUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
                     category: data.status === 'SALE' ? '마감세일' : '일반상품',
@@ -130,12 +150,12 @@ export default function ProductDetailPage() {
 
             if (storeLat && storeLng) {
                 const dist = calculateDistance(myLocation.lat, myLocation.lng, storeLat, storeLng);
-                setDistance(dist);
+                setDistance(formatDistance(dist));
             }
         }
     }, [myLocation, product]);
 
-    // 4️⃣ ✅ 실시간 타이머 로직 (버튼 상태 제어용)
+    // 4️⃣ ✅ 실시간 타이머 로직
     useEffect(() => {
         if (!product?.endTime) return;
 
@@ -146,11 +166,10 @@ export default function ProductDetailPage() {
 
             if (distance < 0) {
                 setTimeLeft('영업종료');
-                setIsClosed(true); // 영업 종료 상태로 변경
+                setIsClosed(true);
                 return;
             }
 
-            // 아직 영업 중이면 상태 초기화 (혹시 모를 에러 방지)
             setIsClosed(false);
 
             const hours = Math.floor(distance / (1000 * 60 * 60));
@@ -160,12 +179,11 @@ export default function ProductDetailPage() {
             setTimeLeft(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
         };
 
-        calculateTime(); // 즉시 실행
+        calculateTime();
         const timer = setInterval(calculateTime, 1000);
 
         return () => clearInterval(timer);
     }, [product]);
-
 
     const handleQuantityChange = (delta: number) => {
         if (!product) return;
@@ -178,23 +196,18 @@ export default function ProductDetailPage() {
     const handleAddToCart = async () => {
         if (!product) return;
 
-        // 영업 종료 체크
         if (isClosed) {
             alert("영업이 종료되어 주문할 수 없습니다.");
             return;
         }
 
         try {
-            // ✅ 1. 현재 장바구니 조회
             const currentCart = await cartApi.getCart();
 
-            // ✅ 2. 장바구니에 다른 매장 상품이 있는지 확인
             if (currentCart.length > 0) {
-                // 첫 번째 상품의 storeId를 가져와서 비교 (장바구니는 같은 매장만 가능)
                 const firstProduct = await productsApi.getProduct(currentCart[0].productId);
                 const cartStoreId = firstProduct.storeId;
 
-                // 다른 매장이면 확인창 표시
                 if (cartStoreId !== product.storeId) {
                     const confirmReplace = confirm(
                         "장바구니에는 같은 가게의 메뉴만 담을 수 있습니다.\n\n" +
@@ -203,23 +216,19 @@ export default function ProductDetailPage() {
                         "계속하시겠습니까?"
                     );
 
-                    // 취소 선택 시
                     if (!confirmReplace) {
                         return;
                     }
 
-                    // 담기 선택 시: 기존 장바구니 비우기
                     await cartApi.clearCart();
                 }
             }
 
-            // ✅ 3. 장바구니에 추가
             await cartApi.addToCart({
                 productId: product.id,
                 quantity: quantity
             });
 
-            // ✅ 4. 성공 메시지 및 이동 확인
             if (confirm(`${product.name} ${quantity}개를 장바구니에 담았습니다!\n장바구니로 이동하시겠습니까?`)) {
                 router.push('/cart');
             }
@@ -232,7 +241,7 @@ export default function ProductDetailPage() {
 
     const handleBuyNow = async () => {
         if (!product) return;
-        // 안전장치: 영업 종료시 함수 실행 막기
+
         if (isClosed) {
             alert("영업이 종료되어 주문할 수 없습니다.");
             return;
@@ -253,6 +262,15 @@ export default function ProductDetailPage() {
             alert("구매 진행 중 오류가 발생했습니다.");
             setLoading(false);
         }
+    };
+
+    // ✅ 가게 문의하기 함수 추가
+    const handleContactStore = async () => {
+        if (!product?.storeId) {
+            alert('매장 정보를 불러오는 중입니다');
+            return;
+        }
+        await openOrCreateChatRoom(product.storeId, router);
     };
 
     if (loading) {
@@ -303,7 +321,7 @@ export default function ProductDetailPage() {
                                 {Math.round(product.discount).toLocaleString()}원 할인
                             </Badge>
 
-                            {/* 타이머 표시 (영업 종료 시 스타일 변경) */}
+                            {/* 타이머 표시 */}
                             <div className={`absolute bottom-4 left-4 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center space-x-2 shadow-lg ${
                                 isClosed ? 'bg-gray-800/90 text-white' : 'bg-white/95 text-gray-900'
                             }`}>
@@ -359,7 +377,7 @@ export default function ProductDetailPage() {
                             </p>
                         </div>
 
-                        {/* 수량 선택 (영업 종료 시 비활성화는 안 함, 버튼에서 막음) */}
+                        {/* 수량 선택 */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">수량</label>
                             <div className="flex items-center space-x-4">
@@ -396,7 +414,6 @@ export default function ProductDetailPage() {
                                 size="lg"
                                 className="flex-1"
                                 onClick={handleAddToCart}
-                                // ✅ 품절이거나 영업 종료 시 비활성화
                                 disabled={product.stock <= 0 || isClosed}
                             >
                                 <ShoppingCart className="w-5 h-5 mr-2" />
@@ -406,7 +423,6 @@ export default function ProductDetailPage() {
                             <Button
                                 size="lg"
                                 className="flex-1"
-                                // ✅ 품절이거나 영업 종료 시 비활성화
                                 disabled={product.stock <= 0 || isClosed}
                                 onClick={handleBuyNow}
                             >

@@ -17,6 +17,7 @@ public class OrderResponse {
     private final Long id;
     @Schema(example = "5")
     private final Long storeId;
+    private final String storeName;
     @Schema(example = "10")
     private final Long userId;
     @Schema(example = "ORD-20260215-001")
@@ -33,6 +34,7 @@ public class OrderResponse {
         return new OrderResponse(
                 order.getId(),
                 order.getStore().getId(),
+                order.getStore().getName(),
                 order.getUser().getId(),
                 order.getOrderKey(),
                 order.getStatus(),

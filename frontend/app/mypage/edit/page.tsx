@@ -1,21 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Camera, User, X, CheckCircle, XCircle } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
+import { usersApi } from '@/lib/api/users'; // API import
 
 export default function EditProfilePage() {
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-    // TODO: 실제 사용자 데이터로 교체
+    // 사용자 데이터 state (초기값은 빈 문자열로 설정하여 하이드레이션 이슈 방지)
     const [formData, setFormData] = useState({
-        name: '홍길동',
-        nickname: '홍길동',
-        email: 'hong@example.com',
+        name: '',
+        nickname: '',
+        email: '',
+        imageUrl: '',
     });
 
     // 비밀번호 변경 모달 상태
@@ -23,6 +27,25 @@ export default function EditProfilePage() {
         newPassword: '',
         confirmPassword: '',
     });
+
+    // 1. 초기 데이터 로드 (API 연동)
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const data = await usersApi.getMyInfo();
+                setFormData({
+                    name: data.username || '', // API 응답 필드명에 맞춤 (username)
+                    nickname: data.nickname || '',
+                    email: data.email || '',
+                    imageUrl: data.imageUrl || '',
+                });
+            } catch (error) {
+                console.error("사용자 정보 로드 실패:", error);
+                // 에러 처리 (필요 시)
+            }
+        };
+        fetchUserData();
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
@@ -38,16 +61,30 @@ export default function EditProfilePage() {
         });
     };
 
+    // 2. 프로필 수정 (API 연동)
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
-        // TODO: 실제 API 호출로 교체
-        setTimeout(() => {
-            console.log('회원정보 수정:', formData);
+        try {
+            // 닉네임만 수정 가능 (API 스펙상)
+            await usersApi.updateProfile({ nickname: formData.nickname });
             alert('회원정보가 수정되었습니다.');
+            // 성공 후 데이터 갱신 (선택 사항)
+            const updated = await usersApi.getMyInfo();
+            setFormData({
+                name: updated.username || '',
+                nickname: updated.nickname || '',
+                email: updated.email || '',
+                imageUrl: updated.imageUrl || '',
+            });
+
+        } catch (error) {
+            console.error("회원정보 수정 실패:", error);
+            alert("회원정보 수정에 실패했습니다.");
+        } finally {
             setLoading(false);
-        }, 1000);
+        }
     };
 
     const handlePasswordSubmit = async () => {
@@ -61,18 +98,27 @@ export default function EditProfilePage() {
             return;
         }
 
-        // TODO: 실제 API 호출로 교체
-        setTimeout(() => {
-            console.log('비밀번호 변경:', passwordData);
-            alert('비밀번호가 변경되었습니다.');
-            setShowPasswordModal(false);
-            setPasswordData({ newPassword: '', confirmPassword: '' });
-        }, 1000);
+        // TODO: 실제 API 호출로 교체 (현재 API 명세에 없음)
+        // await usersApi.updatePassword(passwordData.newPassword);
+
+        // 임시 로직 유지
+        console.log('비밀번호 변경:', passwordData);
+        alert('비밀번호가 변경되었습니다. (API 미연동)');
+        setShowPasswordModal(false);
+        setPasswordData({ newPassword: '', confirmPassword: '' });
     };
 
-    const handleWithdraw = () => {
+    // 3. 회원 탈퇴 (API 연동)
+    const handleWithdraw = async () => {
         if (confirm('정말 탈퇴하시겠습니까? 모든 데이터가 삭제됩니다.')) {
-            alert('회원 탈퇴가 처리되었습니다.');
+            try {
+                await usersApi.withdraw();
+                alert('회원 탈퇴가 처리되었습니다.');
+                router.push('/'); // 메인으로 이동
+            } catch (error) {
+                console.error("회원 탈퇴 실패:", error);
+                alert("회원 탈퇴 처리에 실패했습니다.");
+            }
         }
     };
 
@@ -100,8 +146,12 @@ export default function EditProfilePage() {
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">프로필 사진</h2>
                         <div className="flex items-center">
                             <div className="relative">
-                                <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
-                                    <User className="w-12 h-12 text-white" />
+                                <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center overflow-hidden">
+                                    {formData.imageUrl ? (
+                                        <img src={formData.imageUrl} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <User className="w-12 h-12 text-white" />
+                                    )}
                                 </div>
                                 <button
                                     type="button"

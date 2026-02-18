@@ -1,7 +1,7 @@
 package com.allforone.starvestop.domain.product.dto;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalTime;
 
 public record ProductSaleDto(
         Long id,
@@ -13,5 +13,6 @@ public record ProductSaleDto(
         BigDecimal price,
         BigDecimal salePrice,
         String imageUuid,
-        Timestamp updatedAt) {
+        LocalTime closeTime,
+        java.time.LocalDateTime updatedAt) {
 }

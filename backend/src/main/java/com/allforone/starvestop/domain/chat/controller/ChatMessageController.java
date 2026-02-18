@@ -59,4 +59,13 @@ public class ChatMessageController {
 
         return ResponseEntity.ok(CommonResponse.success(CHAT_MESSAGE_GET_SUCCESS, responseList));
     }
+
+    @GetMapping("/messages/{messageId}")
+    public ResponseEntity<CommonResponse<ChatMessageResponse>> getChatMessage(
+            @PathVariable Long messageId
+    ) {
+        ChatMessageResponse response = chatMessageService.getChatMessage(messageId);
+
+        return ResponseEntity.ok(CommonResponse.success(CHAT_MESSAGE_GET_SUCCESS, response));
+    }
 }

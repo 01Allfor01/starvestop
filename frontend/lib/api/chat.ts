@@ -55,4 +55,10 @@ export const chatApi = {
         );
         return response.data.content;
     },
+
+    // ✅ 메시지 단건 조회 (새로 추가)
+    getMessage: async (messageId: number) => {
+        const response = await apiClient.get<ChatMessage>(`/messages/${messageId}`);
+        return response.data;
+    },
 };

@@ -10,6 +10,14 @@ export interface User {
     createdAt: string;
 }
 
+export interface GetUserResponse {
+    id: number;
+    email: string;
+    nickname: string;
+    username: string;
+    imageUrl: string;
+}
+
 export interface UpdateProfileRequest {
     nickname: string;
     // 백엔드 DTO에 따라 추가 필드 가능
@@ -17,8 +25,8 @@ export interface UpdateProfileRequest {
 
 export const usersApi = {
     // 내 정보 조회
-    getMe: async () => {
-        const response = await apiClient.get<User>('/users');
+    getMyInfo: async () => {
+        const response = await apiClient.get<GetUserResponse>('/users');
         return response.data;
     },
 

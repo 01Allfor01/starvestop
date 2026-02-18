@@ -41,7 +41,8 @@ public class ApiLoggingAspect {
     @Pointcut(
             "(within(@org.springframework.web.bind.annotation.RestController *)" +
                     "|| within(@org.springframework.web.bind.annotation.RestControllerAdvice *)) " +
-                    "&& !within(com.allforone.starvestop.domain.apilog.controller..*)"
+                    "&& !within(com.allforone.starvestop.domain.apilog.controller..*)" +
+                    "&& !within(com.allforone.starvestop.domain.chat..*)"
     )
     public void restControllerPointcut() {
     }

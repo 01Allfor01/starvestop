@@ -11,8 +11,9 @@ export interface Subscription {
     mealTimeList: string[]; // ["BREAKFAST", "LUNCH", "DINNER"] 등
     price: number;
     stock: number;
-    isJoinable: boolean; // 가입 가능 여부
-    location: { x: number; y: number } | null;
+    joinable: boolean; // 가입 가능 여부
+    distance: number; // ✅ 백엔드에서 계산된 거리 (km)
+    imageUrl?: string; // ✅ 이미지 URL 추가
 }
 
 export interface UserSubscription {
@@ -22,16 +23,22 @@ export interface UserSubscription {
     storeId: number;
     storeName: string;
     price: number;
-    status: string; // UserSubscriptionStatus enum
-    createdAt: string; // 구독 시작일
-    expiresAt: string; // 만료일
+    status: string;
+    createdAt: string;
+    expiresAt: string;
 }
 
 export const subscriptionsApi = {
-    // 구독 상품 목록 (전체)
-    getSubscriptions: async () => {
-        const response = await apiClient.get<Subscription[]>('/subscriptions');
-        return response.data;
+    // 구독 상품 목록 (위도/경도 필수) - Slice 응답
+    getSubscriptions: async (latitude: number, longitude: number, size?: number) => {
+        const response = await apiClient.get<{ content: Subscription[] }>('/subscriptions', {
+            params: {
+                nowLatitude: latitude,
+                nowLongitude: longitude,
+                size: size || 100,
+            },
+        });
+        return response.data.content; // ✅ content 반환
     },
 
     // 특정 매장의 구독 상품 목록
@@ -46,7 +53,7 @@ export const subscriptionsApi = {
         return response.data;
     },
 
-    // 구독하기 (정확한 엔드포인트!)
+    // 구독하기
     subscribe: async (subscriptionId: number) => {
         const response = await apiClient.post(`/user-subscriptions/subscriptions/${subscriptionId}`);
         return response.data;
