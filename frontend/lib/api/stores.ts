@@ -38,15 +38,28 @@ interface SliceResponse<T> {
 }
 
 export const storesApi = {
-    // 매장 목록 (검색 조건 가능)
-    getStores: async (params?: { keyword?: string; category?: string }) => {
-        const queryString = new URLSearchParams(params as any).toString();
+    getStores: async (params?: {
+        keyword?: string;
+        category?: string;
+        nowLatitude?: number;
+        nowLongitude?: number;
+        size?: number;
+    }) => {
+        const filteredParams = params
+            ? Object.fromEntries(
+                Object.entries(params).filter(([_, v]) => v !== undefined && v !== null)
+            )
+            : {};
+
+        const queryString = new URLSearchParams(
+            Object.entries(filteredParams).map(([k, v]) => [k, String(v)])
+        ).toString();
+
         const url = queryString ? `/stores?${queryString}` : '/stores';
         const response = await apiClient.get<SliceResponse<Store>>(url);
-        return response.data.content; // content만 반환
+        return response.data.content;
     },
 
-    // 매장 상세
     getStore: async (storeId: number) => {
         const response = await apiClient.get<StoreDetail>(`/stores/${storeId}`);
         return response.data;

@@ -10,6 +10,43 @@ import { productsApi } from '@/lib/api/products';
 import { subscriptionsApi } from '@/lib/api/subscriptions';
 import { storesApi } from '@/lib/api/stores';
 
+// ─── 공통 훅: 브라우저 GPS 위치 가져오기 ─────────────────────────────────────
+function useGeolocation() {
+    const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [denied, setDenied] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!navigator.geolocation) {
+            setDenied(true);
+            setLoading(false);
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                setLoading(false);
+            },
+            (err) => {
+                console.warn('📍 위치 권한 거부:', err.message);
+                setDenied(true);
+                setLoading(false);
+            }
+        );
+    }, []);
+
+    return { location, denied, gpsLoading: loading };
+}
+
+// ─── 거리 포맷 함수 ───────────────────────────────────────────────────────────
+function formatDistance(distanceKm: number): string {
+    if (distanceKm < 1) {
+        return `${Math.round(distanceKm * 1000)}m`;
+    }
+    return `${distanceKm.toFixed(1)}km`;
+}
+
 export default function HomePage() {
     return (
         <div className="min-h-screen bg-gray-50">
@@ -167,7 +204,7 @@ export default function HomePage() {
     );
 }
 
-// 마감세일 상품 컴포넌트 - API 연결
+// ─── 마감세일 상품 컴포넌트 ───────────────────────────────────────────────────
 function SaleProducts() {
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -180,44 +217,28 @@ function SaleProducts() {
 
                 console.log('📦 마감세일 데이터:', data);
 
-                // 거리순 정렬 (distance 필드가 있다면)
-                const sorted = [...data].sort((a, b) => {
-                    const distA = a.distance || 999;
-                    const distB = b.distance || 999;
-                    return distA - distB;
-                });
-
-                // 가장 가까운 20개 선택
-                const nearest20 = sorted.slice(0, 20);
-
-                // 랜덤 4개 선택
-                const shuffled = [...nearest20].sort(() => Math.random() - 0.5);
+                const shuffled = [...data].sort(() => Math.random() - 0.5);
                 const random4 = shuffled.slice(0, 4);
 
-                // 데이터 매핑
                 const mappedProducts = random4.map((item: any) => {
-                    // Store closeTime을 Date로 변환
-                    const getClosingDateTime = (closeTimeStr: string) => {
-                        if (!closeTimeStr) closeTimeStr = '22:00:00';
-                        const now = new Date();
-                        const timeParts = closeTimeStr.split(':').map(Number);
-                        const hours = timeParts[0] || 22;
-                        const minutes = timeParts[1] || 0;
+                    const parseEndTime = (timeStr: string): Date | null => {
+                        if (!timeStr) return null;
+                        const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+                        if (isNaN(hours)) return null;
 
-                        const closingDateTime = new Date(
+                        const now = new Date();
+                        const endDate = new Date(
                             now.getFullYear(),
                             now.getMonth(),
                             now.getDate(),
                             hours,
                             minutes,
-                            0
+                            seconds || 0
                         );
-
-                        if (closingDateTime < now) {
-                            closingDateTime.setDate(closingDateTime.getDate() + 1);
+                        if (endDate <= now) {
+                            endDate.setDate(endDate.getDate() + 1);
                         }
-
-                        return closingDateTime;
+                        return endDate;
                     };
 
                     return {
@@ -228,8 +249,7 @@ function SaleProducts() {
                         salePrice: item.salePrice,
                         discount: item.price - item.salePrice,
                         image: item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-                        endTime: getClosingDateTime(item.closeTime),
-                        distance: item.distance || 0,
+                        endTime: parseEndTime(item.endTime),
                     };
                 });
 
@@ -274,16 +294,12 @@ function SaleProducts() {
                             <Badge variant="sale" className="absolute top-3 left-3">
                                 {product.discount.toLocaleString()}원 할인
                             </Badge>
-                            <CountdownTimer endTime={product.endTime} />
+                            {product.endTime && <CountdownTimer endTime={product.endTime} />}
                         </div>
                         <div className="p-4">
                             <p className="text-sm text-gray-500 mb-1">{product.storeName}</p>
                             <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{product.name}</h3>
-                            <div className="flex items-center text-sm text-gray-600 mb-3">
-                                <MapPin className="w-4 h-4 mr-1" />
-                                <span>{product.distance}km</span>
-                            </div>
-                            <div className="flex items-baseline space-x-2">
+                            <div className="flex items-baseline space-x-2 mt-3">
                                 <span className="text-sm text-gray-400 line-through">
                                     {product.originalPrice.toLocaleString()}원
                                 </span>
@@ -299,7 +315,7 @@ function SaleProducts() {
     );
 }
 
-// 카운트다운 타이머 컴포넌트
+// ─── 카운트다운 타이머 컴포넌트 ──────────────────────────────────────────────
 function CountdownTimer({ endTime }: { endTime: Date }) {
     const [timeLeft, setTimeLeft] = useState('');
 
@@ -332,7 +348,7 @@ function CountdownTimer({ endTime }: { endTime: Date }) {
     );
 }
 
-// 정기구독 상품 컴포넌트 - API 연결
+// ─── 정기구독 상품 컴포넌트 ──────────────────────────────────────────────────
 function SubscriptionProducts() {
     const [subscriptions, setSubscriptions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -345,17 +361,10 @@ function SubscriptionProducts() {
 
                 console.log('📦 정기구독 데이터:', data);
 
-                // 거리순 정렬 (distance 필드가 있다면)
-                const sorted = [...data].sort(() => Math.random() - 0.5); // 거리 필드 없으면 랜덤
+                const shuffled = [...data].sort(() => Math.random() - 0.5);
+                const nearest20 = shuffled.slice(0, Math.min(20, shuffled.length));
+                const random4 = [...nearest20].sort(() => Math.random() - 0.5).slice(0, 4);
 
-                // 가장 가까운 20개 선택 (또는 전체가 20개 미만이면 전체)
-                const nearest20 = sorted.slice(0, Math.min(20, sorted.length));
-
-                // 랜덤 4개 선택
-                const shuffled = [...nearest20].sort(() => Math.random() - 0.5);
-                const random4 = shuffled.slice(0, 4);
-
-                // 데이터 매핑
                 const mappedSubscriptions = random4.map((item: any) => ({
                     id: item.id,
                     name: item.name,
@@ -364,7 +373,7 @@ function SubscriptionProducts() {
                     image: item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
                     days: item.dayList || ['월', '수', '금'],
                     time: item.mealTimeList?.[0] || '점심',
-                    subscribers: Math.floor(Math.random() * 3000) + 500, // 임시 (백엔드에 없음)
+                    subscribers: Math.floor(Math.random() * 3000) + 500,
                 }));
 
                 setSubscriptions(mappedSubscriptions);
@@ -430,44 +439,62 @@ function SubscriptionProducts() {
     );
 }
 
-// 내 근처 가게 컴포넌트 - API 연결
+// ─── 내 근처 가게 컴포넌트 ───────────────────────────────────────────────────
 function NearbyStores() {
     const [stores, setStores] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const { location, denied, gpsLoading } = useGeolocation();
 
     useEffect(() => {
+        if (gpsLoading) return;
+
+        if (denied || !location) {
+            setLoading(false);
+            return;
+        }
+
         const fetchStores = async () => {
             try {
                 setLoading(true);
-                const data = await storesApi.getStores();
+                const data = await storesApi.getStores({
+                    nowLatitude: location.lat,
+                    nowLongitude: location.lng,
+                    size: 20,
+                });
 
                 console.log('📦 매장 데이터:', data);
 
-                // 거리순 정렬
                 const sorted = [...data].sort((a, b) => {
-                    const distA = a.distance || 999;
-                    const distB = b.distance || 999;
+                    const distA = a.distance ?? Infinity;
+                    const distB = b.distance ?? Infinity;
                     return distA - distB;
                 });
 
-                // 가장 가까운 20개 선택
                 const nearest20 = sorted.slice(0, 20);
+                const random4 = [...nearest20].sort(() => Math.random() - 0.5).slice(0, 4);
 
-                // 랜덤 4개 선택
-                const shuffled = [...nearest20].sort(() => Math.random() - 0.5);
-                const random4 = shuffled.slice(0, 4);
+                const storesWithSaleCount = await Promise.all(
+                    random4.map(async (item: any) => {
+                        let saleCount = 0;
+                        try {
+                            const products = await productsApi.getStoreProducts(item.id);
+                            saleCount = products.length;
+                        } catch {
+                            saleCount = 0;
+                        }
 
-                // 데이터 매핑
-                const mappedStores = random4.map((item: any) => ({
-                    id: item.id,
-                    name: item.name,
-                    category: item.category || '음식점',
-                    distance: item.distance || 0,
-                    image: item.imageUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
-                    saleCount: Math.floor(Math.random() * 5) + 1, // 임시
-                }));
+                        return {
+                            id: item.id,
+                            name: item.name,
+                            category: item.category || '음식점',
+                            distance: item.distance ?? 0,
+                            image: item.imageUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
+                            saleCount,
+                        };
+                    })
+                );
 
-                setStores(mappedStores);
+                setStores(storesWithSaleCount);
             } catch (error) {
                 console.error('❌ 매장 로딩 실패:', error);
             } finally {
@@ -476,12 +503,23 @@ function NearbyStores() {
         };
 
         fetchStores();
-    }, []);
+    }, [location, denied, gpsLoading]);
 
-    if (loading) {
+    if (denied) {
         return (
-            <div className="flex justify-center items-center py-20">
+            <div className="text-center py-20 text-gray-500">
+                위치 권한을 허용해야 근처 가게를 볼 수 있어요
+            </div>
+        );
+    }
+
+    if (gpsLoading || loading) {
+        return (
+            <div className="flex flex-col justify-center items-center py-20 gap-3">
                 <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
+                {gpsLoading && (
+                    <p className="text-sm text-gray-500">위치 정보를 가져오는 중...</p>
+                )}
             </div>
         );
     }
@@ -514,9 +552,10 @@ function NearbyStores() {
                         <div className="p-4">
                             <h3 className="font-semibold text-gray-900 mb-1">{store.name}</h3>
                             <p className="text-sm text-gray-500 mb-3">{store.category}</p>
+                            {/* ✅ 1km 미만이면 m, 이상이면 km로 표시 */}
                             <div className="flex items-center text-sm text-gray-600">
                                 <MapPin className="w-4 h-4 mr-1" />
-                                <span>{store.distance}km</span>
+                                <span>{formatDistance(store.distance)}</span>
                             </div>
                         </div>
                     </Card>
