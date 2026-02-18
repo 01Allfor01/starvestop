@@ -2,6 +2,7 @@ package com.allforone.starvestop.domain.store.repository;
 
 import com.allforone.starvestop.common.utils.GeometryUtil;
 import com.allforone.starvestop.domain.store.dto.StoreDto;
+import com.allforone.starvestop.domain.store.dto.StoreLimitedDto;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.entity.QStore;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
@@ -31,12 +32,12 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<StoreDto> searchStoreSlice(SearchStoreCond cond) {
+    public Slice<StoreLimitedDto> searchStoreSlice(SearchStoreCond cond) {
 
         NumberExpression<Double> distance = distanceExpression(cond.getNowLatitude(), cond.getNowLongitude());
 
-        List<StoreDto> list = queryFactory
-                .select(Projections.constructor(StoreDto.class,
+        List<StoreLimitedDto> list = queryFactory
+                .select(Projections.constructor(StoreLimitedDto.class,
                         store.id,
                         store.name,
                         store.address,
@@ -45,7 +46,9 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
                         store.openTime,
                         store.closeTime,
                         store.status,
-                        store.imageUuid
+                        store.imageUuid,
+                        distance,
+                        store.updatedAt
                 ))
                 .distinct()
                 .from(store)
@@ -57,7 +60,7 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
                         containsKeywordStore(cond.getKeyword()),
                         cursorIdLt(cond.getLastId())
                 )
-                .orderBy(distance.asc(), store.id.desc())
+                .orderBy(store.id.desc())
                 .limit(cond.getSize() + 1)
                 .fetch();
 
@@ -78,7 +81,7 @@ public class StoreRepositoryImpl implements StoreRepositoryCustom {
         return queryFactory
                 .select(store.id)
                 .from(store)
-                .where(store.isDeleted.isTrue())
+                .where(store.isDeleted.isFalse())
                 .fetch();
     }
 
