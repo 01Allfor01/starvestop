@@ -2,7 +2,6 @@ package com.allforone.starvestop.domain.store.service;
 
 import com.allforone.starvestop.domain.store.dto.StoreRedisDto;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Metrics;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StoreRedisService {
@@ -32,12 +30,11 @@ public class StoreRedisService {
     //매장 목록 조회 (거리 기반 커서)
     public List<StoreRedisDto> get(Double longitude, Double latitude, double lastDistance, long lastId, int size) {
 
-        RedisGeoCommands.GeoRadiusCommandArgs args =
-                RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs()
-                        .includeDistance()      //거리
-                        .includeCoordinates()   //좌표
-                        .sortAscending()        //오름차순
-                        .limit(1000);       //결과 수
+        RedisGeoCommands.GeoSearchCommandArgs args =
+                RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs()
+                        .includeDistance()  //거리
+                        .sortAscending()    //좌표
+                        .limit(1000); //결과 수
 
         GeoResults<RedisGeoCommands.GeoLocation<String>> search = redisTemplate.opsForGeo().search(redisKey,
                 GeoReference.fromCoordinate(longitude, latitude),
@@ -47,15 +44,6 @@ public class StoreRedisService {
         if (search == null || search.getContent().isEmpty()) {
             return List.of();
         }
-
-        var first = search.getContent().get(0);
-        log.info("geo first id={}, dist={}, point={}",
-                first.getContent().getName(),
-                first.getDistance() == null ? null : first.getDistance().getValue(),
-                first.getContent().getPoint()
-        );
-
-        log.info("query point lon={}, lat={}", longitude, latitude);
 
         return search.getContent().stream()
                 .filter(

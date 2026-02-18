@@ -19,11 +19,14 @@ import com.allforone.starvestop.domain.store.dto.response.GetStoreDetailResponse
 import com.allforone.starvestop.domain.store.dto.response.StoreResponse;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
+import com.allforone.starvestop.domain.store.event.StoreGeoDeletedEvent;
+import com.allforone.starvestop.domain.store.event.StoreGeoUpsertedEvent;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.common.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.locationtech.jts.geom.Point;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -44,6 +47,7 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final OwnerService ownerService;
     private final StoreRedisService storeRedisService;
+    private final ApplicationEventPublisher eventPublisher;
 
     //매장 추가
     @Transactional
@@ -67,7 +71,7 @@ public class StoreService {
 
         Store savedStore = storeRepository.save(store);
 
-        storeRedisService.create(savedStore.getId(), location.getX(), location.getY());
+        eventPublisher.publishEvent(new StoreGeoUpsertedEvent(savedStore.getId(), location.getX(), location.getY()));
 
         return CreateStoreResponse.from(savedStore);
     }
@@ -95,7 +99,7 @@ public class StoreService {
 
         storeRepository.flush();
 
-        storeRedisService.create(store.getId(), location.getX(), location.getY());
+        eventPublisher.publishEvent(new StoreGeoUpsertedEvent(store.getId(), location.getX(), location.getY()));
 
         return CreateStoreResponse.from(store);
     }
@@ -109,7 +113,7 @@ public class StoreService {
 
         store.delete();
 
-        storeRedisService.delete(store.getId());
+        eventPublisher.publishEvent(new StoreGeoDeletedEvent(store.getId()));
     }
 
     //매장 목록 조회
