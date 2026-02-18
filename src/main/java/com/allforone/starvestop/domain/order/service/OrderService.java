@@ -70,6 +70,11 @@ public class OrderService {
         order.delete();
     }
 
+    @Transactional
+    public void paid(String orderKey) {
+        orderRepository.updateStatusToPaidByOrderKey(orderKey);
+    }
+
     private void userCheck(Long userId, Order order) {
         if (!order.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
@@ -94,7 +99,6 @@ public class OrderService {
     public Order getForPayment(String orderKey) {
         return orderRepository.getByIdForUpdate(orderKey);
     }
-
     public List<Order> getExpiredOrder(LocalDateTime now) {
         return orderRepository.findByStatusAndExpiresAtBefore(OrderStatus.PENDING, now);
     }
