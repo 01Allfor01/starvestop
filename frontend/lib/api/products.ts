@@ -13,6 +13,7 @@ export interface ProductSale {
     imageUrl: string;
     endTime: string;
     updatedAt: string;
+    location: { x: number; y: number } | null;
 }
 
 // 상세 조회용 타입 (GetProductDetailResponse 대응)

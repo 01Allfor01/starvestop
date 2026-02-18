@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Clock, MapPin, TrendingUp, Loader2 } from 'lucide-react';
+import { Clock, MapPin, TrendingUp, Loader2, CalendarCheck } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -39,6 +39,19 @@ function useGeolocation() {
     return { location, denied, gpsLoading: loading };
 }
 
+// ─── 거리 계산 함수 (Haversine formula) ────────────────────────────────────
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // 지구 반지름 (km)
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
 // ─── 거리 포맷 함수 ───────────────────────────────────────────────────────────
 function formatDistance(distanceKm: number): string {
     if (distanceKm < 1) {
@@ -46,6 +59,23 @@ function formatDistance(distanceKm: number): string {
     }
     return `${distanceKm.toFixed(1)}km`;
 }
+
+// ─── 요일/식사시간 매핑 ───────────────────────────────────────────────────────
+const dayMap: Record<string, string> = {
+    'MONDAY': '월',
+    'TUESDAY': '화',
+    'WEDNESDAY': '수',
+    'THURSDAY': '목',
+    'FRIDAY': '금',
+    'SATURDAY': '토',
+    'SUNDAY': '일'
+};
+
+const mealTimeMap: Record<string, string> = {
+    'BREAKFAST': '아침',
+    'LUNCH': '점심',
+    'DINNER': '저녁'
+};
 
 export default function HomePage() {
     return (
@@ -174,7 +204,11 @@ export default function HomePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h2 className="text-3xl font-bold text-gray-900 mb-2">💚 정기구독</h2>
+                            {/* ✅ 💚 대신 CalendarCheck 아이콘 사용 */}
+                            <h2 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+                                <CalendarCheck className="w-8 h-8 text-secondary-600 mr-3" />
+                                정기구독
+                            </h2>
                             <p className="text-gray-600">매월 정기적으로 신선한 상품을</p>
                         </div>
                         <Link href="/subscriptions">
@@ -208,8 +242,11 @@ export default function HomePage() {
 function SaleProducts() {
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const { location, denied, gpsLoading } = useGeolocation();
 
     useEffect(() => {
+        if (gpsLoading) return;
+
         const fetchProducts = async () => {
             try {
                 setLoading(true);
@@ -217,43 +254,58 @@ function SaleProducts() {
 
                 console.log('📦 마감세일 데이터:', data);
 
-                const shuffled = [...data].sort(() => Math.random() - 0.5);
+                // ✅ 거리 계산 및 5km 이내 필터링
+                const productsWithDistance = data
+                    .map((item: any) => {
+                        let distance = null;
+                        if (location && item.location && item.location.coordinates) {
+                            distance = calculateDistance(
+                                location.lat,
+                                location.lng,
+                                item.location.coordinates[1],
+                                item.location.coordinates[0]
+                            );
+                        }
+
+                        const parseEndTime = (timeStr: string): Date | null => {
+                            if (!timeStr) return null;
+                            const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+                            if (isNaN(hours)) return null;
+
+                            const now = new Date();
+                            const endDate = new Date(
+                                now.getFullYear(),
+                                now.getMonth(),
+                                now.getDate(),
+                                hours,
+                                minutes,
+                                seconds || 0
+                            );
+                            if (endDate <= now) {
+                                endDate.setDate(endDate.getDate() + 1);
+                            }
+                            return endDate;
+                        };
+
+                        return {
+                            id: item.id,
+                            name: item.name,
+                            storeName: item.storeName || '가게명 미상',
+                            originalPrice: item.price,
+                            salePrice: item.salePrice,
+                            discount: item.price - item.salePrice,
+                            image: item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+                            endTime: parseEndTime(item.endTime),
+                            distance,
+                        };
+                    })
+                    .filter((item: any) => item.distance === null || item.distance <= 5); // ✅ 5km 이내만
+
+                // ✅ 랜덤 4개 선택
+                const shuffled = [...productsWithDistance].sort(() => Math.random() - 0.5);
                 const random4 = shuffled.slice(0, 4);
 
-                const mappedProducts = random4.map((item: any) => {
-                    const parseEndTime = (timeStr: string): Date | null => {
-                        if (!timeStr) return null;
-                        const [hours, minutes, seconds] = timeStr.split(':').map(Number);
-                        if (isNaN(hours)) return null;
-
-                        const now = new Date();
-                        const endDate = new Date(
-                            now.getFullYear(),
-                            now.getMonth(),
-                            now.getDate(),
-                            hours,
-                            minutes,
-                            seconds || 0
-                        );
-                        if (endDate <= now) {
-                            endDate.setDate(endDate.getDate() + 1);
-                        }
-                        return endDate;
-                    };
-
-                    return {
-                        id: item.id,
-                        name: item.name,
-                        storeName: item.storeName || '가게명 미상',
-                        originalPrice: item.price,
-                        salePrice: item.salePrice,
-                        discount: item.price - item.salePrice,
-                        image: item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-                        endTime: parseEndTime(item.endTime),
-                    };
-                });
-
-                setProducts(mappedProducts);
+                setProducts(random4);
             } catch (error) {
                 console.error('❌ 마감세일 로딩 실패:', error);
             } finally {
@@ -262,9 +314,9 @@ function SaleProducts() {
         };
 
         fetchProducts();
-    }, []);
+    }, [location, gpsLoading]);
 
-    if (loading) {
+    if (loading || gpsLoading) {
         return (
             <div className="flex justify-center items-center py-20">
                 <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
@@ -275,7 +327,7 @@ function SaleProducts() {
     if (products.length === 0) {
         return (
             <div className="text-center py-20 text-gray-500">
-                현재 진행 중인 마감세일이 없습니다
+                {denied ? '위치 권한을 허용하면 근처 마감세일 상품을 볼 수 있어요' : '현재 진행 중인 마감세일이 없습니다'}
             </div>
         );
     }
@@ -299,7 +351,14 @@ function SaleProducts() {
                         <div className="p-4">
                             <p className="text-sm text-gray-500 mb-1">{product.storeName}</p>
                             <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{product.name}</h3>
-                            <div className="flex items-baseline space-x-2 mt-3">
+                            {/* ✅ 거리 표시 추가 */}
+                            {product.distance !== null && (
+                                <div className="flex items-center text-sm text-gray-600 mb-2">
+                                    <MapPin className="w-4 h-4 mr-1" />
+                                    <span>{formatDistance(product.distance)}</span>
+                                </div>
+                            )}
+                            <div className="flex items-baseline space-x-2">
                                 <span className="text-sm text-gray-400 line-through">
                                     {product.originalPrice.toLocaleString()}원
                                 </span>
@@ -352,8 +411,11 @@ function CountdownTimer({ endTime }: { endTime: Date }) {
 function SubscriptionProducts() {
     const [subscriptions, setSubscriptions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const { location, denied, gpsLoading } = useGeolocation();
 
     useEffect(() => {
+        if (gpsLoading) return;
+
         const fetchSubscriptions = async () => {
             try {
                 setLoading(true);
@@ -361,22 +423,37 @@ function SubscriptionProducts() {
 
                 console.log('📦 정기구독 데이터:', data);
 
-                const shuffled = [...data].sort(() => Math.random() - 0.5);
-                const nearest20 = shuffled.slice(0, Math.min(20, shuffled.length));
-                const random4 = [...nearest20].sort(() => Math.random() - 0.5).slice(0, 4);
+                // ✅ 거리 계산 및 5km 이내 필터링
+                const subscriptionsWithDistance = data
+                    .map((item: any) => {
+                        let distance = null;
+                        if (location && item.location && item.location.coordinates) {
+                            distance = calculateDistance(
+                                location.lat,
+                                location.lng,
+                                item.location.coordinates[1],
+                                item.location.coordinates[0]
+                            );
+                        }
 
-                const mappedSubscriptions = random4.map((item: any) => ({
-                    id: item.id,
-                    name: item.name,
-                    storeName: item.storeName || '가게명 미상',
-                    price: item.price,
-                    image: item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-                    days: item.dayList || ['월', '수', '금'],
-                    time: item.mealTimeList?.[0] || '점심',
-                    subscribers: Math.floor(Math.random() * 3000) + 500,
-                }));
+                        return {
+                            id: item.id,
+                            name: item.name,
+                            storeName: item.storeName || '가게명 미상',
+                            price: item.price,
+                            image: item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+                            days: item.dayList?.map((d: string) => dayMap[d] || d) || ['월', '수', '금'],
+                            time: mealTimeMap[item.mealTimeList?.[0]] || '점심',
+                            distance,
+                        };
+                    })
+                    .filter((item: any) => item.distance === null || item.distance <= 5); // ✅ 5km 이내만
 
-                setSubscriptions(mappedSubscriptions);
+                // ✅ 랜덤 4개 선택
+                const shuffled = [...subscriptionsWithDistance].sort(() => Math.random() - 0.5);
+                const random4 = shuffled.slice(0, 4);
+
+                setSubscriptions(random4);
             } catch (error) {
                 console.error('❌ 정기구독 로딩 실패:', error);
             } finally {
@@ -385,9 +462,9 @@ function SubscriptionProducts() {
         };
 
         fetchSubscriptions();
-    }, []);
+    }, [location, gpsLoading]);
 
-    if (loading) {
+    if (loading || gpsLoading) {
         return (
             <div className="flex justify-center items-center py-20">
                 <Loader2 className="w-10 h-10 text-green-500 animate-spin" />
@@ -398,7 +475,7 @@ function SubscriptionProducts() {
     if (subscriptions.length === 0) {
         return (
             <div className="text-center py-20 text-gray-500">
-                현재 진행 중인 정기구독이 없습니다
+                {denied ? '위치 권한을 허용하면 근처 정기구독 상품을 볼 수 있어요' : '현재 진행 중인 정기구독이 없습니다'}
             </div>
         );
     }
@@ -419,12 +496,15 @@ function SubscriptionProducts() {
                             </Badge>
                         </div>
                         <div className="p-4">
-                            <p className="text-sm text-gray-500 mb-1">{sub.storeName}</p>
-                            <h3 className="font-semibold text-gray-900 mb-2">{sub.name}</h3>
-                            <div className="flex items-center text-sm text-gray-600 mb-3">
-                                <TrendingUp className="w-4 h-4 mr-1 text-secondary-500" />
-                                <span>{sub.subscribers.toLocaleString()}명 구독중</span>
-                            </div>
+                            <p className="text-sm text-gray-500 mb-2">{sub.storeName}</p>
+                            <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2">{sub.name}</h3>
+                            {/* ✅ 거리 표시 추가 */}
+                            {sub.distance !== null && (
+                                <div className="flex items-center text-sm text-gray-600 mb-3">
+                                    <MapPin className="w-4 h-4 mr-1" />
+                                    <span>{formatDistance(sub.distance)}</span>
+                                </div>
+                            )}
                             <div className="flex items-baseline">
                                 <span className="text-2xl font-bold text-secondary-600">
                                     {sub.price.toLocaleString()}원
@@ -543,16 +623,10 @@ function NearbyStores() {
                                 alt={store.name}
                                 className="w-full h-48 object-cover"
                             />
-                            {store.saleCount > 0 && (
-                                <Badge variant="sale" className="absolute top-3 left-3">
-                                    마감세일 {store.saleCount}개
-                                </Badge>
-                            )}
                         </div>
                         <div className="p-4">
                             <h3 className="font-semibold text-gray-900 mb-1">{store.name}</h3>
                             <p className="text-sm text-gray-500 mb-3">{store.category}</p>
-                            {/* ✅ 1km 미만이면 m, 이상이면 km로 표시 */}
                             <div className="flex items-center text-sm text-gray-600">
                                 <MapPin className="w-4 h-4 mr-1" />
                                 <span>{formatDistance(store.distance)}</span>

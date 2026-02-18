@@ -4,6 +4,7 @@ import com.allforone.starvestop.domain.product.entity.Product;
 import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.locationtech.jts.geom.Point;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,6 +13,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class GetProductResponse {
     private final Long id;
+    private final Long storeId;
+    private final String storeName;
+    private final Point location;
     private final String name;
     private final String description;
     private final Integer stock;
@@ -24,6 +28,9 @@ public class GetProductResponse {
     public static GetProductResponse from(Product product, String imageUrl) {
         return new GetProductResponse(
                 product.getId(),
+                product.getStore().getId(),
+                product.getStore().getName(),
+                product.getStore().getLocation(),
                 product.getName(),
                 product.getDescription(),
                 product.getStock(),

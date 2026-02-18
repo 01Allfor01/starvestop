@@ -1,10 +1,57 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Search, User, Menu, CalendarCheck } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, CalendarCheck, Ticket } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { cartApi } from '@/lib/api/cart';
 
 export default function Header() {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [cartCount, setCartCount] = useState(0);
+
+    useEffect(() => {
+        const checkLoginStatus = () => {
+            if (typeof window === 'undefined') return;
+            const token = localStorage.getItem('accessToken');
+            setIsLoggedIn(!!token);
+
+            if (token) {
+                fetchCartCount();
+            }
+        };
+
+        checkLoginStatus();
+
+        // ✅ 로그인/로그아웃 이벤트 리스너 추가
+        window.addEventListener('login', checkLoginStatus);
+        window.addEventListener('logout', () => {
+            setIsLoggedIn(false);
+            setCartCount(0);
+        });
+
+        return () => {
+            window.removeEventListener('login', checkLoginStatus);
+            window.removeEventListener('logout', () => {
+                setIsLoggedIn(false);
+                setCartCount(0);
+            });
+        };
+    }, []);
+
+    const fetchCartCount = async () => {
+        try {
+            console.log('🛒 장바구니 조회 시작');
+            const cartItems = await cartApi.getCart();
+            console.log('🛒 장바구니 데이터:', cartItems);
+            console.log('🛒 장바구니 개수:', cartItems.length);
+            setCartCount(cartItems.length);
+        } catch (error) {
+            console.error('❌ 장바구니 개수 조회 실패:', error);
+            setCartCount(0);
+        }
+    };
+
     return (
         <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,8 +62,8 @@ export default function Header() {
                             <span className="text-white text-xl font-bold">S</span>
                         </div>
                         <span className="text-xl font-bold bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text text-transparent">
-              Starve Stop
-            </span>
+                            Starve Stop
+                        </span>
                     </Link>
 
                     {/* 검색바 (데스크탑) */}
@@ -42,9 +89,11 @@ export default function Header() {
                         {/* 장바구니 */}
                         <Link href="/cart" className="relative p-2 text-gray-700 hover:text-primary-500 transition-colors">
                             <ShoppingCart className="w-6 h-6" />
-                            <span className="absolute top-0 right-0 w-5 h-5 bg-primary-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                3
-              </span>
+                            {cartCount > 0 && (
+                                <span className="absolute top-0 right-0 w-5 h-5 bg-primary-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                                    {cartCount}
+                                </span>
+                            )}
                         </Link>
 
                         {/* 프로필 */}
@@ -52,14 +101,15 @@ export default function Header() {
                             <User className="w-6 h-6" />
                         </Link>
 
-                        {/* 로그인 버튼 (데스크탑) */}
-                        <div className="hidden lg:block">
-                            <Link href="/login">
-                                <Button variant="outline" size="sm">
-                                    로그인
-                                </Button>
-                            </Link>
-                        </div>
+                        {!isLoggedIn && (
+                            <div className="hidden lg:block">
+                                <Link href="/login">
+                                    <Button variant="outline" size="sm">
+                                        로그인
+                                    </Button>
+                                </Link>
+                            </div>
+                        )}
 
                         {/* 모바일 메뉴 */}
                         <button className="md:hidden p-2 text-gray-700">
@@ -100,6 +150,13 @@ export default function Header() {
                             <Link href="/subscriptions" className="text-gray-700 hover:text-primary-500 inline-flex items-center">
                                 <CalendarCheck className="w-4 h-4 mr-1.5 text-secondary-500" />
                                 정기구독
+                            </Link>
+                        </li>
+                        {/* ✅ 쿠폰 탭 추가 */}
+                        <li>
+                            <Link href="/coupons" className="text-gray-700 hover:text-primary-500 inline-flex items-center">
+                                <Ticket className="w-4 h-4 mr-1.5 text-amber-500" />
+                                쿠폰
                             </Link>
                         </li>
                         <li>

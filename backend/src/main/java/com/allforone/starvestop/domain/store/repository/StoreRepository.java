@@ -58,4 +58,6 @@ public interface StoreRepository extends JpaRepository<Store, Long>, StoreReposi
                 and (:category is null or s.category = :category)
             """)
     List<StoreDto> findStoreDtoList(@Param("ids") List<Long> ids, @Param("category") StoreCategory category);
+
+    List<Store> findAllByIsDeletedIsFalse();
 }

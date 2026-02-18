@@ -36,9 +36,10 @@ export const couponsApi = {
         return response.data;
     },
 
-    // 쿠폰 받기
     receiveCoupon: async (couponId: number) => {
-        const response = await apiClient.post(`/coupons/${couponId}/user-coupons`);
+        const response = await apiClient.post(`/coupons/${couponId}/user-coupons`, {
+            startedAt: new Date().toISOString()
+        });
         return response.data;
     },
 

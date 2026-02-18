@@ -50,6 +50,17 @@ export default function OrderCompletePage() {
                         setStoreData(store);
                     } catch (e) { console.warn("가게 정보 로드 실패"); }
                 }
+                console.log('📦 주문 데이터:', order);
+                console.log('🛒 주문 상품:', items);
+                console.log('💰 amount:', order.amount);
+                console.log('🎫 discountedPrice:', order.discountedPrice);
+
+                // 상품 총액 계산
+                const itemsTotal = items.reduce((sum, item) => {
+                    console.log(`상품: ${item.productName}, price: ${item.productPrice}, qty: ${item.quantity}`);
+                    return sum + (item.productPrice * item.quantity);
+                }, 0);
+                console.log('📊 상품 총액 계산:', itemsTotal);
             } catch (error) {
                 console.error("주문 정보 조회 실패:", error);
                 alert("주문 정보를 불러오지 못했습니다.");
@@ -58,7 +69,6 @@ export default function OrderCompletePage() {
                 setLoading(false);
             }
         };
-
         fetchCompleteData();
     }, [orderIdParam, router]);
 
@@ -158,18 +168,42 @@ export default function OrderCompletePage() {
                                     <p className="text-sm text-gray-600">수량: {item.quantity}개</p>
                                 </div>
                                 <p className="font-semibold text-gray-900">
-                                    {Math.round(item.productPrice).toLocaleString()}원
+                                    {Math.round(item.productPrice * item.quantity).toLocaleString()}원
                                 </p>
                             </div>
                         ))}
                     </div>
 
-                    <div className="mt-6 pt-6 border-t border-gray-200">
-                        <div className="flex justify-between items-center">
+                    <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
+                        {/* ✅ 상품 금액 = 주문 상품들의 합계 */}
+                        <div className="flex justify-between items-center text-gray-600">
+                            <span>상품 금액</span>
+                            <span>
+                {Math.round(
+                    orderItems.reduce((sum, item) => sum + (item.productPrice * item.quantity), 0)
+                ).toLocaleString()}원
+            </span>
+                        </div>
+
+                        {/* ✅ 쿠폰 할인 (있을 때만 표시) */}
+                        {orderData.discountedPrice && orderData.discountedPrice > 0 && (
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-600">쿠폰 할인</span>
+                                <span className="text-lg font-semibold text-red-600">
+                    -{Math.round(orderData.discountedPrice).toLocaleString()}원
+                </span>
+                            </div>
+                        )}
+
+                        {/* ✅ 총 결제 금액 = 상품 금액 - 쿠폰 할인 */}
+                        <div className="flex justify-between items-center pt-3 border-t border-gray-200">
                             <span className="text-lg font-semibold text-gray-900">총 결제 금액</span>
                             <span className="text-2xl font-bold text-primary-600">
-                                {Math.round(orderData.amount).toLocaleString()}원
-                            </span>
+            {Math.round(
+                orderItems.reduce((sum, item) => sum + (item.productPrice * item.quantity), 0)
+                - (orderData.discountedPrice || 0)
+            ).toLocaleString()}원
+        </span>
                         </div>
                     </div>
                 </Card>

@@ -73,6 +73,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/stores/*/chat-rooms").hasRole("USER")
 
+                        .requestMatchers(HttpMethod.POST, "/coupons/{couponId}/user-coupons").hasAnyRole("USER")
                         .requestMatchers(HttpMethod.POST, "/products/**").hasAnyRole("OWNER")
                         .requestMatchers(HttpMethod.PATCH, "/products/**").hasAnyRole("OWNER")
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasAnyRole("OWNER", "ADMIN")

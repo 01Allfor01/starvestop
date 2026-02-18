@@ -1,75 +1,84 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Gift, Users, Clock, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Gift, Users, Clock, CheckCircle, ArrowLeft, Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import { couponsApi } from '@/lib/api/coupons';
 
 export default function CouponsAvailablePage() {
-    // TODO: 실제 API 데이터로 교체
-    const [coupons, setCoupons] = useState([
-        {
-            id: 1,
-            name: '신규 가입 축하 5,000원 할인',
-            discount: 5000,
-            minAmount: 20000,
-            expiryDate: '2026.03.31',
-            totalQuantity: 1000,
-            remainingQuantity: 234,
-            isReceived: false,
-        },
-        {
-            id: 2,
-            name: '2월 특가 10% 할인',
-            discountRate: 10,
-            minAmount: 30000,
-            expiryDate: '2026.02.28',
-            totalQuantity: 500,
-            remainingQuantity: 87,
-            isReceived: false,
-        },
-        {
-            id: 3,
-            name: '첫 구매 3,000원 할인',
-            discount: 3000,
-            minAmount: 15000,
-            expiryDate: '2026.04.15',
-            totalQuantity: 2000,
-            remainingQuantity: 1456,
-            isReceived: true,
-        },
-        {
-            id: 4,
-            name: '주말 한정 20% 할인',
-            discountRate: 20,
-            minAmount: 25000,
-            expiryDate: '2026.02.20',
-            totalQuantity: 100,
-            remainingQuantity: 0,
-            isReceived: false,
-        },
-    ]);
+    const [coupons, setCoupons] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const handleReceiveCoupon = (couponId: number) => {
-        setCoupons(coupons.map(coupon => {
-            if (coupon.id === couponId && coupon.remainingQuantity > 0) {
-                // TODO: 실제 API 호출
-                alert(`쿠폰 "${coupon.name}"을 받았습니다!`);
-                return {
-                    ...coupon,
-                    remainingQuantity: coupon.remainingQuantity - 1,
-                    isReceived: true,
-                };
+    useEffect(() => {
+        fetchCoupons();
+    }, []);
+
+    const fetchCoupons = async () => {
+        try {
+            setLoading(true);
+
+            // ✅ 발급 가능한 쿠폰 먼저 조회
+            const allCoupons = await couponsApi.getCoupons();
+            console.log('📋 전체 쿠폰:', allCoupons);
+
+            // ✅ 내 쿠폰 조회 (로그인 안 되어 있으면 빈 배열)
+            let myCoupons: any[] = [];
+            try {
+                myCoupons = await couponsApi.getMyCoupons();
+                console.log('🎫 내 쿠폰:', myCoupons);
+            } catch (error) {
+                console.log('내 쿠폰 조회 실패 (비로그인 상태일 수 있음)');
             }
-            return coupon;
-        }));
+
+            // 내가 받은 쿠폰 ID Set
+            const myCouponIds = new Set(myCoupons.map((c: any) => c.couponId));
+
+            // 매핑
+            const mappedCoupons = allCoupons.map((coupon: any) => ({
+                id: coupon.id,
+                name: coupon.name,
+                discount: coupon.discountAmount,
+                minAmount: coupon.minAmount,
+                expiryDate: coupon.expiresAt || '2026-12-31', // 기본값 설정
+                remainingQuantity: coupon.stock || 0,
+                isReceived: myCouponIds.has(coupon.id),
+                status: coupon.status || 'ACTIVE',
+            }));
+
+            console.log('✅ 매핑된 쿠폰:', mappedCoupons);
+            setCoupons(mappedCoupons);
+        } catch (error) {
+            console.error('❌ 쿠폰 목록 조회 실패:', error);
+            alert('쿠폰 목록을 불러오는데 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const getProgressPercentage = (remaining: number, total: number) => {
-        return ((total - remaining) / total) * 100;
+    const handleReceiveCoupon = async (couponId: number) => {
+        try {
+            await couponsApi.receiveCoupon(couponId);
+            alert('쿠폰을 받았습니다!');
+
+            // 목록 새로고침
+            fetchCoupons();
+        } catch (error: any) {
+            console.error('❌ 쿠폰 받기 실패:', error);
+            const msg = error.response?.data?.message || '쿠폰 받기에 실패했습니다.';
+            alert(msg);
+        }
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-primary-500 animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
@@ -85,97 +94,85 @@ export default function CouponsAvailablePage() {
                 </div>
 
                 {/* 쿠폰 목록 */}
-                <div className="space-y-4">
-                    {coupons.map((coupon) => {
-                        const isAvailable = coupon.remainingQuantity > 0;
-                        const progressPercentage = getProgressPercentage(coupon.remainingQuantity, coupon.totalQuantity);
+                {coupons.length === 0 ? (
+                    <div className="text-center py-20 text-gray-500">
+                        현재 발급 가능한 쿠폰이 없습니다
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {coupons.map((coupon) => {
+                            const isAvailable = coupon.remainingQuantity > 0 && coupon.status === 'USABLE';
 
-                        return (
-                            <Card key={coupon.id} className={
-                                coupon.isReceived
-                                    ? 'border-2 border-green-200 bg-green-50'
-                                    : !isAvailable
-                                        ? 'opacity-50'
-                                        : 'border-2 border-primary-200'
-                            }>
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-start space-x-4 flex-1">
-                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                                            coupon.isReceived
-                                                ? 'bg-green-100'
-                                                : !isAvailable
-                                                    ? 'bg-gray-100'
-                                                    : 'bg-primary-100'
-                                        }`}>
-                                            <Gift className={`w-6 h-6 ${
+                            return (
+                                <Card key={coupon.id} className={
+                                    coupon.isReceived
+                                        ? 'border-2 border-green-200 bg-green-50'
+                                        : !isAvailable
+                                            ? 'opacity-50'
+                                            : 'border-2 border-primary-200'
+                                }>
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex items-start space-x-4 flex-1">
+                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
                                                 coupon.isReceived
-                                                    ? 'text-green-600'
+                                                    ? 'bg-green-100'
                                                     : !isAvailable
-                                                        ? 'text-gray-400'
-                                                        : 'text-primary-600'
-                                            }`} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-lg font-bold text-gray-900 mb-1">
-                                                {coupon.name}
-                                            </h3>
-                                            <p className="text-sm text-gray-600 mb-2">
-                                                {coupon.minAmount.toLocaleString()}원 이상 구매 시
-                                            </p>
-                                            <div className="flex items-center space-x-3 text-sm text-gray-600">
-                                                <div className="flex items-center">
-                                                    <Clock className="w-4 h-4 mr-1" />
-                                                    ~{coupon.expiryDate}
-                                                </div>
-                                                <div className="flex items-center">
-                                                    <Users className="w-4 h-4 mr-1" />
-                                                    {coupon.remainingQuantity.toLocaleString()}/{coupon.totalQuantity.toLocaleString()}개 남음
+                                                        ? 'bg-gray-100'
+                                                        : 'bg-primary-100'
+                                            }`}>
+                                                <Gift className={`w-6 h-6 ${
+                                                    coupon.isReceived
+                                                        ? 'text-green-600'
+                                                        : !isAvailable
+                                                            ? 'text-gray-400'
+                                                            : 'text-primary-600'
+                                                }`} />
+                                            </div>
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-bold text-gray-900 mb-1">
+                                                    {coupon.name}
+                                                </h3>
+                                                <p className="text-sm text-gray-600 mb-2">
+                                                    {coupon.minAmount.toLocaleString()}원 이상 구매 시 {coupon.discount.toLocaleString()}원 할인
+                                                </p>
+                                                <div className="flex items-center space-x-3 text-sm text-gray-600">
+                                                    <div className="flex items-center">
+                                                        <Clock className="w-4 h-4 mr-1" />
+                                                        ~{coupon.expiryDate.split('T')[0]}
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <Users className="w-4 h-4 mr-1" />
+                                                        {coupon.remainingQuantity.toLocaleString()}개 남음
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div>
-                                        {coupon.isReceived ? (
-                                            <Badge variant="success" className="flex items-center">
-                                                <CheckCircle className="w-4 h-4 mr-1" />
-                                                받음
-                                            </Badge>
-                                        ) : !isAvailable ? (
-                                            <Badge variant="default">
-                                                품절
-                                            </Badge>
-                                        ) : (
-                                            <Button
-                                                size="sm"
-                                                onClick={() => handleReceiveCoupon(coupon.id)}
-                                            >
-                                                받기
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* 진행 바 */}
-                                {!coupon.isReceived && (
-                                    <div className="mt-3">
-                                        <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                                className={`h-2 rounded-full transition-all ${
-                                                    isAvailable ? 'bg-primary-500' : 'bg-gray-400'
-                                                }`}
-                                                style={{ width: `${progressPercentage}%` }}
-                                            ></div>
+                                        <div>
+                                            {coupon.isReceived ? (
+                                                <Badge variant="success" className="flex items-center">
+                                                    <CheckCircle className="w-4 h-4 mr-1" />
+                                                    받음
+                                                </Badge>
+                                            ) : !isAvailable ? (
+                                                <Badge variant="default">
+                                                    품절
+                                                </Badge>
+                                            ) : (
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => handleReceiveCoupon(coupon.id)}
+                                                >
+                                                    받기
+                                                </Button>
+                                            )}
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-1 text-right">
-                                            {progressPercentage.toFixed(0)}% 소진
-                                        </p>
                                     </div>
-                                )}
-                            </Card>
-                        );
-                    })}
-                </div>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                )}
 
                 {/* 안내 */}
                 <Card className="mt-8 bg-blue-50 border-blue-200">

@@ -1,79 +1,163 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, MapPin, Clock, MessageCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, MessageCircle, Loader2, Calendar } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import { storesApi } from '@/lib/api/stores';
+import { productsApi } from '@/lib/api/products';
+import { subscriptionsApi } from '@/lib/api/subscriptions';
+
+// ─── 카테고리 매핑 ────────────────────────────────────────────────────────────
+const categoryMap: Record<string, string> = {
+    'KOREAN_FOOD': '한식',
+    'JAPANESE_FOOD': '일식',
+    'CHINESE_FOOD': '중식',
+    'WESTERN_FOOD': '양식',
+    'ASIAN_FOOD': '아시안',
+    'FAST_FOOD': '패스트푸드',
+    'CAFE': '카페',
+    'DESSERT': '디저트'
+};
+
+// ─── 요일/식사시간 매핑 ───────────────────────────────────────────────────────
+const dayMap: Record<string, string> = {
+    'MONDAY': '월',
+    'TUESDAY': '화',
+    'WEDNESDAY': '수',
+    'THURSDAY': '목',
+    'FRIDAY': '금',
+    'SATURDAY': '토',
+    'SUNDAY': '일'
+};
+
+const mealTimeMap: Record<string, string> = {
+    'BREAKFAST': '아침',
+    'LUNCH': '점심',
+    'DINNER': '저녁'
+};
+
+const mealTimeRange: Record<string, string> = {
+    'BREAKFAST': '07:00-12:00',
+    'LUNCH': '12:00-17:00',
+    'DINNER': '17:00-22:00'
+};
 
 export default function StoreDetailPage() {
     const params = useParams();
-    const storeId = params.id;
+    const storeId = Number(params.id);
 
-    const [activeTab, setActiveTab] = useState<'products' | 'info'>('products');
+    const [activeTab, setActiveTab] = useState<'products' | 'subscriptions'>('products');
+    const [store, setStore] = useState<any>(null);
+    const [saleProducts, setSaleProducts] = useState<any[]>([]);
+    const [normalProducts, setNormalProducts] = useState<any[]>([]);
+    const [subscriptions, setSubscriptions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // TODO: 나중에 실제 API 데이터로 교체
-    const store = {
-        id: storeId,
-        name: '파리바게뜨 강남점',
-        category: '베이커리',
-        address: '서울특별시 강남구 테헤란로 123',
-        distance: 1.2,
-        openTime: '07:00',
-        closeTime: '22:00',
-        isOpen: true,
-        image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
-        description: '매일 아침 신선하게 구워내는 프리미엄 베이커리입니다. 최상급 재료만을 사용하여 건강하고 맛있는 빵을 만듭니다.',
-        breakTime: '15:00 - 16:00',
-        holiday: '매주 일요일',
-    };
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
 
-    const saleProducts = [
-        {
-            id: 1,
-            name: '프리미엄 크루아상 3입',
-            originalPrice: 6000,
-            salePrice: 3000,
-            discount: 3000,
-            stock: 5,
-            image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
-            timeLeft: '02:34:12',
-        },
-        {
-            id: 2,
-            name: '바게트 2입',
-            originalPrice: 5000,
-            salePrice: 3500,
-            discount: 1500,
-            stock: 8,
-            image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff',
-            timeLeft: '03:15:22',
-        },
-    ];
+                // 매장 정보
+                const storeData = await storesApi.getStore(storeId);
 
-    const normalProducts = [
-        {
-            id: 3,
-            name: '소금빵 5입',
-            price: 8000,
-            image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff',
-        },
-        {
-            id: 4,
-            name: '단팥빵 3입',
-            price: 4500,
-            image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff',
-        },
-    ];
+                setStore({
+                    ...storeData,
+                    categoryKo: categoryMap[storeData.category] || storeData.category,
+                });
+
+                // 상품 목록
+                const productsData = await productsApi.getStoreProducts(storeId);
+
+                // SALE 상품과 일반 상품 분리
+                const sale = productsData
+                    .filter((p: any) => p.status === 'SALE')
+                    .map((p: any) => ({
+                        id: p.id,
+                        name: p.name,
+                        originalPrice: p.price,
+                        salePrice: p.salePrice,
+                        discount: p.price - p.salePrice,
+                        stock: p.stock,
+                        image: p.imageUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
+                        endTime: p.endTime,
+                    }));
+
+                const normal = productsData
+                    .filter((p: any) => p.status !== 'SALE')
+                    .map((p: any) => ({
+                        id: p.id,
+                        name: p.name,
+                        price: p.price,
+                        image: p.imageUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
+                    }));
+
+                setSaleProducts(sale);
+                setNormalProducts(normal);
+
+                // 정기구독 목록
+                const subscriptionsData = await subscriptionsApi.getStoreSubscriptions(storeId);
+
+                const mappedSubs = subscriptionsData.map((item: any) => {
+                    const days = item.dayList?.map((d: string) => dayMap[d] || d) || [];
+                    const mealTimeKey = item.mealTimeList?.[0] || 'LUNCH';
+                    const mealTime = mealTimeMap[mealTimeKey] || '점심';
+                    const timeRange = mealTimeRange[mealTimeKey] || '12:00-17:00';
+
+                    return {
+                        id: item.id,
+                        name: item.name,
+                        storeName: item.storeName,
+                        description: item.description,
+                        price: item.price,
+                        image: storeData.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+                        days,
+                        mealTime,
+                        timeRange,
+                        pickupSchedule: `${days.join('.')} ${mealTime}`,
+                        isJoinable: item.joinable,
+                    };
+                });
+
+                setSubscriptions(mappedSubs);
+            } catch (error) {
+                console.error('❌ 매장 정보 로딩 실패:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [storeId]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-primary-500 animate-spin" />
+            </div>
+        );
+    }
+
+    if (!store) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center text-gray-500">
+                    매장 정보를 찾을 수 없습니다
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* 헤더 */}
             <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <Link href="/" className="flex items-center text-gray-600 hover:text-gray-900">
+                    <Link href="/stores" className="flex items-center text-gray-600 hover:text-gray-900">
                         <ArrowLeft className="w-5 h-5 mr-2" />
                         <span>뒤로</span>
                     </Link>
@@ -86,7 +170,7 @@ export default function StoreDetailPage() {
                     {/* 이미지 */}
                     <div className="lg:col-span-1">
                         <img
-                            src={store.image}
+                            src={store.imageUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4'}
                             alt={store.name}
                             className="w-full aspect-square object-cover rounded-2xl"
                         />
@@ -94,44 +178,37 @@ export default function StoreDetailPage() {
 
                     {/* 정보 */}
                     <div className="lg:col-span-2">
-                        <div className="flex items-start justify-between mb-4">
-                            <div>
-                                <Badge variant={store.isOpen ? 'success' : 'default'} className="mb-2">
-                                    {store.isOpen ? '영업중' : '영업종료'}
-                                </Badge>
-                                <h1 className="text-3xl font-bold text-gray-900 mb-2">{store.name}</h1>
-                                <p className="text-gray-600">{store.category}</p>
-                            </div>
+                        <div className="mb-4">
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">{store.name}</h1>
+                            <p className="text-gray-600">{store.categoryKo}</p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            {/* 거리 */}
-                            <Card padding="sm">
-                                <div className="flex items-center">
-                                    <MapPin className="w-5 h-5 text-gray-400 mr-2" />
-                                    <span className="font-medium text-gray-900">{store.distance}km</span>
-                                </div>
-                            </Card>
-
-                            {/* 운영 시간 */}
-                            <Card padding="sm">
-                                <div className="flex items-center">
-                                    <Clock className="w-5 h-5 text-gray-400 mr-2" />
-                                    <span className="font-bold text-gray-900 mr-2">운영 시간</span>
-                                    <span className="font-medium text-gray-900">
-            {store.openTime}~{store.closeTime}
+                        {/* 운영 시간 */}
+                        <Card padding="sm" className="mb-6">
+                            <div className="flex items-center">
+                                <Clock className="w-5 h-5 text-gray-400 mr-2" />
+                                <span className="font-bold text-gray-900 mr-2">운영 시간</span>
+                                <span className="font-medium text-gray-900">
+            {store.openTime?.slice(0, 5)} ~ {store.closeTime?.slice(0, 5)}
         </span>
-                                </div>
+                            </div>
+                        </Card>
+
+                        {/* 가게 소개 */}
+                        {store.description && (
+                            <Card className="mb-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">가게 소개</h3>
+                                <p className="text-gray-700 whitespace-pre-wrap">{store.description}</p>
                             </Card>
-                        </div>
+                        )}
 
                         {/* 주소 */}
                         <Card className="mb-6">
                             <div className="flex items-start">
                                 <MapPin className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                                 <div className="flex-1">
-                                    <p className="text-gray-900 mb-2">{store.address}</p>
-                                    <Button variant="outline" size="sm">지도 보기</Button>
+                                    <span className="font-bold text-gray-900 mr-2">주소</span>
+                                    <span className="text-gray-900">{store.address}</span>
                                 </div>
                             </div>
                         </Card>
@@ -160,19 +237,19 @@ export default function StoreDetailPage() {
                             상품
                         </button>
                         <button
-                            onClick={() => setActiveTab('info')}
+                            onClick={() => setActiveTab('subscriptions')}
                             className={`py-4 px-1 border-b-2 font-semibold transition ${
-                                activeTab === 'info'
+                                activeTab === 'subscriptions'
                                     ? 'border-primary-500 text-primary-600'
                                     : 'border-transparent text-gray-600 hover:text-gray-900'
                             }`}
                         >
-                            정보
+                            정기구독
                         </button>
                     </nav>
                 </div>
 
-                {/* 탭 콘텐츠 */}
+                {/* 탭 콘텐츠 - 상품 */}
                 {activeTab === 'products' && (
                     <div className="space-y-8">
                         {/* 마감 세일 */}
@@ -192,22 +269,16 @@ export default function StoreDetailPage() {
                                                     <Badge variant="sale" className="absolute top-3 left-3">
                                                         {product.discount.toLocaleString()}원 할인
                                                     </Badge>
-                                                    <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center space-x-1">
-                                                        <Clock className="w-4 h-4 text-red-500" />
-                                                        <span className="text-sm font-semibold text-gray-900">{product.timeLeft}</span>
-                                                    </div>
                                                 </div>
                                                 <div className="p-4">
                                                     <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
-                                                    <div className="flex items-center justify-between">
-                                                        <div>
-                              <span className="text-sm text-gray-400 line-through mr-2">
-                                {product.originalPrice.toLocaleString()}원
-                              </span>
-                                                            <span className="text-lg font-bold text-primary-600">
-                                {product.salePrice.toLocaleString()}원
-                              </span>
-                                                        </div>
+                                                    <div className="flex items-baseline space-x-2">
+                                                        <span className="text-sm text-gray-400 line-through">
+                                                            {product.originalPrice.toLocaleString()}원
+                                                        </span>
+                                                        <span className="text-xl font-bold text-primary-600">
+                                                            {product.salePrice.toLocaleString()}원
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </Link>
@@ -218,55 +289,115 @@ export default function StoreDetailPage() {
                         )}
 
                         {/* 일반 상품 */}
-                        <div>
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">일반 상품</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {normalProducts.map((product) => (
-                                    <Card key={product.id} hover padding="none" className="overflow-hidden">
-                                        <Link href={`/products/${product.id}`}>
-                                            <img
-                                                src={product.image}
-                                                alt={product.name}
-                                                className="w-full h-48 object-cover"
-                                            />
-                                            <div className="p-4">
-                                                <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
-                                                <span className="text-lg font-bold text-gray-900">
-                          {product.price.toLocaleString()}원
-                        </span>
-                                            </div>
-                                        </Link>
-                                    </Card>
-                                ))}
+                        {normalProducts.length > 0 && (
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-4">일반 상품</h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    {normalProducts.map((product) => (
+                                        <Card key={product.id} hover padding="none" className="overflow-hidden">
+                                            <Link href={`/products/${product.id}`}>
+                                                <img
+                                                    src={product.image}
+                                                    alt={product.name}
+                                                    className="w-full h-48 object-cover"
+                                                />
+                                                <div className="p-4">
+                                                    <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
+                                                    <span className="text-lg font-bold text-gray-900">
+                                                        {product.price.toLocaleString()}원
+                                                    </span>
+                                                </div>
+                                            </Link>
+                                        </Card>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
+
+                        {/* 상품 없음 */}
+                        {saleProducts.length === 0 && normalProducts.length === 0 && (
+                            <div className="text-center py-16 text-gray-500">
+                                등록된 상품이 없습니다
+                            </div>
+                        )}
                     </div>
                 )}
 
-                {activeTab === 'info' && (
-                    <div className="space-y-6">
-                        <Card>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">가게 소개</h3>
-                            <p className="text-gray-700">{store.description}</p>
-                        </Card>
+                {/* 탭 콘텐츠 - 정기구독 */}
+                {activeTab === 'subscriptions' && (
+                    <div>
+                        {subscriptions.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {subscriptions.map((subscription) => (
+                                    <Link key={subscription.id} href={`/subscriptions/${subscription.id}`}>
+                                        <Card hover className="border-2 border-secondary-200 bg-white h-full">
+                                            <div className="relative -m-6 mb-4">
+                                                <img
+                                                    src={subscription.image}
+                                                    alt={subscription.name}
+                                                    className="w-full h-48 object-cover rounded-t-xl"
+                                                />
+                                                <Badge
+                                                    variant="subscription"
+                                                    className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-secondary-700 border border-secondary-200"
+                                                >
+                                                    {subscription.pickupSchedule}
+                                                </Badge>
+                                                {!subscription.isJoinable && (
+                                                    <Badge
+                                                        variant="sale"
+                                                        className="absolute top-3 right-3 bg-gray-500/90 backdrop-blur-sm text-white"
+                                                    >
+                                                        구독 마감
+                                                    </Badge>
+                                                )}
+                                            </div>
 
-                        <Card>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">운영 정보</h3>
-                            <div className="space-y-3 text-gray-700">
-                                <div className="flex">
-                                    <span className="w-24 text-gray-500">운영 시간</span>
-                                    <span>{store.openTime} - {store.closeTime}</span>
-                                </div>
-                                <div className="flex">
-                                    <span className="w-24 text-gray-500">브레이크타임</span>
-                                    <span>{store.breakTime}</span>
-                                </div>
-                                <div className="flex">
-                                    <span className="w-24 text-gray-500">정기휴무</span>
-                                    <span>{store.holiday}</span>
-                                </div>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                                        {subscription.name}
+                                                    </h3>
+                                                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                                                        {subscription.description}
+                                                    </p>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center text-sm text-gray-700 bg-secondary-50 px-3 py-2 rounded-lg">
+                                                        <Calendar className="w-4 h-4 text-secondary-600 mr-2" />
+                                                        <span>{subscription.days.join('/')} {subscription.timeRange}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="pt-4 border-t border-gray-200">
+                                                    <div className="flex items-baseline justify-between mb-4">
+                                                        <div>
+                                                            <span className="text-3xl font-bold text-secondary-600">
+                                                                {subscription.price.toLocaleString()}원
+                                                            </span>
+                                                            <span className="text-gray-500 ml-2">/월</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <Button
+                                                        variant="secondary"
+                                                        fullWidth
+                                                        disabled={!subscription.isJoinable}
+                                                    >
+                                                        {subscription.isJoinable ? '구독하기' : '구독 마감'}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    </Link>
+                                ))}
                             </div>
-                        </Card>
+                        ) : (
+                            <div className="text-center py-16 text-gray-500">
+                                등록된 정기구독이 없습니다
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

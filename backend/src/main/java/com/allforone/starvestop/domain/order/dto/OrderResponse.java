@@ -16,6 +16,7 @@ public class OrderResponse {
     private final Long userId;
     private final String orderKey;
     private final OrderStatus status;
+    private final BigDecimal discountedPrice;
     private final BigDecimal amount;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
@@ -27,6 +28,7 @@ public class OrderResponse {
                 order.getUser().getId(),
                 order.getOrderKey(),
                 order.getStatus(),
+                order.getDiscountedPrice(),
                 order.getAmount(),
                 order.getCreatedAt(),
                 order.getUpdatedAt()

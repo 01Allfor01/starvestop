@@ -13,6 +13,7 @@ export interface OrderResponse {
     userId: number;
     orderKey: string;
     status: string;
+    discountedPrice: number;
     amount: number;
     createdAt: string;
     updatedAt: string;

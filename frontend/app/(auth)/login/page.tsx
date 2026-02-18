@@ -36,6 +36,8 @@ export default function LoginPage() {
 
             if (token) {
                 localStorage.setItem('accessToken', token);
+                window.dispatchEvent(new Event('login'));
+                router.push('/')
                 console.log('토큰 저장 완료:', token);
                 router.push('/');
                 router.refresh();

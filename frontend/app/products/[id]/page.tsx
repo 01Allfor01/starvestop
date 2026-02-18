@@ -9,6 +9,7 @@ import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import { productsApi } from '@/lib/api/products';
 import { cartApi } from '@/lib/api/cart';
+import { openOrCreateChatRoom } from '@/lib/helpers/chat';
 import { calculateDistance, getCurrentLocation } from '@/lib/utils/location';
 
 export default function ProductDetailPage() {
@@ -176,18 +177,49 @@ export default function ProductDetailPage() {
 
     const handleAddToCart = async () => {
         if (!product) return;
-        // 안전장치: 영업 종료시 함수 실행 막기
+
+        // 영업 종료 체크
         if (isClosed) {
             alert("영업이 종료되어 주문할 수 없습니다.");
             return;
         }
 
         try {
+            // ✅ 1. 현재 장바구니 조회
+            const currentCart = await cartApi.getCart();
+
+            // ✅ 2. 장바구니에 다른 매장 상품이 있는지 확인
+            if (currentCart.length > 0) {
+                // 첫 번째 상품의 storeId를 가져와서 비교 (장바구니는 같은 매장만 가능)
+                const firstProduct = await productsApi.getProduct(currentCart[0].productId);
+                const cartStoreId = firstProduct.storeId;
+
+                // 다른 매장이면 확인창 표시
+                if (cartStoreId !== product.storeId) {
+                    const confirmReplace = confirm(
+                        "장바구니에는 같은 가게의 메뉴만 담을 수 있습니다.\n\n" +
+                        "선택하신 메뉴를 장바구니에 담을 경우\n" +
+                        "이전에 담은 메뉴가 삭제됩니다.\n\n" +
+                        "계속하시겠습니까?"
+                    );
+
+                    // 취소 선택 시
+                    if (!confirmReplace) {
+                        return;
+                    }
+
+                    // 담기 선택 시: 기존 장바구니 비우기
+                    await cartApi.clearCart();
+                }
+            }
+
+            // ✅ 3. 장바구니에 추가
             await cartApi.addToCart({
                 productId: product.id,
                 quantity: quantity
             });
 
+            // ✅ 4. 성공 메시지 및 이동 확인
             if (confirm(`${product.name} ${quantity}개를 장바구니에 담았습니다!\n장바구니로 이동하시겠습니까?`)) {
                 router.push('/cart');
             }
@@ -383,7 +415,7 @@ export default function ProductDetailPage() {
                         </div>
 
                         {/* 가게 문의 */}
-                        <Button variant="ghost" fullWidth className="border border-gray-300">
+                        <Button size="lg" fullWidth onClick={handleContactStore}>
                             <MessageCircle className="w-5 h-5 mr-2" />
                             가게에 문의하기
                         </Button>

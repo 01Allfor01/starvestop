@@ -21,6 +21,7 @@ import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
 import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StoreService {
@@ -197,6 +199,23 @@ public class StoreService {
         return storeRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
                 () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
         );
+    }
+
+    @Transactional(readOnly = true)
+    public void syncStoresToRedis() {
+        List<Store> stores = storeRepository.findAllByIsDeletedIsFalse();
+        log.info("🔄 Redis 동기화 시작 - 매장 수: {}", stores.size());
+
+        for (Store store : stores) {
+            org.locationtech.jts.geom.Point location = store.getLocation();
+            log.info("📍 매장 ID: {}, location: {}", store.getId(), location);
+            if (location != null) {
+                storeRedisService.create(store.getId(), location.getX(), location.getY());
+                log.info("✅ Redis 저장 완료 - ID: {}", store.getId());
+            } else {
+                log.warn("⚠️ location null - 매장 ID: {}", store.getId());
+            }
+        }
     }
 
     //판매자 아이디 주인 확인

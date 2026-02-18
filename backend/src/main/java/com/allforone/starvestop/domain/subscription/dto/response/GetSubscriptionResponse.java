@@ -5,6 +5,7 @@ import com.allforone.starvestop.domain.subscription.enums.Day;
 import com.allforone.starvestop.domain.subscription.enums.MealTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.locationtech.jts.geom.Point;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,6 +16,7 @@ public class GetSubscriptionResponse {
     private final Long id;
     private final Long storeId;
     private final String storeName;
+    private final Point location;
     private final String name;
     private final String description;
     private final List<Day> dayList;
@@ -30,6 +32,7 @@ public class GetSubscriptionResponse {
                 subscription.getId(),
                 subscription.getStore().getId(),
                 subscription.getStore().getName(),
+                subscription.getStore().getLocation(),
                 subscription.getName(),
                 subscription.getDescription(),
                 dayList,

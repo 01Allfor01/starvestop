@@ -5,10 +5,13 @@ import com.allforone.starvestop.domain.order.dto.OrderProductResponse;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
 import com.allforone.starvestop.domain.order.repository.OrderProductRepository;
+import com.allforone.starvestop.domain.product.entity.Product;
+import com.allforone.starvestop.domain.product.enums.ProductStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -29,13 +32,20 @@ public class OrderProductService {
 
     public List<OrderProduct> saveAll(Order order, List<Cart> cartList) {
         List<OrderProduct> orderProductList = cartList.stream()
-                .map(cart -> OrderProduct.create(
-                        order,
-                        cart.getProduct().getId(),
-                        cart.getProduct().getName(),
-                        cart.getQuantity(),
-                        cart.getProduct().getPrice()
-                )).toList();
+                .map(cart -> {
+                    Product product = cart.getProduct();
+                    BigDecimal actualPrice = product.getStatus() == ProductStatus.SALE
+                            ? product.getSalePrice()
+                            : product.getPrice();
+
+                    return OrderProduct.create(
+                            order,
+                            product.getId(),
+                            product.getName(),
+                            cart.getQuantity(),
+                            actualPrice
+                    );
+                }).toList();
         return orderProductRepository.saveAll(orderProductList);
     }
 }

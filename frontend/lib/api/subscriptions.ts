@@ -12,6 +12,7 @@ export interface Subscription {
     price: number;
     stock: number;
     isJoinable: boolean; // 가입 가능 여부
+    location: { x: number; y: number } | null;
 }
 
 export interface UserSubscription {
