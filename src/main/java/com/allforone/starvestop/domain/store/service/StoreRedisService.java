@@ -30,12 +30,11 @@ public class StoreRedisService {
     //매장 목록 조회 (거리 기반 커서)
     public List<StoreRedisDto> get(Double longitude, Double latitude, double lastDistance, long lastId, int size) {
 
-        RedisGeoCommands.GeoRadiusCommandArgs args =
-                RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs()
-                        .includeDistance()      //거리
-                        .includeCoordinates()   //좌표
-                        .sortAscending()        //오름차순
-                        .limit(1000);       //결과 수
+        RedisGeoCommands.GeoSearchCommandArgs args =
+                RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs()
+                        .includeDistance()  //거리
+                        .sortAscending()    //오름차순
+                        .limit(1000); //결과 수
 
         GeoResults<RedisGeoCommands.GeoLocation<String>> search = redisTemplate.opsForGeo().search(redisKey,
                 GeoReference.fromCoordinate(longitude, latitude),
