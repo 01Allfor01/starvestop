@@ -33,7 +33,7 @@ public class StoreRedisService {
         RedisGeoCommands.GeoSearchCommandArgs args =
                 RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs()
                         .includeDistance()  //거리
-                        .sortAscending()    //좌표
+                        .sortAscending()    //오름차순
                         .limit(1000); //결과 수
 
         GeoResults<RedisGeoCommands.GeoLocation<String>> search = redisTemplate.opsForGeo().search(redisKey,
