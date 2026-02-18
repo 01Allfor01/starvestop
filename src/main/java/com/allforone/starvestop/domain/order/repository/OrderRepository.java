@@ -31,6 +31,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("UPDATE Order o SET o.status = 'PAID' WHERE o.orderKey = :orderKey")
     void updateStatusToPaidByOrderKey(@Param("orderKey") String orderKey);
 
-    List<Order> findByStatusAndExpiresAtBefore(OrderStatus status, LocalDateTime now);
+    @Modifying
+    @Query("UPDATE Order o SET o.status = 'CANCELED' WHERE o.orderKey = :orderKey")
+    void updateStatusToCancelByOrderKey(String orderKey);
 
+    List<Order> findByStatusAndExpiresAtBefore(OrderStatus status, LocalDateTime now);
 }

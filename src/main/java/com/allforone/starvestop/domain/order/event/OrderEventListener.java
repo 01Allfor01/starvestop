@@ -20,5 +20,9 @@ public class OrderEventListener {
         if (event.status() == PaymentStatus.SUCCEEDED) {
             orderService.paid(event.orderKey());
         }
+
+        if (event.status() == PaymentStatus.FAILED_NON_RETRYABLE) {
+            orderService.cancel(event.orderKey());
+        }
     }
 }
