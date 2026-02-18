@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.chat.service;
 
 import com.allforone.starvestop.common.dto.AuthUser;
+import com.allforone.starvestop.common.enums.UserRole;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.chat.dto.request.SendMessageRequest;
@@ -9,7 +10,6 @@ import com.allforone.starvestop.domain.chat.entity.ChatMessage;
 import com.allforone.starvestop.domain.chat.entity.ChatRoom;
 import com.allforone.starvestop.domain.chat.enums.SenderType;
 import com.allforone.starvestop.domain.chat.repository.ChatMessageRepository;
-import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;

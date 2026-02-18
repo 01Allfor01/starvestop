@@ -21,7 +21,7 @@ public class GetReceiptResponse {
                 userId,
                 receipt.getOrder().getId(),
                 receipt.getOrderKey(),
-                receipt.getReceiptStatus(),
+                receipt.getStatus(),
                 receipt.getAmount());
     }
 }

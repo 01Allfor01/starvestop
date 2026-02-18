@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.product.service;
 
 import com.allforone.starvestop.common.dto.AuthUser;
+import com.allforone.starvestop.common.enums.UserRole;
 import com.allforone.starvestop.domain.owner.entity.Owner;
 import com.allforone.starvestop.domain.product.dto.request.CreateProductRequest;
 import com.allforone.starvestop.domain.product.dto.response.CreateProductResponse;
@@ -11,7 +12,6 @@ import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreCategory;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
 import com.allforone.starvestop.domain.store.service.StoreService;
-import com.allforone.starvestop.domain.user.enums.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

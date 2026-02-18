@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.annotation.Nullable;
@@ -35,6 +36,12 @@ public class PaymentService {
         return paymentRepository.findPaymentByOrderKey(orderKey);
     }
 
+
+    @Transactional
+    public Payment saveAndFlush(Payment payment) {
+        return paymentRepository.saveAndFlush(payment);
+    }
+
     public void save(Payment payment) {
         paymentRepository.save(payment);
     }
@@ -53,7 +60,7 @@ public class PaymentService {
     }
 
     public Page<Payment> findByOrderUserId(Long userId, Pageable pageable) {
-        return paymentRepository.findAllByOrderUserIdAndIsDeletedIsFalse(userId, pageable);
+        return paymentRepository.findAllByOrderUserId(userId, pageable);
     }
 
     public Payment findById(Long paymentId) {

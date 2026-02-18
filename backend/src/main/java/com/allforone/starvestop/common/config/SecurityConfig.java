@@ -40,7 +40,6 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
                         .requestMatchers(
                                 "/payment.html",
                                 "/success.html",
@@ -52,40 +51,58 @@ public class SecurityConfig {
                                 "/billing.html",
                                 "/billing-success.html"
                         ).permitAll()
-
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers("/login/**", "/oauth2/**").permitAll()
                         .requestMatchers("/ws-stomp/**").permitAll()
-                        .requestMatchers("/notifications/**").permitAll()
                         .requestMatchers("/pushtest.html").permitAll()
                         .requestMatchers("firebase-messaging-sw.js").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/payments/success").permitAll()
                         .requestMatchers(HttpMethod.GET, "/payments/fail").permitAll()
 
-                        .requestMatchers(HttpMethod.PATCH, "/users").hasRole("USER")
-                        .requestMatchers(HttpMethod.DELETE, "/users").hasRole("USER")
-
-                        .requestMatchers(HttpMethod.PATCH, "/owners").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.DELETE, "/owners").hasRole("OWNER")
-
-                        .requestMatchers(HttpMethod.POST, "/stores/*/chat-rooms").hasRole("USER")
-
+                        //USER
                         .requestMatchers(HttpMethod.POST, "/coupons/{couponId}/user-coupons").hasAnyRole("USER")
-                        .requestMatchers(HttpMethod.POST, "/products/**").hasAnyRole("OWNER")
-                        .requestMatchers(HttpMethod.PATCH, "/products/**").hasAnyRole("OWNER")
-                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasAnyRole("OWNER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/stores/**").hasAnyRole("OWNER", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/stores/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers("/users/**").hasRole("USER")
+                        .requestMatchers("/payments/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/stores/*/chat-rooms").hasRole("USER")
+                        .requestMatchers("/carts").hasRole("USER")
+                        .requestMatchers("/user-coupons/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/coupons/*/user-coupons").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/coupons/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/billing/*").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/orders").hasRole("USER")
+
+                        //OWNER
+                        .requestMatchers("/owners/**").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.POST, "/products/**").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.PATCH, "/products/**").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.POST, "/stores/**").hasRole("OWNER")
+                        .requestMatchers(HttpMethod.PATCH, "/stores/**").hasRole("OWNER")
+                        .requestMatchers("stores/my").hasRole("OWNER")
+
+                        //ADMIN
+                        .requestMatchers("/admins/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/coupons/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/coupons/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/coupons/**").hasRole("ADMIN")
+                        .requestMatchers("/api-logs/**").hasRole("ADMIN")
+                        .requestMatchers("/payment-logs/**").hasRole("ADMIN")
+                        .requestMatchers("/settlements/**").hasRole("ADMIN")
+                        .requestMatchers("/settlement-logs/**").hasRole("ADMIN")
+
+                        //USER & OWNER
+                        .requestMatchers("/chat-rooms/**").hasAnyRole("USER", "OWNER")
+                        .requestMatchers("/notifications/save/token").hasAnyRole("USER", "OWNER")
+
+                        //OWNER & ADMIN
                         .requestMatchers(HttpMethod.DELETE, "/stores/**").hasAnyRole("OWNER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasAnyRole("OWNER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/subscriptions/**").hasAnyRole("OWNER", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/coupons/**").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/coupons/**").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api-logs/**").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/notifications/send/**").hasAnyRole("OWNER", "ADMIN")
 
                         .anyRequest().authenticated()
                 )

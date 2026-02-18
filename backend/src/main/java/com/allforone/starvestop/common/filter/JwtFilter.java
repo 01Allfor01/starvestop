@@ -1,8 +1,8 @@
 package com.allforone.starvestop.common.filter;
 
 import com.allforone.starvestop.common.dto.AuthUser;
+import com.allforone.starvestop.common.enums.UserRole;
 import com.allforone.starvestop.common.utils.JwtUtil;
-import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

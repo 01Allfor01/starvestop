@@ -1,6 +1,7 @@
 package com.allforone.starvestop.common.dto;
 
 import com.allforone.starvestop.common.enums.SuccessMessage;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,11 +9,16 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
+@Schema(description = "공통 응답 포맷")
 public class CommonResponse <T> {
 
+    @Schema(example = "true", description = "성공 여부")
     private boolean success;
+    @Schema(example = "로그인 성공", description = "응답 메시지")
     private String message;
+    @Schema(description = "응답 데이터")
     private T data;
+    @Schema(example = "2026-02-13T20:10:30.123", description = "응답 시각")
     private LocalDateTime timestamp;
 
     // 성공 시 (사용 예시: CommonResponse.success(SuccessMessage 이넘, 반환 DTO)

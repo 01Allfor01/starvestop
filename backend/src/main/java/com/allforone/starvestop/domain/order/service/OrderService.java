@@ -7,6 +7,7 @@ import com.allforone.starvestop.domain.order.dto.OrderResponse;
 import com.allforone.starvestop.domain.order.dto.UpdateOrderRequest;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
+import com.allforone.starvestop.domain.order.enums.OrderStatus;
 import com.allforone.starvestop.domain.order.repository.OrderRepository;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.user.entity.User;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -91,5 +93,9 @@ public class OrderService {
 
     public Order getForPayment(String orderKey) {
         return orderRepository.getByIdForUpdate(orderKey);
+    }
+
+    public List<Order> getExpiredOrder(LocalDateTime now) {
+        return orderRepository.findByStatusAndExpiresAtBefore(OrderStatus.PENDING, now);
     }
 }

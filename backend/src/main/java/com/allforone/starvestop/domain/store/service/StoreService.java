@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.store.service;
 
 import com.allforone.starvestop.common.dto.AuthUser;
+import com.allforone.starvestop.common.enums.UserRole;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.GeometryUtil;
@@ -9,6 +10,7 @@ import com.allforone.starvestop.domain.owner.service.OwnerService;
 import com.allforone.starvestop.domain.s3.enums.S3BucketStatus;
 import com.allforone.starvestop.domain.s3.service.S3Service;
 import com.allforone.starvestop.domain.store.dto.StoreDto;
+import com.allforone.starvestop.domain.store.dto.StoreLimitedDto;
 import com.allforone.starvestop.domain.store.dto.StoreRedisDto;
 import com.allforone.starvestop.domain.store.dto.condition.SearchStoreCond;
 import com.allforone.starvestop.domain.store.dto.request.CreateStoreRequest;
@@ -18,11 +20,14 @@ import com.allforone.starvestop.domain.store.dto.response.GetStoreDetailResponse
 import com.allforone.starvestop.domain.store.dto.response.StoreResponse;
 import com.allforone.starvestop.domain.store.entity.Store;
 import com.allforone.starvestop.domain.store.enums.StoreStatus;
+import com.allforone.starvestop.domain.store.event.StoreGeoDeletedEvent;
+import com.allforone.starvestop.domain.store.event.StoreGeoUpsertedEvent;
 import com.allforone.starvestop.domain.store.repository.StoreRepository;
-import com.allforone.starvestop.domain.user.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.locationtech.jts.geom.Point;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,16 +45,12 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final OwnerService ownerService;
     private final StoreRedisService storeRedisService;
+    private final ApplicationEventPublisher eventPublisher;
 
     //매장 추가
     @Transactional
-    public CreateStoreResponse createStore(CreateStoreRequest request) {
-        Owner owner = ownerService.getById(request.getOwnerId());
-
-        if (!UserRole.OWNER.equals(owner.getRole())) {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
-
+    public CreateStoreResponse createStore(Long ownerId, CreateStoreRequest request) {
+        Owner owner = ownerService.getById(ownerId);
         StoreStatus status = getStatus(request.getStatus());
         Point location = getLocation(request.getLongitude(), request.getLatitude());
 
@@ -68,7 +69,7 @@ public class StoreService {
 
         Store savedStore = storeRepository.save(store);
 
-        storeRedisService.create(savedStore.getId(), location.getX(), location.getY());
+        eventPublisher.publishEvent(new StoreGeoUpsertedEvent(savedStore.getId(), location.getX(), location.getY()));
 
         return CreateStoreResponse.from(savedStore);
     }
@@ -96,7 +97,7 @@ public class StoreService {
 
         storeRepository.flush();
 
-        storeRedisService.create(store.getId(), location.getX(), location.getY());
+        eventPublisher.publishEvent(new StoreGeoUpsertedEvent(store.getId(), location.getX(), location.getY()));
 
         return CreateStoreResponse.from(store);
     }
@@ -110,7 +111,7 @@ public class StoreService {
 
         store.delete();
 
-        storeRedisService.delete(store.getId());
+        eventPublisher.publishEvent(new StoreGeoDeletedEvent(store.getId()));
     }
 
     //매장 목록 조회
@@ -120,28 +121,81 @@ public class StoreService {
         long cursorId = cond.getLastId() != null ? cond.getLastId() : 0L;
         int limitSize = cond.getSize() != null ? cond.getSize() : 10;
 
-        List<StoreRedisDto> storeRedisList = storeRedisService.get(
-                cond.getNowLongitude(),
-                cond.getNowLatitude(),
-                distance,
-                cursorId,
-                limitSize);
+        try {
+            List<StoreRedisDto> storeRedisList = storeRedisService.get(
+                    cond.getNowLongitude(),
+                    cond.getNowLatitude(),
+                    distance,
+                    cursorId,
+                    limitSize);
 
-        if (storeRedisList.isEmpty()) {
-            Pageable pageable = PageRequest.of(
-                    (cond.getSize() == null ? 0 : 1),
-                    limitSize
-            );
+            if (storeRedisList == null || storeRedisList.isEmpty()) {
+                Pageable pageable = PageRequest.of(
+                        (cond.getSize() == null ? 0 : 1),
+                        limitSize
+                );
 
-            return new SliceImpl<>(List.of(), pageable, false);
+                return new SliceImpl<>(List.of(), pageable, false);
+            }
+
+            return getStoreListWithRedis(cond, storeRedisList, limitSize);
+
+        } catch (Exception e) { //Redis에서 조회를 할 때 에러날 때
+            return limitedStoreSlice(cond, limitSize);
+        }
+    }
+
+    //매장 상세 조회
+    @Transactional(readOnly = true)
+    public GetStoreDetailResponse getStoreDetail(Long storeId) {
+        Store store = getById(storeId);
+
+        String imageUrl = s3Service.createPresignedGetUrl(store.getId(), S3BucketStatus.STORE, store.getImageUuid());
+
+        return GetStoreDetailResponse.from(store, imageUrl);
+    }
+
+    //매장 확인
+    @Transactional
+    public Store getById(Long id) {
+        return storeRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
+                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
+        );
+    }
+
+    //판매자 아이디 주인 확인
+    public void idMismatchCheck(AuthUser authUser, Store store) {
+        if (UserRole.ADMIN == authUser.getUserRole()) {
+            return;
         }
 
+        if (store.getOwner().getId().equals(authUser.getUserId())) {
+            return;
+        }
+
+        throw new CustomException(ErrorCode.FORBIDDEN);
+    }
+
+    //매장 상태
+    private StoreStatus getStatus(StoreStatus status) {
+        return status == null ? StoreStatus.CLOSED : status;
+    }
+
+    //매장 위치
+    private Point getLocation(Double longitude, Double latitude) {
+        return GeometryUtil.createPoint(longitude, latitude);
+    }
+
+    //매장 조회 리스트 Redis GEO 사용
+    private @NonNull SliceImpl<StoreResponse> getStoreListWithRedis(SearchStoreCond cond,
+                                                                    List<StoreRedisDto> storeRedisList,
+                                                                    int limitSize) {
         List<Long> ids = storeRedisList
                 .stream()
                 .map(StoreRedisDto::getId)
                 .toList();
 
-        List<StoreDto> list = null;
+        List<StoreDto> list;
 
         if (cond.getKeyword() == null) {
             list = storeRepository.findStoreDtoList(ids, cond.getCategory());
@@ -183,22 +237,23 @@ public class StoreService {
         return new SliceImpl<>(responseList, pageable, hasNext);
     }
 
-    //매장 상세 조회
-    @Transactional(readOnly = true)
-    public GetStoreDetailResponse getStoreDetail(Long storeId) {
-        Store store = getById(storeId);
+    //Redis 장애시 DB에서 조회한 매장 목록 조회
+    private Slice<StoreResponse> limitedStoreSlice(SearchStoreCond cond, int limitSize) {
+        Slice<StoreLimitedDto> slice = storeRepository.searchStoreSlice(cond);
 
-        String imageUrl = s3Service.createPresignedGetUrl(store.getId(), S3BucketStatus.STORE, store.getImageUuid());
+        List<StoreResponse> responseList = slice.getContent().stream()
+                .map(dto -> {
+                    String imageUrl = s3Service.createPresignedGetUrl(
+                            dto.getId(),
+                            S3BucketStatus.STORE,
+                            dto.getImageUuid()
+                    );
 
-        return GetStoreDetailResponse.from(store, imageUrl);
-    }
+                    return StoreResponse.from(dto, imageUrl);
+                })
+                .toList();
 
-    //매장 확인
-    @Transactional
-    public Store getById(Long id) {
-        return storeRepository.findByIdAndIsDeletedIsFalse(id).orElseThrow(
-                () -> new CustomException(ErrorCode.STORE_NOT_FOUND)
-        );
+        return new SliceImpl<>(responseList, PageRequest.of(0, limitSize), slice.hasNext());
     }
 
     @Transactional(readOnly = true)
@@ -216,29 +271,6 @@ public class StoreService {
                 log.warn("⚠️ location null - 매장 ID: {}", store.getId());
             }
         }
-    }
-
-    //판매자 아이디 주인 확인
-    public void idMismatchCheck(AuthUser authUser, Store store) {
-        if (UserRole.ADMIN == authUser.getUserRole()) {
-            return;
-        }
-
-        if (store.getOwner().getId().equals(authUser.getUserId())) {
-            return;
-        }
-
-        throw new CustomException(ErrorCode.FORBIDDEN);
-    }
-
-    //매장 상태
-    private StoreStatus getStatus(StoreStatus status) {
-        return status == null ? StoreStatus.CLOSED : status;
-    }
-
-    //매장 위치
-    private Point getLocation(Double longitude, Double latitude) {
-        return GeometryUtil.createPoint(longitude, latitude);
     }
 
     public Page<Store> getStorePage(Long ownerId, Pageable pageable) {

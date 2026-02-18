@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -38,9 +37,9 @@ public class PaymentLogService {
         return GetPaymentLogDetailResponse.from(paymentLog);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void save(Long paymentId, Long userId, String orderKey, PaymentStatus paymentStatus, String pgStatus, String payload) {
-        PaymentLog paymentLog = PaymentLog.create(paymentId, userId, orderKey, paymentStatus, pgStatus, payload);
+    @Transactional
+    public void save(Long paymentId, Long userId, String orderKey, PaymentStatus paymentStatus, String payload) {
+        PaymentLog paymentLog = PaymentLog.create(paymentId, userId, orderKey, paymentStatus, payload);
         paymentLogRepository.save(paymentLog);
     }
 

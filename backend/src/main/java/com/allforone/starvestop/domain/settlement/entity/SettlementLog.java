@@ -8,18 +8,13 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(
-        name = "settlement_logs",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_settlement_log_event",
-                columnNames = "event_id"
-        )
-)
+@Table(name = "settlement_logs")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class SettlementLog {
@@ -31,13 +26,13 @@ public class SettlementLog {
     @Column(name = "settlement_id", nullable = false)
     private Long settlementId;
 
-    @Column(name = "event_id", nullable = false, length = 64)
+    @Column(name = "event_id", nullable = false, length = 64, unique = true)
     private String eventId;
 
-    @Column(nullable = false)
+    @Column
     private Long actorAdminId;
 
-    @Column(nullable = false, length = 20)
+    @Column(length = 20)
     private String fromStatus;
 
     @Column(nullable = false, length = 20)
@@ -50,6 +45,7 @@ public class SettlementLog {
     private LocalDateTime occurredAt;
 
     @Column(name = "created_at", nullable = false)
+    @CreatedDate
     private LocalDateTime createdAt;
 
     public static SettlementLog from(SettlementCreatedEvent e) {
@@ -57,7 +53,7 @@ public class SettlementLog {
                 null,
                 e.settlementId(),
                 e.eventId(),
-                null,
+                e.actorAdminId(),
                 null,
                 SettlementStatus.CREATED.name(),
                 "SETTLEMENT_CREATED",

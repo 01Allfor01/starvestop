@@ -53,7 +53,7 @@ public class ReceiptService {
 
         Long orderId = receipt.getOrder().getId();
 
-        if (userId.equals(receipt.getUserId())) {
+        if (!userId.equals(receipt.getUserId())) {
             throw new CustomException(ErrorCode.FORBIDDEN);
         }
 

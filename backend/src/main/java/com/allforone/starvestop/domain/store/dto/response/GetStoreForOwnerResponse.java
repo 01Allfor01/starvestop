@@ -24,7 +24,7 @@ public class GetStoreForOwnerResponse {
     private final Long unreadCount;
     private final String ImageUrl;
 
-    public static GetStoreForOwnerResponse from(Store store, Long unreadCount) {
+    public static GetStoreForOwnerResponse from(Store store, Long unreadCount, String imageUrl) {
         Point point = store.getLocation();
         return new GetStoreForOwnerResponse(
                 store.getId(),
@@ -37,7 +37,7 @@ public class GetStoreForOwnerResponse {
                 store.getCloseTime(),
                 store.getStatus(),
                 unreadCount,
-                store.getImageUuid()
+                imageUrl
         );
     }
 }

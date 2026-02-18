@@ -1,9 +1,8 @@
 package com.allforone.starvestop.domain.product.dto.response;
 
-import com.allforone.starvestop.domain.product.entity.Product;
+import com.allforone.starvestop.domain.product.dto.ProductSaleDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.locationtech.jts.geom.Point;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -15,7 +14,6 @@ public class GetProductSaleResponse {
     private final Long id;
     private final Long storeId;
     private final String storeName;
-    private final Point location;
     private final String name;
     private final String description;
     private final Integer stock;
@@ -23,22 +21,22 @@ public class GetProductSaleResponse {
     private final BigDecimal salePrice;
     private final String imageUrl;
     private final LocalTime endTime;
+    private final Double distance;
     private final LocalDateTime updatedAt;
 
-    public static GetProductSaleResponse from(Product product, String imageUrl) {
+    public static GetProductSaleResponse from(ProductSaleDto productSaleDto, Double distance, String imageUrl) {
         return new GetProductSaleResponse(
-                product.getId(),
-                product.getStore().getId(),
-                product.getStore().getName(),
-                product.getStore().getLocation(),
-                product.getName(),
-                product.getDescription(),
-                product.getStock(),
-                product.getPrice(),
-                product.getSalePrice(),
+                productSaleDto.id(),
+                productSaleDto.storeId(),
+                productSaleDto.storeName(),
+                productSaleDto.name(),
+                productSaleDto.description(),
+                productSaleDto.stock(),
+                productSaleDto.price(),
+                productSaleDto.salePrice(),
                 imageUrl,
-                product.getStore().getCloseTime(),
-                product.getUpdatedAt()
+                distance,
+                productSaleDto.updatedAt().toLocalDateTime()
         );
     }
 }

@@ -1,7 +1,7 @@
 package com.allforone.starvestop.domain.notification.entity;
 
+import com.allforone.starvestop.common.enums.UserRole;
 import com.allforone.starvestop.domain.notification.enums.NotificationPlatformType;
-import com.allforone.starvestop.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,9 +19,8 @@ public class UserNotification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false)
+    private Long userId;
 
     @Column(unique = true)
     private String token;
@@ -29,8 +28,9 @@ public class UserNotification {
     @Column(nullable = false)
     private NotificationPlatformType platform;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private LocalDateTime last_seen_at;
+    private UserRole role;
 
     @Column(updatable = false)
     private LocalDateTime created_at;
@@ -38,18 +38,18 @@ public class UserNotification {
     @PrePersist
     public void prePersist() {
         this.created_at = LocalDateTime.now();
-        this.last_seen_at = LocalDateTime.now();
     }
 
-    public UserNotification(User user, String token, NotificationPlatformType platform) {
-        this.user = user;
+    public UserNotification(Long userId, String token, NotificationPlatformType platform, UserRole role) {
+        this.userId = userId;
         this.token = token;
         this.platform = platform;
+        this.role = role;
     }
 
-    public static UserNotification create(User user, String token, NotificationPlatformType platform) {
+    public static UserNotification createToken(Long userId, String token, NotificationPlatformType platform, UserRole role) {
         return new UserNotification(
-                user, token, platform
+                userId, token, platform, role
         );
     }
 }

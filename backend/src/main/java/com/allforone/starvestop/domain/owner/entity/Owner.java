@@ -1,7 +1,6 @@
 package com.allforone.starvestop.domain.owner.entity;
 
 import com.allforone.starvestop.common.entity.BaseEntity;
-import com.allforone.starvestop.domain.user.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -25,14 +24,9 @@ public class Owner extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private UserRole role;
-
     private Owner(String email, String password, String userName) {
         this.email = email;
         this.password = password;
-        this.role = UserRole.OWNER;
         this.username = userName;
     }
 

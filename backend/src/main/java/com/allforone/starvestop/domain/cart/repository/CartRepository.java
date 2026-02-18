@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface CartRepository extends JpaRepository<Cart, Long> {
+public interface CartRepository extends JpaRepository<Cart, Long>, CartRepositoryCustom {
     @Query("""
             SELECT c FROM Cart c
             WHERE c.user.id = :userId
@@ -17,14 +17,9 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     void deleteAllByUserId(Long userId);
 
     @Query("""
-            SELECT c FROM Cart c
-            WHERE c.user.id = :userId
-                AND c.product.store.id = (
-                    SELECT c2.product.store.id FROM Cart c2
-                    WHERE c2.user.id = :userId
-                    ORDER BY c2.createdAt DESC
-                    LIMIT 1
-                )
+                SELECT c FROM Cart c
+                WHERE c.user.id = :userId
+                    AND c.product.id = :productId
             """)
-    List<Cart> findAllByUserIdAndLastVisitStore(Long userId);
+    Cart findByUserIdAndProductId(Long userId, Long productId);
 }

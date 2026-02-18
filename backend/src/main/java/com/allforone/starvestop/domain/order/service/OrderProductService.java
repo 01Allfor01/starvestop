@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.order.service;
 
 import com.allforone.starvestop.domain.cart.entity.Cart;
+import com.allforone.starvestop.domain.order.dto.OrderProductQuantityDto;
 import com.allforone.starvestop.domain.order.dto.OrderProductResponse;
 import com.allforone.starvestop.domain.order.entity.Order;
 import com.allforone.starvestop.domain.order.entity.OrderProduct;
@@ -24,6 +25,11 @@ public class OrderProductService {
     public List<OrderProductResponse> getOrderProductList(Long userId, Long orderId) {
         List<OrderProduct> orderProductResponseList = orderProductRepository.findAllByOrderIdAndUserIdAndIsDeletedIsFalse(userId, orderId);
         return orderProductResponseList.stream().map(OrderProductResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderProductQuantityDto> getOrderProductQuantityList(Long orderId) {
+        return orderProductRepository.findQuantityAndIdByOrderId(orderId);
     }
 
     public List<OrderProduct> findListByOrderId(Long orderId) {
