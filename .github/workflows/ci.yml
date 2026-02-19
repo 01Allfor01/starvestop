@@ -1,6 +1,9 @@
 name: Ci
 
 on:
+  push:
+    branches:
+      - feat/**
   pull_request:
     branches:
       - feat/cicd/test
