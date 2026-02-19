@@ -43,21 +43,23 @@ export default function OrdersPage() {
         const fetchOrders = async () => {
             try {
                 setLoading(true);
-                const ordersData = await ordersApi.getOrders();
+                const ordersData: OrderResponse[] = await ordersApi.getOrders();
 
-                // 각 주문의 상품 목록을 조회하여 요약 생성
                 const ordersWithItems = await Promise.all(
-                    ordersData.map(async (order) => {
+                    ordersData.map(async (order: OrderResponse) => {
                         try {
-                            const products = await ordersApi.getOrderProducts(order.id);
+                            const products: OrderProductResponse[] = await ordersApi.getOrderProducts(order.id);
+
                             let summary = '상품 정보 없음';
                             if (products.length > 0) {
-                                summary = products.length > 1
-                                    ? `${products[0].productName} 외 ${products.length - 1}건`
-                                    : products[0].productName;
+                                summary =
+                                    products.length > 1
+                                        ? `${products[0].productName} 외 ${products.length - 1}건`
+                                        : products[0].productName;
                             }
+
                             return { ...order, itemsSummary: summary };
-                        } catch (e) {
+                        } catch {
                             return { ...order, itemsSummary: '상품 정보 로딩 실패' };
                         }
                     })

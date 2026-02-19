@@ -72,25 +72,35 @@ jobs:
           set -e
 
           PREV_TG=$(aws elbv2 describe-listeners \
-            --listener-arn "${{ secrets.ALB_LISTENER_ARN }}" \
-            --query "Listeners[0].DefaultActions[0].TargetGroupArn" \
-            --output text)
-
+          --listener-arn "${{ secrets.ALB_LISTENER_ARN }}" \
+          --query "Listeners[0].DefaultActions[0].ForwardConfig.TargetGroups[0].TargetGroupArn" \
+          --output text)
+      
           echo "PREV_TG=$PREV_TG" >> $GITHUB_OUTPUT
           echo "PREV_TG=$PREV_TG"
-
+      
           if [ "$PREV_TG" = "${{ secrets.TG_BLUE_ARN }}" ]; then
-            echo "IDLE_TG=${{ secrets.TG_GREEN_ARN }}" >> $GITHUB_OUTPUT
-            echo "IDLE_NAME=${{ env.GREEN_NAME }}" >> $GITHUB_OUTPUT
-            echo "IDLE_PORT=${{ env.GREEN_HOST_PORT }}" >> $GITHUB_OUTPUT
+          echo "IDLE_TG=${{ secrets.TG_GREEN_ARN }}" >> $GITHUB_OUTPUT
+          echo "IDLE_NAME=${{ env.GREEN_NAME }}" >> $GITHUB_OUTPUT
+          echo "IDLE_PORT=${{ env.GREEN_HOST_PORT }}" >> $GITHUB_OUTPUT
+      
           elif [ "$PREV_TG" = "${{ secrets.TG_GREEN_ARN }}" ]; then
-            echo "IDLE_TG=${{ secrets.TG_BLUE_ARN }}" >> $GITHUB_OUTPUT
-            echo "IDLE_NAME=${{ env.BLUE_NAME }}" >> $GITHUB_OUTPUT
-            echo "IDLE_PORT=${{ env.BLUE_HOST_PORT }}" >> $GITHUB_OUTPUT
+          echo "IDLE_TG=${{ secrets.TG_BLUE_ARN }}" >> $GITHUB_OUTPUT
+          echo "IDLE_NAME=${{ env.BLUE_NAME }}" >> $GITHUB_OUTPUT
+          echo "IDLE_PORT=${{ env.BLUE_HOST_PORT }}" >> $GITHUB_OUTPUT
+      
           else
-            echo "Unknown current target group: $PREV_TG"
-            exit 1
+          echo "Unknown current target group: $PREV_TG"
+          echo "Assume first deploy, deploy to GREEN"
+          
+          echo "IDLE_TG=${{ secrets.TG_GREEN_ARN }}" >> $GITHUB_OUTPUT
+          echo "IDLE_NAME=${{ env.GREEN_NAME }}" >> $GITHUB_OUTPUT
+          echo "IDLE_PORT=${{ env.GREEN_HOST_PORT }}" >> $GITHUB_OUTPUT
           fi
+      
+          echo "IDLE_TG=${{ steps.decide.outputs.IDLE_TG }}"
+          echo "IDLE_NAME=${{ steps.decide.outputs.IDLE_NAME }}"
+          echo "IDLE_PORT=${{ steps.decide.outputs.IDLE_PORT }}"
 
       - name: Deploy to IDLE on EC2-1
         uses: appleboy/ssh-action@v1.0.3
