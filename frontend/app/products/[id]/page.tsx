@@ -115,6 +115,7 @@ export default function ProductDetailPage() {
                     endTime: parseEndTime(rawTime),
                     image: data.imageUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
                     category: data.status === 'SALE' ? '마감세일' : '일반상품',
+                    status: data.status, // ✅ status 추가
                 };
 
                 setProduct(mappedProduct);
@@ -155,9 +156,9 @@ export default function ProductDetailPage() {
         }
     }, [myLocation, product]);
 
-    // 4️⃣ ✅ 실시간 타이머 로직
+    // 4️⃣ ✅ 실시간 타이머 로직 (SALE 상품만)
     useEffect(() => {
-        if (!product?.endTime) return;
+        if (!product?.endTime || product?.status !== 'SALE') return;
 
         const calculateTime = () => {
             const now = new Date().getTime();
@@ -196,7 +197,7 @@ export default function ProductDetailPage() {
     const handleAddToCart = async () => {
         if (!product) return;
 
-        if (isClosed) {
+        if (product.status === 'SALE' && isClosed) {
             alert("영업이 종료되어 주문할 수 없습니다.");
             return;
         }
@@ -242,7 +243,7 @@ export default function ProductDetailPage() {
     const handleBuyNow = async () => {
         if (!product) return;
 
-        if (isClosed) {
+        if (product.status === 'SALE' && isClosed) {
             alert("영업이 종료되어 주문할 수 없습니다.");
             return;
         }
@@ -284,6 +285,9 @@ export default function ProductDetailPage() {
 
     if (!product) return null;
 
+    // ✅ SALE 상품인지 확인
+    const isSaleProduct = product.status === 'SALE';
+
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* 헤더 */}
@@ -317,17 +321,22 @@ export default function ProductDetailPage() {
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                             />
-                            <Badge variant="sale" className="absolute top-4 left-4 text-base px-3 py-1">
-                                {Math.round(product.discount).toLocaleString()}원 할인
-                            </Badge>
+                            {/* ✅ SALE 상품만 할인 뱃지 표시 */}
+                            {isSaleProduct && product.discount > 0 && (
+                                <Badge variant="sale" className="absolute top-4 left-4 text-base px-3 py-1">
+                                    {Math.round(product.discount).toLocaleString()}원 할인
+                                </Badge>
+                            )}
 
-                            {/* 타이머 표시 */}
-                            <div className={`absolute bottom-4 left-4 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center space-x-2 shadow-lg ${
-                                isClosed ? 'bg-gray-800/90 text-white' : 'bg-white/95 text-gray-900'
-                            }`}>
-                                <Clock className={`w-5 h-5 ${isClosed ? 'text-gray-400' : 'text-red-500'}`} />
-                                <span className="font-semibold">{timeLeft}</span>
-                            </div>
+                            {/* ✅ SALE 상품만 타이머 표시 */}
+                            {isSaleProduct && (
+                                <div className={`absolute bottom-4 left-4 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center space-x-2 shadow-lg ${
+                                    isClosed ? 'bg-gray-800/90 text-white' : 'bg-white/95 text-gray-900'
+                                }`}>
+                                    <Clock className={`w-5 h-5 ${isClosed ? 'text-gray-400' : 'text-red-500'}`} />
+                                    <span className="font-semibold">{timeLeft}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -360,14 +369,17 @@ export default function ProductDetailPage() {
 
                         {/* 가격 정보 */}
                         <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl p-6">
-                            <div className="flex items-baseline space-x-3 mb-2">
-                                <span className="text-2xl text-gray-400 line-through">
-                                  {Math.round(product.originalPrice).toLocaleString()}원
-                                </span>
-                                <Badge variant="sale" className="text-lg px-3 py-1 bg-red-500 text-white border-none">
-                                    {Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100)}% 할인
-                                </Badge>
-                            </div>
+                            {/* ✅ SALE 상품만 할인 정보 표시 */}
+                            {isSaleProduct && product.discount > 0 && (
+                                <div className="flex items-baseline space-x-3 mb-2">
+                                    <span className="text-2xl text-gray-400 line-through">
+                                        {Math.round(product.originalPrice).toLocaleString()}원
+                                    </span>
+                                    <Badge variant="sale" className="text-lg px-3 py-1 bg-red-500 text-white border-none">
+                                        {Math.round(product.discount).toLocaleString()}원 할인
+                                    </Badge>
+                                </div>
+                            )}
                             <div className="text-4xl font-bold text-primary-600">
                                 {product.salePrice.toLocaleString()}원
                             </div>
@@ -384,7 +396,7 @@ export default function ProductDetailPage() {
                                 <div className="flex items-center border border-gray-300 rounded-lg bg-white">
                                     <button
                                         onClick={() => handleQuantityChange(-1)}
-                                        disabled={quantity <= 1 || isClosed}
+                                        disabled={quantity <= 1 || (isSaleProduct && isClosed)}
                                         className="p-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition rounded-l-lg"
                                     >
                                         <Minus className="w-5 h-5" />
@@ -392,7 +404,7 @@ export default function ProductDetailPage() {
                                     <span className="px-6 text-lg font-semibold min-w-[3rem] text-center">{quantity}</span>
                                     <button
                                         onClick={() => handleQuantityChange(1)}
-                                        disabled={quantity >= product.stock || isClosed}
+                                        disabled={quantity >= product.stock || (isSaleProduct && isClosed)}
                                         className="p-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition rounded-r-lg"
                                     >
                                         <Plus className="w-5 h-5" />
@@ -414,19 +426,19 @@ export default function ProductDetailPage() {
                                 size="lg"
                                 className="flex-1"
                                 onClick={handleAddToCart}
-                                disabled={product.stock <= 0 || isClosed}
+                                disabled={product.stock <= 0 || (isSaleProduct && isClosed)}
                             >
                                 <ShoppingCart className="w-5 h-5 mr-2" />
-                                {isClosed ? '영업 종료' : '장바구니'}
+                                {(isSaleProduct && isClosed) ? '영업 종료' : '장바구니'}
                             </Button>
 
                             <Button
                                 size="lg"
                                 className="flex-1"
-                                disabled={product.stock <= 0 || isClosed}
+                                disabled={product.stock <= 0 || (isSaleProduct && isClosed)}
                                 onClick={handleBuyNow}
                             >
-                                {product.stock <= 0 ? '품절' : isClosed ? '영업 종료' : '바로 구매'}
+                                {product.stock <= 0 ? '품절' : (isSaleProduct && isClosed) ? '영업 종료' : '바로 구매'}
                             </Button>
                         </div>
 
@@ -451,11 +463,16 @@ export default function ProductDetailPage() {
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">상품 설명</h3>
                             <div className="prose max-w-none text-gray-600 whitespace-pre-wrap">
                                 {product.description}
-                                <br /><br />
-                                <p className="text-sm text-gray-500">
-                                    * 본 상품은 마감 임박 상품으로 환불이 어려울 수 있습니다.<br/>
-                                    * 매장 방문 수령 시간을 꼭 확인해주세요.
-                                </p>
+                                {/* ✅ SALE 상품만 주의사항 표시 */}
+                                {isSaleProduct && (
+                                    <>
+                                        <br /><br />
+                                        <p className="text-sm text-gray-500">
+                                            * 본 상품은 마감 임박 상품으로 환불이 어려울 수 있습니다.<br/>
+                                            * 매장 방문 수령 시간을 꼭 확인해주세요.
+                                        </p>
+                                    </>
+                                )}
                             </div>
                         </Card>
                     </div>

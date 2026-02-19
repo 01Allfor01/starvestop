@@ -203,19 +203,21 @@ export default function CartPage() {
                         <div className="lg:col-span-2 space-y-4">
                             {/* 매장 정보 표시 */}
                             {currentStore && (
-                                <Card padding="sm" className="bg-primary-50 border-primary-200">
-                                    <div className="flex items-center">
-                                        <Store className="w-5 h-5 text-primary-600 mr-2" />
-                                        <div className="flex-1">
-                                            <span className="font-semibold text-primary-900">
-                                                {currentStore.name}
-                                            </span>
-                                            <p className="text-sm text-primary-700 mt-1">
-                                                💡 한 매장의 상품만 함께 주문할 수 있습니다
-                                            </p>
+                                <Link href={`/stores/${currentStore.id}`}>
+                                    <Card padding="sm" className="bg-primary-50 border-primary-200 cursor-pointer hover:bg-primary-100 transition-colors">
+                                        <div className="flex items-center">
+                                            <Store className="w-5 h-5 text-primary-600 mr-2" />
+                                            <div className="flex-1">
+                    <span className="font-semibold text-primary-900">
+                        {currentStore.name}
+                    </span>
+                                                <p className="text-sm text-primary-700 mt-1">
+                                                    한 매장의 상품만 함께 주문할 수 있습니다
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </Card>
+                                    </Card>
+                                </Link>
                             )}
 
                             {/* 컨트롤 바 */}

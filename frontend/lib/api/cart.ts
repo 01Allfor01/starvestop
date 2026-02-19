@@ -8,6 +8,12 @@ export interface CartItemResponse {
     quantity: number;
 }
 
+// ✅ 백엔드 응답 구조
+export interface CartResponse {
+    storeId: number;
+    cartList: CartItemResponse[];
+}
+
 // 프론트엔드에서 사용할 UI용 타입 (상품 상세 정보 포함)
 export interface CartItemDetail extends CartItemResponse {
     price: number;       // 판매가 (salePrice)
@@ -31,10 +37,10 @@ export interface UpdateCartRequest {
 
 export const cartApi = {
     // 장바구니 목록 조회
-    getCart: async () => {
-        // 백엔드가 CommonResponse<List<CartResponse>> 형태이므로 data.data로 접근
-        const response = await apiClient.get<{ data: CartItemResponse[] }>('/carts');
-        return response.data;
+    getCart: async (): Promise<CartItemResponse[]> => {
+        const response = await apiClient.get<CartResponse>('/carts');
+        // ✅ cartList 배열 반환
+        return response.data.cartList || [];
     },
 
     // 장바구니 추가

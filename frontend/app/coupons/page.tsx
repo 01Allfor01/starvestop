@@ -42,14 +42,21 @@ export default function CouponsAvailablePage() {
                 name: coupon.name,
                 discount: coupon.discountAmount,
                 minAmount: coupon.minAmount,
-                expiryDate: coupon.expiresAt || '2026-12-31', // 기본값 설정
+                expiryDate: coupon.expiresAt || '2026-12-31',
                 remainingQuantity: coupon.stock || 0,
                 isReceived: myCouponIds.has(coupon.id),
                 status: coupon.status || 'ACTIVE',
             }));
 
-            console.log('✅ 매핑된 쿠폰:', mappedCoupons);
-            setCoupons(mappedCoupons);
+// ✅ 발급 안 받은 쿠폰이 위로 오도록 정렬
+            const sortedCoupons = mappedCoupons.sort((a, b) => {
+                if (a.isReceived && !b.isReceived) return 1;  // a가 받은 것이면 뒤로
+                if (!a.isReceived && b.isReceived) return -1; // b가 받은 것이면 a를 앞으로
+                return 0;
+            });
+
+            console.log('✅ 매핑된 쿠폰:', sortedCoupons);
+            setCoupons(sortedCoupons);
         } catch (error) {
             console.error('❌ 쿠폰 목록 조회 실패:', error);
             alert('쿠폰 목록을 불러오는데 실패했습니다.');
@@ -106,7 +113,7 @@ export default function CouponsAvailablePage() {
                             return (
                                 <Card key={coupon.id} className={
                                     coupon.isReceived
-                                        ? 'border-2 border-green-200 bg-green-50'
+                                        ? 'border-2 border-green-200 bg-green-50 opacity-60'
                                         : !isAvailable
                                             ? 'opacity-50'
                                             : 'border-2 border-primary-200'

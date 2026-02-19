@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Clock, MapPin, TrendingUp, Loader2, CalendarCheck } from 'lucide-react';
+import { Clock, MapPin, Loader2, CalendarCheck } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
+import HeroBanner from '@/components/HeroBanner';
 import { productsApi } from '@/lib/api/products';
 import { subscriptionsApi } from '@/lib/api/subscriptions';
 import { storesApi } from '@/lib/api/stores';
@@ -39,19 +40,6 @@ function useGeolocation() {
     return { location, denied, gpsLoading: loading };
 }
 
-// ─── 거리 계산 함수 (Haversine formula) ────────────────────────────────────
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371; // 지구 반지름 (km)
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-}
-
 // ─── 거리 포맷 함수 ───────────────────────────────────────────────────────────
 function formatDistance(distanceKm: number): string {
     if (distanceKm < 1) {
@@ -80,108 +68,8 @@ const mealTimeMap: Record<string, string> = {
 export default function HomePage() {
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* 히어로 섹션 - 이미지 배경으로 개선 */}
-            <section className="relative bg-gradient-to-r from-amber-50 to-orange-50 overflow-hidden">
-                {/* 배경 이미지 */}
-                <div className="absolute inset-0 opacity-20">
-                    <img
-                        src="https://images.unsplash.com/photo-1495195134817-aeb325a55b65?w=1200"
-                        alt="배경"
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-
-                {/* 그라데이션 오버레이 */}
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-50/95 to-orange-50/95"></div>
-
-                {/* 컨텐츠 */}
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-                    <div className="grid md:grid-cols-2 gap-12 items-center">
-                        {/* 왼쪽: 텍스트 */}
-                        <div>
-                            <div className="inline-block mb-4">
-                                <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm">
-                                    <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
-                                        <span className="text-white text-lg font-bold">S</span>
-                                    </div>
-                                    <span className="font-bold text-gray-900">Starve Stop</span>
-                                </div>
-                            </div>
-
-                            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                                합리적인 가격으로<br />
-                                <span className="text-orange-600">든든한 한끼</span>
-                            </h1>
-
-                            <p className="text-xl text-gray-700 mb-8">
-                                마감 세일과 정기구독으로 똑똑하게 장보기
-                            </p>
-
-                            {/* 아이콘 포인트 */}
-                            <div className="flex items-center space-x-8 mb-8">
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
-                                        <Clock className="w-6 h-6 text-orange-600" />
-                                    </div>
-                                    <span className="font-semibold text-gray-900">마감 세일</span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
-                                        <TrendingUp className="w-6 h-6 text-green-600" />
-                                    </div>
-                                    <span className="font-semibold text-gray-900">정기 구독</span>
-                                </div>
-                            </div>
-
-                            {/* 버튼 */}
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <Link href="/products/sale">
-                                    <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg">
-                                        마감세일 구경하기
-                                    </Button>
-                                </Link>
-                                <Link href="/subscriptions">
-                                    <Button size="lg" variant="outline" className="border-2 border-orange-600 text-orange-600 hover:bg-orange-50">
-                                        정기구독 알아보기
-                                    </Button>
-                                </Link>
-                            </div>
-                        </div>
-
-                        {/* 오른쪽: 이미지들 */}
-                        <div className="relative hidden md:block">
-                            <div className="relative">
-                                {/* 메인 도시락 이미지 */}
-                                <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-4 transform rotate-2">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1608198399988-841b3c6f76d2?w=400"
-                                        alt="도시락"
-                                        className="rounded-xl w-full h-64 object-cover"
-                                    />
-                                </div>
-
-                                {/* 샐러드 이미지 */}
-                                <div className="absolute -top-4 -right-4 z-20 bg-white rounded-2xl shadow-xl p-3 transform -rotate-6">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200"
-                                        alt="샐러드"
-                                        className="rounded-lg w-32 h-32 object-cover"
-                                    />
-                                </div>
-
-                                {/* 샌드위치 이미지 */}
-                                <div className="absolute -bottom-4 -left-4 z-20 bg-white rounded-2xl shadow-xl p-3 transform rotate-6">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=200"
-                                        alt="샌드위치"
-                                        className="rounded-lg w-32 h-32 object-cover"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            {/* ✅ 히어로 배너 */}
+            <HeroBanner />
 
             {/* 마감 세일 */}
             <section className="py-16">
@@ -204,7 +92,6 @@ export default function HomePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            {/* ✅ 💚 대신 CalendarCheck 아이콘 사용 */}
                             <h2 className="text-3xl font-bold text-gray-900 mb-2 flex items-center">
                                 <CalendarCheck className="w-8 h-8 text-secondary-600 mr-3" />
                                 정기구독
@@ -247,7 +134,6 @@ function SaleProducts() {
     useEffect(() => {
         if (gpsLoading) return;
 
-        // ✅ GPS 위치 없으면 로딩 종료
         if (denied || !location) {
             setLoading(false);
             return;
@@ -256,15 +142,10 @@ function SaleProducts() {
         const fetchProducts = async () => {
             try {
                 setLoading(true);
-                // ✅ 백엔드 API에 위도/경도 전달
                 const data = await productsApi.getSaleProducts(location.lat, location.lng, 100);
 
-                console.log('📦 마감세일 데이터:', data);
-
-                // ✅ 5km 이내만 필터링
                 const filtered = data.filter((item: any) => item.distance <= 5);
 
-                // 시간 파싱 함수
                 const parseEndTime = (timeStr: string): Date | null => {
                     if (!timeStr) return null;
                     const [hours, minutes, seconds] = timeStr.split(':').map(Number);
@@ -294,10 +175,9 @@ function SaleProducts() {
                     discount: item.price - item.salePrice,
                     image: item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
                     endTime: parseEndTime(item.endTime),
-                    distance: item.distance, // ✅ 백엔드에서 계산된 거리 사용
+                    distance: item.distance,
                 }));
 
-                // ✅ 랜덤 4개 선택
                 const shuffled = [...mappedProducts].sort(() => Math.random() - 0.5);
                 const random4 = shuffled.slice(0, 4);
 
@@ -355,7 +235,6 @@ function SaleProducts() {
                         <div className="p-4">
                             <p className="text-sm text-gray-500 mb-1">{product.storeName}</p>
                             <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{product.name}</h3>
-                            {/* ✅ 거리 표시 */}
                             <div className="flex items-center text-sm text-gray-600 mb-2">
                                 <MapPin className="w-4 h-4 mr-1" />
                                 <span>{formatDistance(product.distance)}</span>
@@ -418,7 +297,6 @@ function SubscriptionProducts() {
     useEffect(() => {
         if (gpsLoading) return;
 
-        // ✅ GPS 위치 없으면 로딩 종료
         if (denied || !location) {
             setLoading(false);
             return;
@@ -427,14 +305,8 @@ function SubscriptionProducts() {
         const fetchSubscriptions = async () => {
             try {
                 setLoading(true);
-                console.log('🔍 구독 API 호출:', { lat: location.lat, lng: location.lng });
-
-                // ✅ 백엔드 API에 위도/경도 전달
                 const data = await subscriptionsApi.getSubscriptions(location.lat, location.lng, 100);
 
-                console.log('📦 정기구독 데이터:', data);
-
-                // ✅ 5km 이내만 필터링
                 const filtered = data.filter((item: any) => item.distance <= 5);
 
                 const mappedSubscriptions = filtered.map((item: any) => ({
@@ -445,10 +317,9 @@ function SubscriptionProducts() {
                     image: item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
                     days: item.dayList?.map((d: string) => dayMap[d] || d) || ['월', '수', '금'],
                     time: mealTimeMap[item.mealTimeList?.[0]] || '점심',
-                    distance: item.distance, // ✅ 백엔드에서 계산된 거리 사용
+                    distance: item.distance,
                 }));
 
-                // ✅ 랜덤 4개 선택
                 const shuffled = [...mappedSubscriptions].sort(() => Math.random() - 0.5);
                 const random4 = shuffled.slice(0, 4);
 
@@ -505,7 +376,6 @@ function SubscriptionProducts() {
                         <div className="p-4">
                             <p className="text-sm text-gray-500 mb-2">{sub.storeName}</p>
                             <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2">{sub.name}</h3>
-                            {/* ✅ 거리 표시 */}
                             <div className="flex items-center text-sm text-gray-600 mb-3">
                                 <MapPin className="w-4 h-4 mr-1" />
                                 <span>{formatDistance(sub.distance)}</span>
@@ -546,8 +416,6 @@ function NearbyStores() {
                     nowLongitude: location.lng,
                     size: 20,
                 });
-
-                console.log('📦 매장 데이터:', data);
 
                 const sorted = [...data].sort((a, b) => {
                     const distA = a.distance ?? Infinity;

@@ -1,50 +1,28 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MapPin, Search, Loader2 } from 'lucide-react';
+import { Search, MapPin, Loader2, X } from 'lucide-react';
 import Card from '@/components/ui/Card';
+import Badge from '@/components/ui/Badge';
 import { storesApi } from '@/lib/api/stores';
 
-// ─── GPS 위치 훅 ─────────────────────────────────────────────────────────────
-function useGeolocation() {
-    const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-    const [denied, setDenied] = useState(false);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        if (!navigator.geolocation) {
-            setDenied(true);
-            setLoading(false);
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                setLoading(false);
-            },
-            (err) => {
-                console.warn('📍 위치 권한 거부:', err.message);
-                setDenied(true);
-                setLoading(false);
-            }
-        );
-    }, []);
-
-    return { location, denied, gpsLoading: loading };
-}
-
-// ─── 거리 포맷 함수 ───────────────────────────────────────────────────────────
-function formatDistance(distanceKm: number): string {
-    if (distanceKm < 1) {
-        return `${Math.round(distanceKm * 1000)}m`;
-    }
-    return `${distanceKm.toFixed(1)}km`;
-}
-
-// ─── 카테고리 매핑 ────────────────────────────────────────────────────────────
+// 카테고리 매핑
 const categoryMap: Record<string, string> = {
+    '전체': '',
+    '한식': 'KOREAN_FOOD',
+    '일식': 'JAPANESE_FOOD',
+    '중식': 'CHINESE_FOOD',
+    '양식': 'WESTERN_FOOD',
+    '아시안': 'ASIAN_FOOD',
+    '패스트푸드': 'FAST_FOOD',
+    '카페': 'CAFE',
+    '디저트': 'DESSERT',
+};
+
+// 역방향 매핑 (KOREAN_FOOD -> 한식)
+const reverseCategoryMap: Record<string, string> = {
     'KOREAN_FOOD': '한식',
     'JAPANESE_FOOD': '일식',
     'CHINESE_FOOD': '중식',
@@ -52,98 +30,104 @@ const categoryMap: Record<string, string> = {
     'ASIAN_FOOD': '아시안',
     'FAST_FOOD': '패스트푸드',
     'CAFE': '카페',
-    'DESSERT': '디저트'
+    'DESSERT': '디저트',
 };
 
-const categories = [
-    { value: 'all', label: '전체' },
-    { value: 'KOREAN_FOOD', label: '한식' },
-    { value: 'JAPANESE_FOOD', label: '일식' },
-    { value: 'CHINESE_FOOD', label: '중식' },
-    { value: 'WESTERN_FOOD', label: '양식' },
-    { value: 'ASIAN_FOOD', label: '아시안' },
-    { value: 'FAST_FOOD', label: '패스트푸드' },
-    { value: 'CAFE', label: '카페' },
-    { value: 'DESSERT', label: '디저트' }
-];
+// 거리 포맷 함수
+function formatDistance(distanceKm: number): string {
+    if (distanceKm < 1) {
+        return `${Math.round(distanceKm * 1000)}m`;
+    }
+    return `${distanceKm.toFixed(1)}km`;
+}
 
 export default function StoresPage() {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // ✅ URL의 category 파라미터를 읽어서 초기값 설정
+    const categoryFromUrl = searchParams.get('category');
+    const initialCategory = categoryFromUrl
+        ? (reverseCategoryMap[categoryFromUrl] || '전체')
+        : '전체';
+
     const [stores, setStores] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-    const { location, denied, gpsLoading } = useGeolocation();
-
+    // ✅ URL 파라미터가 변경되면 selectedCategory 업데이트
     useEffect(() => {
-        if (gpsLoading || denied || !location) return;
+        if (categoryFromUrl) {
+            const koreanCategory = reverseCategoryMap[categoryFromUrl] || '전체';
+            setSelectedCategory(koreanCategory);
+        } else {
+            setSelectedCategory('전체');
+        }
+    }, [categoryFromUrl]);
+
+    // GPS 위치 가져오기
+    useEffect(() => {
+        if (!navigator.geolocation) return;
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setMyLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            },
+            (err) => {
+                console.warn('📍 위치 권한 거부:', err.message);
+            }
+        );
+    }, []);
+
+    // 매장 목록 조회
+    useEffect(() => {
+        if (!myLocation) return;
+
+        const fetchStores = async () => {
+            try {
+                setLoading(true);
+                const categoryParam = categoryMap[selectedCategory];
+
+                const data = await storesApi.getStores({
+                    nowLatitude: myLocation.lat,
+                    nowLongitude: myLocation.lng,
+                    keyword: searchKeyword || undefined,
+                    category: categoryParam || undefined,
+                    size: 50,
+                });
+
+                setStores(data);
+            } catch (error) {
+                console.error('❌ 매장 목록 로딩 실패:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
         fetchStores();
-    }, [location, gpsLoading, denied, selectedCategory]);
+    }, [myLocation, selectedCategory, searchKeyword]);
 
-    const fetchStores = async () => {
-        if (!location) return;
+    // ✅ 카테고리 변경 핸들러 (URL도 업데이트)
+    const handleCategoryChange = (category: string) => {
+        setSelectedCategory(category);
 
-        try {
-            setLoading(true);
-
-            const params: any = {
-                nowLatitude: location.lat,
-                nowLongitude: location.lng,
-                size: 100,
-            };
-
-            if (searchQuery.trim()) {
-                params.keyword = searchQuery.trim();
-            }
-
-            if (selectedCategory !== 'all') {
-                params.category = selectedCategory;
-            }
-
-            const data = await storesApi.getStores(params);
-
-            console.log('📦 매장 데이터:', data);
-
-            const mappedStores = data.map((item: any) => ({
-                id: item.id,
-                name: item.name,
-                category: categoryMap[item.category] || item.category,
-                distance: item.distance ?? 0,
-                image: item.imageUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
-            }));
-
-            setStores(mappedStores);
-        } catch (error) {
-            console.error('❌ 매장 로딩 실패:', error);
-        } finally {
-            setLoading(false);
+        // URL 업데이트
+        if (category === '전체') {
+            router.push('/stores');
+        } else {
+            const englishCategory = categoryMap[category];
+            router.push(`/stores?category=${englishCategory}`);
         }
     };
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        fetchStores();
+    // 검색어 초기화
+    const handleClearSearch = () => {
+        setSearchKeyword('');
     };
 
-    if (denied) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <Card className="max-w-md text-center">
-                    <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h2 className="text-xl font-bold text-gray-900 mb-2">위치 권한이 필요합니다</h2>
-                    <p className="text-gray-600 mb-4">
-                        내 근처 가게를 보려면 위치 권한을 허용해주세요.
-                    </p>
-                    <p className="text-sm text-gray-500">
-                        브라우저 설정에서 위치 권한을 허용한 후 페이지를 새로고침해주세요.
-                    </p>
-                </Card>
-            </div>
-        );
-    }
-
-    if (gpsLoading) {
+    if (!myLocation) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
@@ -159,94 +143,104 @@ export default function StoresPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* 헤더 */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">내 근처 가게</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">가게 둘러보기</h1>
                     <p className="text-gray-600">
                         총 <span className="text-primary-600 font-semibold">{stores.length}개</span>의 가게
                     </p>
                 </div>
 
                 {/* 검색 */}
-                <Card className="mb-6">
-                    <form onSubmit={handleSearch}>
-                        <div className="flex gap-3">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                                <input
-                                    type="text"
-                                    placeholder="가게를 검색하세요"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                                />
-                            </div>
+                <div className="mb-6">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input
+                            type="text"
+                            placeholder="가게 이름으로 검색"
+                            value={searchKeyword}
+                            onChange={(e) => setSearchKeyword(e.target.value)}
+                            className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        />
+                        {searchKeyword && (
                             <button
-                                type="submit"
-                                className="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition"
+                                onClick={handleClearSearch}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                             >
-                                검색
+                                <X className="w-5 h-5" />
                             </button>
-                        </div>
-                    </form>
-                </Card>
+                        )}
+                    </div>
+                </div>
 
-                {/* 카테고리 필터 */}
-                <div className="flex items-center space-x-2 overflow-x-auto pb-2 mb-6">
-                    {categories.map((category) => (
+                {/* 카테고리 탭 */}
+                <div className="mb-6 flex overflow-x-auto space-x-2 pb-2">
+                    {Object.keys(categoryMap).map((category) => (
                         <button
-                            key={category.value}
-                            onClick={() => setSelectedCategory(category.value)}
-                            className={`px-4 py-2 rounded-lg whitespace-nowrap transition ${
-                                selectedCategory === category.value
+                            key={category}
+                            onClick={() => handleCategoryChange(category)}
+                            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                                selectedCategory === category
                                     ? 'bg-primary-500 text-white'
-                                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                             }`}
                         >
-                            {category.label}
+                            {category}
                         </button>
                     ))}
                 </div>
 
-                {/* 로딩 상태 */}
-                {loading && (
+                {/* 매장 목록 */}
+                {loading ? (
                     <div className="flex justify-center items-center py-20">
                         <Loader2 className="w-10 h-10 text-primary-500 animate-spin" />
                     </div>
-                )}
-
-                {/* 가게 목록 */}
-                {!loading && stores.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                ) : stores.length === 0 ? (
+                    <div className="text-center py-20">
+                        <p className="text-gray-500 mb-4">검색 결과가 없습니다</p>
+                        <button
+                            onClick={() => {
+                                setSearchKeyword('');
+                                handleCategoryChange('전체');
+                            }}
+                            className="text-primary-500 hover:text-primary-600 font-medium"
+                        >
+                            전체 가게 보기
+                        </button>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {stores.map((store) => (
                             <Link key={store.id} href={`/stores/${store.id}`}>
                                 <Card hover padding="none" className="overflow-hidden h-full">
                                     <div className="relative">
                                         <img
-                                            src={store.image}
+                                            src={store.imageUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4'}
                                             alt={store.name}
                                             className="w-full h-48 object-cover"
                                         />
+                                        <Badge variant="default" className="absolute top-3 left-3">
+                                            {reverseCategoryMap[store.category] || store.category}
+                                        </Badge>
                                     </div>
                                     <div className="p-4">
-                                        <h3 className="font-semibold text-gray-900 mb-1">{store.name}</h3>
-                                        <p className="text-sm text-gray-500 mb-3">{store.category}</p>
+                                        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-1">
+                                            {store.name}
+                                        </h3>
+                                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                                            {store.description || '맛있는 음식을 제공하는 가게입니다'}
+                                        </p>
                                         <div className="flex items-center text-sm text-gray-600">
-                                            <MapPin className="w-4 h-4 mr-1" />
-                                            <span>{formatDistance(store.distance)}</span>
+                                            <MapPin className="w-4 h-4 mr-1 text-primary-500" />
+                                            <span className="font-medium text-primary-600">
+                                                {store.distance !== undefined && store.distance !== null
+                                                    ? formatDistance(store.distance)
+                                                    : '-'}
+                                            </span>
                                         </div>
                                     </div>
                                 </Card>
                             </Link>
                         ))}
                     </div>
-                )}
-
-                {/* 결과 없음 */}
-                {!loading && stores.length === 0 && (
-                    <Card className="text-center py-16">
-                        <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-600 mb-2">가게가 없습니다</p>
-                        <p className="text-sm text-gray-500">다른 카테고리나 검색어로 시도해보세요</p>
-                    </Card>
                 )}
             </div>
         </div>
