@@ -136,10 +136,13 @@ export default function EditProfilePage() {
     };
 
     // 비밀번호 일치 여부
-    const passwordsMatch = formData.newPassword && formData.confirmPassword &&
-        formData.newPassword === formData.confirmPassword;
-    const passwordsDontMatch = formData.confirmPassword &&
-        formData.newPassword !== formData.confirmPassword;
+    const shouldCheck = formData.newPassword.length > 0 && formData.confirmPassword.length > 0;
+
+    const passwordsMatch =
+        shouldCheck && formData.newPassword === formData.confirmPassword;
+
+    const passwordsDontMatch =
+        shouldCheck && formData.newPassword !== formData.confirmPassword;
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
