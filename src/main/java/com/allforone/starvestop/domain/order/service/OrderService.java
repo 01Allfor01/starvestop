@@ -70,6 +70,16 @@ public class OrderService {
         order.delete();
     }
 
+    @Transactional
+    public void paid(String orderKey) {
+        orderRepository.updateStatusToPaidByOrderKey(orderKey);
+    }
+
+    @Transactional
+    public void cancel(String orderKey) {
+        orderRepository.updateStatusToCancelByOrderKey(orderKey);
+    }
+
     private void userCheck(Long userId, Order order) {
         if (!order.getUser().getId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);
