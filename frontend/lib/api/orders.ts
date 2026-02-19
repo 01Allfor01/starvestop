@@ -1,5 +1,7 @@
 import { apiClient } from './client';
 
+export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELED';
+
 // 주문 생성 요청 DTO
 export interface CreateOrderRequest {
     storeId: number;
@@ -13,7 +15,7 @@ export interface OrderResponse {
     storeName: string;
     userId: number;
     orderKey: string;
-    status: string;
+    status: OrderStatus;
     discountedPrice: number;
     amount: number;
     createdAt: string;
