@@ -66,6 +66,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Debug listener
+        run: |
+          aws elbv2 describe-listeners --listener-arn "${{ secrets.ALB_LISTENER_ARN }}"
+
       - name: Decide IDLE + remember PREV TG
         id: decide
         run: |

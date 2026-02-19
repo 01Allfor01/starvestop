@@ -25,15 +25,24 @@ const getStatusText = (status: string): string => {
 };
 
 // 주문 상태별 뱃지 variant
-const getStatusVariant = (status: string): 'default' | 'success' | 'warning' | 'danger' => {
-    const variantMap: Record<string, 'default' | 'success' | 'warning' | 'danger'> = {
+type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELED';
+
+const getStatusVariant = (
+    status: OrderStatus
+): 'default' | 'success' | 'warning' | 'sale' => {
+    const variantMap: Record<
+        OrderStatus,
+        'default' | 'success' | 'warning' | 'sale'
+    > = {
         PENDING: 'warning',
         PAID: 'success',
-        FAILED: 'danger',
+        FAILED: 'sale',
         CANCELED: 'default',
     };
-    return variantMap[status] || 'default';
+
+    return variantMap[status];
 };
+
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<OrderWithItems[]>([]);
