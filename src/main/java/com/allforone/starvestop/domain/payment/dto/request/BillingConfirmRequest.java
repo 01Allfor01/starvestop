@@ -10,9 +10,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class BillingConfirmRequest {
-    @Schema(example = "customer_123")
-    @NotBlank
-    private String customerKey;
     @Schema(example = "auth_abc")
     @NotBlank
     private String authKey;

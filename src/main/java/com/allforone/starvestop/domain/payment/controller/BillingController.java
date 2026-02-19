@@ -40,7 +40,6 @@ public class BillingController {
 
         billingService.confirmAndActivate(
                 userId,
-                request.getCustomerKey(),
                 request.getAuthKey(),
                 request.getSubscriptionId()
         );
