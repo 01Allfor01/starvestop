@@ -72,18 +72,24 @@ export default function BillingRegisterPage() {
         try {
             setProcessing(true);
 
+            // ✅ 1단계: 백엔드에 UserSubscription 생성 요청 먼저 실행
+            // 백엔드 로직상 DB에 구독 정보를 먼저 생성해야 한다면 여기서 호출합니다.
+            console.log('🔄 구독 정보 생성 중...');
+            await subscriptionsApi.subscribe(Number(subscriptionId));
+
+            // 2단계: 토스 페이먼츠 연동 시작
             const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
             if (!clientKey) {
                 throw new Error('토스 클라이언트 키가 설정되지 않았습니다.');
             }
 
-            // customerKey는 백엔드에서 user.userKey로 자동 생성되므로
-            // 여기서는 임시로 userId 기반으로 생성 (토스 SDK 호출용)
-            const customerKey = `customer_${userInfo.id}`;
+            // customerKey는 백엔드 User 엔티티의 userKey 사용
+            const customerKey = `${userInfo.userKey}`;
 
             const tossPayments = window.TossPayments(clientKey);
             const payment = tossPayments.payment({ customerKey });
 
+            // 3단계: 카드 등록창 호출 (빌링 키 발급 요청)
             await payment.requestBillingAuth({
                 method: 'CARD',
                 successUrl: `${window.location.origin}/billing/success?subscriptionId=${subscriptionId}`,
@@ -91,9 +97,16 @@ export default function BillingRegisterPage() {
                 customerEmail: userInfo.email || 'customer@example.com',
                 customerName: userInfo.name || userInfo.nickname || '사용자',
             });
-        } catch (error) {
-            console.error('❌ 카드 등록 실패:', error);
-            alert('카드 등록에 실패했습니다.');
+
+        } catch (error: any) {
+            console.error('❌ 프로세스 실패:', error);
+
+            // 구독 생성 API에서 에러가 났는지, 토스에서 났는지에 따라 메시지 분기 가능
+            if (error.response) {
+                alert(`구독 생성 실패: ${error.response.data.message || '오류가 발생했습니다.'}`);
+            } else {
+                alert('카드 등록 프로세스 중 오류가 발생했습니다.');
+            }
             setProcessing(false);
         }
     };

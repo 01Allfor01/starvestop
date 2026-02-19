@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, MapPin, Clock, Loader2, Store, Users, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Clock, Loader2, Store, MessageCircle } from 'lucide-react';
 import { openOrCreateChatRoom } from '@/lib/helpers/chat';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -61,19 +61,25 @@ const mealTimeMap: Record<string, string> = {
     'DINNER': '저녁'
 };
 
-const mealTimeRange: Record<string, string> = {
-    'BREAKFAST': '07:00-12:00',
-    'LUNCH': '12:00-17:00',
-    'DINNER': '17:00-22:00'
+// ─── 다음 결제일 계산 (만료일 + 1일) ───────────────────────────────────────
+const getNextPaymentDate = (expiresAt: string) => {
+    const date = new Date(expiresAt);
+    date.setDate(date.getDate() + 1);
+    return date.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
 };
 
-export default function SubscriptionDetailPage() {
+export default function MySubscriptionDetailPage() {
     const params = useParams();
     const router = useRouter();
-    const subscriptionId = Number(params.id);
+    const userSubscriptionId = Number(params.id);
 
     const location = useGeolocation();
 
+    const [userSubscription, setUserSubscription] = useState<any>(null);
     const [subscription, setSubscription] = useState<any>(null);
     const [storeInfo, setStoreInfo] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -83,20 +89,24 @@ export default function SubscriptionDetailPage() {
             try {
                 setLoading(true);
 
-                // 구독 정보 가져오기
-                const subData = await subscriptionsApi.getSubscription(subscriptionId);
+                // 내 구독 정보 가져오기
+                const mySubData = await subscriptionsApi.getMySubscription(userSubscriptionId);
+                setUserSubscription(mySubData);
+
+                // 구독 상품 정보 가져오기
+                const subData = await subscriptionsApi.getSubscription(mySubData.subscriptionId);
 
                 // 매장 정보 가져오기
                 const storeData = await storesApi.getStore(subData.storeId);
 
-                // ✅ 거리 계산
+                // 거리 계산
                 let distance = null;
                 if (location && subData.location && subData.location.coordinates) {
                     distance = calculateDistance(
                         location.lat,
                         location.lng,
-                        subData.location.coordinates[1],  // 위도
-                        subData.location.coordinates[0]   // 경도
+                        subData.location.coordinates[1],
+                        subData.location.coordinates[0]
                     );
                 }
 
@@ -104,13 +114,11 @@ export default function SubscriptionDetailPage() {
                 const days = subData.dayList?.map((d: string) => dayMap[d] || d) || [];
                 const mealTimeKey = subData.mealTimeList?.[0] || 'LUNCH';
                 const mealTime = mealTimeMap[mealTimeKey] || '점심';
-                const timeRange = mealTimeRange[mealTimeKey] || '12:00-17:00';
 
                 setSubscription({
                     ...subData,
                     days,
                     mealTime,
-                    timeRange,
                     pickupSchedule: `${days.join('.')} ${mealTime}`,
                     image: storeData.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
                     distance,
@@ -125,7 +133,7 @@ export default function SubscriptionDetailPage() {
         };
 
         fetchData();
-    }, [subscriptionId, location]);
+    }, [userSubscriptionId, location]);
 
     const handleContactStore = async () => {
         if (!subscription?.storeId) {
@@ -133,6 +141,21 @@ export default function SubscriptionDetailPage() {
             return;
         }
         await openOrCreateChatRoom(subscription.storeId, router);
+    };
+
+    const handleUnsubscribe = async () => {
+        if (confirm(
+            `${subscription.name} 구독을 취소하시겠습니까?\n\n⚠️ 이용 기간에 대해 할인 가격이 아닌 정산가로 차감 후 차액이 환불됩니다.`
+        )) {
+            try {
+                await subscriptionsApi.unsubscribe(userSubscriptionId);
+                alert('구독이 취소되었습니다.');
+                router.push('/mypage/subscriptions');
+            } catch (error) {
+                console.error('❌ 구독 취소 실패:', error);
+                alert('구독 취소에 실패했습니다.');
+            }
+        }
     };
 
     if (loading) {
@@ -143,7 +166,7 @@ export default function SubscriptionDetailPage() {
         );
     }
 
-    if (!subscription) {
+    if (!subscription || !userSubscription) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-secondary-50 to-secondary-100 flex items-center justify-center">
                 <div className="text-center text-gray-500">
@@ -158,9 +181,9 @@ export default function SubscriptionDetailPage() {
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* 헤더 */}
                 <div className="mb-8">
-                    <Link href="/subscriptions" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4">
+                    <Link href="/mypage/subscriptions" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4">
                         <ArrowLeft className="w-5 h-5 mr-2" />
-                        <span>구독 목록으로</span>
+                        <span>내 구독 목록으로</span>
                     </Link>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">{subscription.name}</h1>
                     <p className="text-gray-600">{subscription.storeName}</p>
@@ -176,7 +199,6 @@ export default function SubscriptionDetailPage() {
                         />
                         <div className="flex-1 flex flex-col justify-between">
                             <div>
-                                {/* ✅ Badge와 거리를 가로로 배치 */}
                                 <div className="flex items-center justify-between mb-3">
                                     <Badge variant="subscription">
                                         {subscription.pickupSchedule}
@@ -198,10 +220,9 @@ export default function SubscriptionDetailPage() {
                                 </p>
                             </div>
 
-                            {/* 가격을 하단에 배치 */}
                             <div className="flex items-baseline mt-auto">
                                 <span className="text-4xl font-bold text-secondary-600">
-                                    {subscription.price.toLocaleString()}원
+                                    {userSubscription.price.toLocaleString()}원
                                 </span>
                                 <span className="text-gray-500 ml-2">/월</span>
                             </div>
@@ -261,57 +282,49 @@ export default function SubscriptionDetailPage() {
                     </div>
                 </Card>
 
+                {/* ✅ 구독 정보 (새로 추가) */}
+                <Card className="mb-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <Calendar className="w-5 h-5 mr-2 text-secondary-600" />
+                        구독 정보
+                    </h2>
+                    <div className="space-y-3">
+                        <div className="flex items-start">
+                            <span className="text-sm text-gray-500 w-28 flex-shrink-0">만료일</span>
+                            <span className="font-medium text-gray-900">
+                                {new Date(userSubscription.expiresAt).toLocaleDateString('ko-KR')}
+                            </span>
+                        </div>
+                        <div className="flex items-start">
+                            <span className="text-sm text-gray-500 w-28 flex-shrink-0">다음 결제일</span>
+                            <span className="font-medium text-secondary-600">
+                                {getNextPaymentDate(userSubscription.expiresAt)}
+                            </span>
+                        </div>
+                    </div>
+                </Card>
+
                 {/* 구독 관리 */}
                 <Card className="mb-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">구독 관련 문의</h2>
-                    {/* 가게 문의 */}
                     <Button size="lg" fullWidth onClick={handleContactStore}>
                         <MessageCircle className="w-5 h-5 mr-2" />
                         가게에 문의하기
                     </Button>
                 </Card>
 
-                {/* 구독 가능 인원 */}
-                {subscription.stock > 0 && (
-                    <div className="text-center mb-4">
-                        <p className="text-sm text-gray-600 flex items-center justify-center">
-                            <Users className="w-4 h-4 mr-1 text-secondary-600" />
-                            구독 가능 인원 <span className="font-semibold text-secondary-600 mx-1">{subscription.stock}명</span> 남았어요
-                        </p>
-                    </div>
-                )}
-
-                {/* 구독하기 버튼 */}
-                <Link href={`/billing/register?subscriptionId=${subscription.id}`}>
-                <Button
-                    variant="secondary"
-                    size="lg"
-                    fullWidth
-                    disabled={!subscription.joinable || subscription.stock === 0}
-                    className="mb-4"
+                {/* ✅ 구독 취소하기 버튼 (빨간색) */}
+                <button
+                    onClick={handleUnsubscribe}
+                    className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors mb-3"
                 >
-                    {subscription.joinable && subscription.stock > 0 ? '구독하기' : '구독 마감'}
-                </Button>
-                </Link>
+                    구독 취소하기
+                </button>
 
-                {/* 주의사항 */}
-                <Card className="bg-gray-50 border-gray-200">
-                    <h3 className="font-semibold text-gray-900 mb-3">주의사항</h3>
-                    <ul className="space-y-2 text-sm text-gray-600">
-                        <li className="flex items-start">
-                            <span className="mr-2">•</span>
-                            <span>구독 기간 중 중도 해지 시, 정상가 기준으로 재계산되어 차액이 환불됩니다.</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="mr-2">•</span>
-                            <span>픽업 시간 및 장소는 매장 사정에 따라 변경될 수 있습니다.</span>
-                        </li>
-                        <li className="flex items-start">
-                            <span className="mr-2">•</span>
-                            <span>구독 신청 후 영업일 기준 1일 이내 승인됩니다.</span>
-                        </li>
-                    </ul>
-                </Card>
+                {/* ✅ 주의사항 (작은 글씨, 박스 없음, 붉은색) */}
+                <p className="text-xs text-red-600 text-center">
+                    ⚠️ 구독 기간 중 중도 해지 시, 정상가 기준으로 재계산되어 차액이 환불됩니다.
+                </p>
             </div>
         </div>
     );

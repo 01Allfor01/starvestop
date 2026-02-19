@@ -50,6 +50,7 @@ public class UserSubscription extends BaseEntity {
         this.user = user;
         this.subscription = subscription;
         this.status = UserSubscriptionStatus.PENDING;
+        this.expiresAt = LocalDateTime.now().plusMonths(1);
     }
 
     public static UserSubscription create(User user, Subscription subscription) {

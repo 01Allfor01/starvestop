@@ -11,6 +11,7 @@ public class GetUserResponse {
     private final String email;
     private final String nickname;
     private final String username;
+    private final String userKey;
     private final String imageUrl;
 
     public static GetUserResponse from(User user, String imageUrl) {
@@ -19,6 +20,7 @@ public class GetUserResponse {
                 user.getEmail(),
                 user.getNickname(),
                 user.getUsername(),
+                user.getUserKey(),
                 imageUrl
         );
     }

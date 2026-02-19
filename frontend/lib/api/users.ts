@@ -6,6 +6,7 @@ export interface GetUserResponse {
     nickname: string;
     email: string;
     role: string;
+    userKey: string;
     imageUrl?: string;
 }
 

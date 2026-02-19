@@ -9,6 +9,7 @@ import com.allforone.starvestop.domain.payment.repository.BillingRepository;
 import com.allforone.starvestop.domain.subscription.service.UserSubscriptionService;
 import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BillingService {
@@ -28,7 +30,10 @@ public class BillingService {
 
     @Transactional
     public UserBilling issueAndSave(Long userId, String customerKey, String authKey) {
-
+        log.info("🔥 issueAndSave 호출");
+        log.info("userId = {}", userId);
+        log.info("customerKey = {}", customerKey);
+        log.info("authKey = {}", authKey);
         // 유저당 빌링 1개
         billingRepository.findByUserId(userId).ifPresent(b -> {
             throw new CustomException(ErrorCode.SUBSCRIPTION_BILLING_ALREADY_EXISTS);
@@ -37,7 +42,9 @@ public class BillingService {
         Map<String, Object> response;
         try {
             response = tossBillingClient.issueBillingKey(authKey, customerKey);
+            log.info("토스 billingKey 발급 응답: {}", response);
         } catch (WebClientResponseException e) {
+            log.error("토스 4xx/5xx 응답: {}", e.getResponseBodyAsString());
             // 토스가 4xx/5xx 주는 케이스
             throw new CustomException(ErrorCode.BILLING_KEY_ISSUE_FAILED);
         } catch (Exception e) {
@@ -64,6 +71,7 @@ public class BillingService {
 
     @Transactional
     public void confirmAndActivate(Long userId, String authKey, Long subscriptionId) {
+        log.info("activate subscriptionId = {}", subscriptionId);
         String customerKey = userService.getUserKey(userId);
 
         UserBilling billing = issueAndSave(userId, customerKey, authKey);

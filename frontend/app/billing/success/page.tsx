@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -8,6 +8,7 @@ import Card from '@/components/ui/Card';
 import { billingApi } from '@/lib/api/billing';
 
 export default function BillingSuccessPage() {
+    const calledRef = useRef(false);
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -18,7 +19,11 @@ export default function BillingSuccessPage() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
 
+
     useEffect(() => {
+        if (calledRef.current) return;   // 🔥 중복 방지
+        calledRef.current = true;
+
         if (!authKey || !subscriptionId) {
             setError('필수 정보가 누락되었습니다.');
             setProcessing(false);
