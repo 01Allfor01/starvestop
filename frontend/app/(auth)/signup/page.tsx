@@ -70,8 +70,13 @@ export default function SignupPage() {
         }
     };
 
-    const passwordsMatch = formData.passwordConfirm && formData.password === formData.passwordConfirm;
-    const passwordsDontMatch = formData.passwordConfirm && formData.password !== formData.passwordConfirm;
+    const passwordsMatch =
+        formData.passwordConfirm.length > 0 &&
+        formData.password === formData.passwordConfirm;
+
+    const passwordsDontMatch =
+        formData.passwordConfirm.length > 0 &&
+        formData.password !== formData.passwordConfirm;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
