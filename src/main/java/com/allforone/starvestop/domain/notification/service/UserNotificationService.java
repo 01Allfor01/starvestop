@@ -5,7 +5,6 @@ import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.domain.notification.dto.NotificationDto;
 import com.allforone.starvestop.domain.notification.dto.NotificationMulticastRequest;
-import com.allforone.starvestop.domain.notification.dto.SendMealTimeNotificationDto;
 import com.allforone.starvestop.domain.notification.entity.UserNotification;
 import com.allforone.starvestop.domain.notification.enums.NotificationPlatformType;
 import com.allforone.starvestop.domain.notification.repository.UserNotificationRepository;
@@ -24,7 +23,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -59,10 +57,13 @@ public class UserNotificationService {
 
     //
     @Transactional
-    public BatchResponse sendMultiNotification(Long subscriptionId, NotificationMulticastRequest notification, Set<String> tokens) {
+    public BatchResponse sendMultiNotification(Long subscriptionId, NotificationMulticastRequest notification) {
+
+        List<String> tokenList = userNotificationRepository.findUserTokenBySubscriptionId(subscriptionId);
+
         try {
             MulticastMessage message = MulticastMessage.builder()
-                    .addAllTokens(tokens)
+                    .addAllTokens(tokenList)
                     .setNotification(Notification.builder()
                             .setTitle(notification.getTitle())
                             .setBody(notification.getBody())
@@ -156,47 +157,12 @@ public class UserNotificationService {
         }
     }
 
-    @Transactional
-    public void sendSubscriptionTimeNotification(Integer dayBit, Integer mealTimeBit) {
-
-        List<SendMealTimeNotificationDto> dtoList = userNotificationRepository.findByTargetList(dayBit);
-
-        if (dtoList.isEmpty()) {
-            return;
-        }
-
-        List<Message> messageList = dtoList.stream()
-                .map(dto -> Message.builder()
-                        .setToken(dto.token())
-                        .setNotification(Notification.builder()
-                                .setTitle("Starve stop")
-                                .setBody(dto.subscriptionName() + " 상품 수령 시간입니다")
-                                .build())
-                        .build()
-                ).toList();
-
-        try {
-            BatchResponse response = FirebaseMessaging.getInstance().sendEach(messageList);
-            int i = 0;
-            for (SendResponse r : response.getResponses()) {
-                if (!r.isSuccessful()) {
-                    FirebaseMessagingException e = r.getException();
-                    invalidToken(dtoList.get(i).token(), e);
-                }
-                ++i;
-            }
-
-        } catch (FirebaseMessagingException e) {
-            throw new CustomException(ErrorCode.NOTIFICATION_SEND_FAIL);
-        }
-    }
-
     private void invalidToken(String token, FirebaseMessagingException e) {
         MessagingErrorCode code = e.getMessagingErrorCode();
 
         if (code.equals(MessagingErrorCode.UNREGISTERED)
                 || code.equals(MessagingErrorCode.INVALID_ARGUMENT)) {
-            userNotificationRepository.deleteByToken(token);
+            clearTokenService.invalidToken(token);
         }
     }
 }
