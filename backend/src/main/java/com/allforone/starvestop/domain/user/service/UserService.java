@@ -35,12 +35,15 @@ public class UserService {
     // 회원 정보 수정
     @Transactional
     public UpdateUserResponse updateUser(Long userId, UpdateUserRequest request) {
-        String password = request.getPassword();
-        String nickname = request.getNickname();
-
         User foundUser = getUserOrThrow(userId);
 
-        foundUser.update(nickname, passwordEncoder.encode(password));
+        if (request.getNickname() != null && !request.getNickname().equals(foundUser.getNickname())) {
+            foundUser.updateNickname(request.getNickname());
+        }
+
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            foundUser.updatePassword(passwordEncoder.encode(request.getPassword()));
+        }
 
         return new UpdateUserResponse(
                 foundUser.getEmail(),

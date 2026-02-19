@@ -257,6 +257,7 @@ export default function SubscriptionsPage() {
                                             </div>
                                         </div>
 
+                                        <Link href={`/billing/register?subscriptionId=${subscription.id}`}>
                                         <Button
                                             variant="secondary"
                                             fullWidth
@@ -264,6 +265,7 @@ export default function SubscriptionsPage() {
                                         >
                                             {subscription.isJoinable ? '구독하기' : '구독 마감'}
                                         </Button>
+                                        </Link>
                                     </div>
                                 </div>
                             </Card>

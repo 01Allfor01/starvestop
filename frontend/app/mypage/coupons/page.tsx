@@ -1,59 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Gift, Clock, Plus } from 'lucide-react';
+import { ArrowLeft, Gift, Clock, Plus, Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import { couponsApi, UserCoupon } from '@/lib/api/coupons';
 
 export default function CouponsPage() {
-    const [activeTab, setActiveTab] = useState<'available' | 'used' | 'expired'>('available');
+    const [coupons, setCoupons] = useState<UserCoupon[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // TODO: 실제 API 데이터로 교체
-    const coupons = {
-        available: [
-            {
-                id: 1,
-                name: '5,000원 할인 쿠폰',
-                discount: 5000,
-                minAmount: 30000,
-                expiryDate: '2026.03.31',
-            },
-            {
-                id: 2,
-                name: '10% 할인 쿠폰',
-                discountRate: 10,
-                minAmount: 20000,
-                expiryDate: '2026.02.28',
-            },
-            {
-                id: 3,
-                name: '첫 구매 20% 할인',
-                discountRate: 20,
-                minAmount: 10000,
-                expiryDate: '2026.04.15',
-            },
-        ],
-        used: [
-            {
-                id: 4,
-                name: '신규가입 3,000원 할인',
-                discount: 3000,
-                minAmount: 15000,
-                usedDate: '2026.02.01',
-            },
-        ],
-        expired: [
-            {
-                id: 5,
-                name: '1월 특가 5,000원',
-                discount: 5000,
-                minAmount: 20000,
-                expiryDate: '2026.01.31',
-            },
-        ],
+    useEffect(() => {
+        fetchCoupons();
+    }, []);
+
+    const fetchCoupons = async () => {
+        try {
+            setLoading(true);
+            const data = await couponsApi.getMyCoupons();
+
+            // 만료일 기준 정렬 (가까운 순)
+            const sorted = [...data].sort((a, b) => {
+                return new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime();
+            });
+
+            setCoupons(sorted);
+        } catch (error) {
+            console.error('❌ 쿠폰 목록 조회 실패:', error);
+        } finally {
+            setLoading(false);
+        }
     };
+
+    // 만료 여부 체크
+    const isExpired = (expiryDate: string): boolean => {
+        return new Date(expiryDate) < new Date();
+    };
+
+    // 사용 가능한 쿠폰 개수
+    const availableCount = coupons.filter(c => !isExpired(c.expiresAt)).length;
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-primary-500 animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
@@ -68,10 +63,10 @@ export default function CouponsPage() {
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 mb-2">쿠폰함</h1>
                             <p className="text-gray-600">
-                                사용 가능한 쿠폰 <span className="text-primary-600 font-semibold">{coupons.available.length}개</span>
+                                사용 가능한 쿠폰 <span className="text-primary-600 font-semibold">{availableCount}개</span>
                             </p>
                         </div>
-                        <Link href="/coupons">
+                        <Link href="/coupons/available">
                             <Button>
                                 <Plus className="w-5 h-5 mr-2" />
                                 쿠폰 받기
@@ -80,114 +75,80 @@ export default function CouponsPage() {
                     </div>
                 </div>
 
-                {/* 탭 */}
-                <div className="flex space-x-4 mb-6 border-b border-gray-200">
-                    <button
-                        onClick={() => setActiveTab('available')}
-                        className={`pb-3 px-1 font-semibold transition ${
-                            activeTab === 'available'
-                                ? 'text-primary-600 border-b-2 border-primary-600'
-                                : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                    >
-                        사용 가능 ({coupons.available.length})
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('used')}
-                        className={`pb-3 px-1 font-semibold transition ${
-                            activeTab === 'used'
-                                ? 'text-primary-600 border-b-2 border-primary-600'
-                                : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                    >
-                        사용 완료 ({coupons.used.length})
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('expired')}
-                        className={`pb-3 px-1 font-semibold transition ${
-                            activeTab === 'expired'
-                                ? 'text-primary-600 border-b-2 border-primary-600'
-                                : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                    >
-                        기간 만료 ({coupons.expired.length})
-                    </button>
-                </div>
-
-                {/* 쿠폰 목록 - 사용 가능 */}
-                {activeTab === 'available' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {coupons.available.map((coupon) => (
-                            <Card key={coupon.id} className="border-2 border-primary-200 bg-gradient-to-br from-primary-50 to-white">
-                                <div className="flex items-start justify-between mb-3">
-                                    <Gift className="w-8 h-8 text-primary-500" />
-                                    <Badge variant="default" className="text-xs">
-                                        <Clock className="w-3 h-3 mr-1" />
-                                        ~{coupon.expiryDate}
-                                    </Badge>
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">{coupon.name}</h3>
-                                <p className="text-sm text-gray-600">
-                                    {coupon.minAmount.toLocaleString()}원 이상 구매 시
-                                </p>
-                            </Card>
-                        ))}
-                    </div>
-                )}
-
-                {/* 쿠폰 목록 - 사용 완료 */}
-                {activeTab === 'used' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {coupons.used.map((coupon) => (
-                            <Card key={coupon.id} className="opacity-60">
-                                <div className="flex items-start justify-between mb-3">
-                                    <Gift className="w-8 h-8 text-gray-400" />
-                                    <Badge variant="default">사용 완료</Badge>
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">{coupon.name}</h3>
-                                <p className="text-sm text-gray-600">
-                                    사용일: {coupon.usedDate}
-                                </p>
-                            </Card>
-                        ))}
-                    </div>
-                )}
-
-                {/* 쿠폰 목록 - 기간 만료 */}
-                {activeTab === 'expired' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {coupons.expired.map((coupon) => (
-                            <Card key={coupon.id} className="opacity-40">
-                                <div className="flex items-start justify-between mb-3">
-                                    <Gift className="w-8 h-8 text-gray-400" />
-                                    <Badge variant="default">기간 만료</Badge>
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">{coupon.name}</h3>
-                                <p className="text-sm text-gray-600">
-                                    만료일: {coupon.expiryDate}
-                                </p>
-                            </Card>
-                        ))}
-                    </div>
-                )}
-
-                {/* 빈 상태 */}
-                {coupons[activeTab].length === 0 && (
+                {/* 쿠폰 목록 */}
+                {coupons.length === 0 ? (
                     <Card className="text-center py-16">
                         <Gift className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-600 mb-6">
-                            {activeTab === 'available' && '사용 가능한 쿠폰이 없습니다'}
-                            {activeTab === 'used' && '사용한 쿠폰이 없습니다'}
-                            {activeTab === 'expired' && '만료된 쿠폰이 없습니다'}
-                        </p>
-                        {activeTab === 'available' && (
-                            <Link href="/coupons">
-                                <Button>
-                                    <Plus className="w-5 h-5 mr-2" />
-                                    쿠폰 받으러 가기
-                                </Button>
-                            </Link>
-                        )}
+                        <p className="text-gray-600 mb-6">보유한 쿠폰이 없습니다</p>
+                        <Link href="/coupons/available">
+                            <Button>
+                                <Plus className="w-5 h-5 mr-2" />
+                                쿠폰 받으러 가기
+                            </Button>
+                        </Link>
+                    </Card>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {coupons.map((coupon) => {
+                            const expired = isExpired(coupon.expiresAt);
+
+                            return (
+                                <Card
+                                    key={coupon.id}
+                                    className={`${
+                                        expired
+                                            ? 'opacity-40 border-gray-200'
+                                            : 'border-2 border-primary-200 bg-gradient-to-br from-primary-50 to-white'
+                                    }`}
+                                >
+                                    <div className="flex items-start justify-between mb-3">
+                                        <Gift className={`w-8 h-8 ${expired ? 'text-gray-400' : 'text-primary-500'}`} />
+                                        {expired ? (
+                                            <Badge variant="default">기간 만료</Badge>
+                                        ) : (
+                                            <Badge variant="default" className="text-xs">
+                                                <Clock className="w-3 h-3 mr-1" />
+                                                ~{new Date(coupon.expiresAt).toLocaleDateString('ko-KR', {
+                                                year: 'numeric',
+                                                month: '2-digit',
+                                                day: '2-digit',
+                                            }).replace(/\. /g, '.').slice(0, -1)}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-900 mb-2">{coupon.couponName}</h3>
+                                    <p className="text-sm text-gray-600 mb-1">
+                                        {coupon.minAmount.toLocaleString()}원 이상 구매 시
+                                    </p>
+                                    <p className="text-xl font-bold text-primary-600">
+                                        {coupon.discountAmount.toLocaleString()}원 할인
+                                    </p>
+                                </Card>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* 안내 */}
+                {coupons.length > 0 && (
+                    <Card className="mt-8 bg-blue-50 border-blue-200">
+                        <div className="flex items-start">
+                            <div className="flex-shrink-0">
+                                <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <h3 className="text-sm font-medium text-blue-800">쿠폰 사용 안내</h3>
+                                <div className="mt-2 text-sm text-blue-700">
+                                    <ul className="list-disc pl-5 space-y-1">
+                                        <li>주문 시 자동으로 적용 가능한 쿠폰이 표시됩니다</li>
+                                        <li>쿠폰은 유효기간 내에만 사용 가능합니다</li>
+                                        <li>최소 주문 금액을 충족해야 사용할 수 있습니다</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </Card>
                 )}
             </div>

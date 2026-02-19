@@ -287,6 +287,7 @@ export default function SubscriptionDetailPage() {
                 )}
 
                 {/* 구독하기 버튼 */}
+                <Link href={`/billing/register?subscriptionId=${subscription.id}`}>
                 <Button
                     variant="secondary"
                     size="lg"
@@ -297,6 +298,7 @@ export default function SubscriptionDetailPage() {
                 >
                     {subscription.joinable && subscription.stock > 0 ? '구독하기' : '구독 마감'}
                 </Button>
+                </Link>
 
                 {/* 주의사항 */}
                 <Card className="bg-gray-50 border-gray-200">

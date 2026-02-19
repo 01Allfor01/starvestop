@@ -3,45 +3,40 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Camera, User, X, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Camera, User, CheckCircle, XCircle } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
-import { usersApi } from '@/lib/api/users'; // API import
+import { usersApi } from '@/lib/api/users';
 
 export default function EditProfilePage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [showPasswordModal, setShowPasswordModal] = useState(false);
 
-    // 사용자 데이터 state (초기값은 빈 문자열로 설정하여 하이드레이션 이슈 방지)
+    // 사용자 데이터 state
     const [formData, setFormData] = useState({
         name: '',
         nickname: '',
         email: '',
         imageUrl: '',
-    });
-
-    // 비밀번호 변경 모달 상태
-    const [passwordData, setPasswordData] = useState({
         newPassword: '',
         confirmPassword: '',
     });
 
-    // 1. 초기 데이터 로드 (API 연동)
+    // 초기 데이터 로드
     useEffect(() => {
         const fetchUserData = async () => {
             try {
                 const data = await usersApi.getMyInfo();
-                setFormData({
-                    name: data.username || '', // API 응답 필드명에 맞춤 (username)
+                setFormData(prev => ({
+                    ...prev,
+                    name: data.username || '',
                     nickname: data.nickname || '',
                     email: data.email || '',
                     imageUrl: data.imageUrl || '',
-                });
+                }));
             } catch (error) {
                 console.error("사용자 정보 로드 실패:", error);
-                // 에러 처리 (필요 시)
             }
         };
         fetchUserData();
@@ -54,67 +49,85 @@ export default function EditProfilePage() {
         });
     };
 
-    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPasswordData({
-            ...passwordData,
-            [e.target.name]: e.target.value,
-        });
-    };
-
-    // 2. 프로필 수정 (API 연동)
+    // 프로필 수정
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            // 닉네임만 수정 가능 (API 스펙상)
-            await usersApi.updateProfile({ nickname: formData.nickname });
-            alert('회원정보가 수정되었습니다.');
-            // 성공 후 데이터 갱신 (선택 사항)
+            // 비밀번호 입력했으면 유효성 검사
+            if (formData.newPassword) {
+                if (formData.newPassword !== formData.confirmPassword) {
+                    alert('비밀번호가 일치하지 않습니다.');
+                    setLoading(false);
+                    return;
+                }
+
+                if (formData.newPassword.length < 8) {
+                    alert('비밀번호는 8자 이상이어야 합니다.');
+                    setLoading(false);
+                    return;
+                }
+
+                const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+                if (!passwordRegex.test(formData.newPassword)) {
+                    alert('비밀번호는 8자 이상, 영문자, 숫자, 특수문자를 최소 1개씩 포함해야 합니다.');
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            // ✅ 하나의 API 요청으로 통합
+            const updateData: any = {
+                nickname: formData.nickname,
+            };
+
+            // 비밀번호 입력했으면 추가
+            if (formData.newPassword) {
+                updateData.password = formData.newPassword;
+            }
+
+            await usersApi.updateUser(updateData);
+
+            alert(formData.newPassword
+                ? '회원정보와 비밀번호가 변경되었습니다.'
+                : '회원정보가 수정되었습니다.'
+            );
+
+            // 비밀번호 필드 초기화
+            setFormData(prev => ({
+                ...prev,
+                newPassword: '',
+                confirmPassword: '',
+            }));
+
+            // 데이터 갱신
             const updated = await usersApi.getMyInfo();
-            setFormData({
+            setFormData(prev => ({
+                ...prev,
                 name: updated.username || '',
                 nickname: updated.nickname || '',
                 email: updated.email || '',
                 imageUrl: updated.imageUrl || '',
-            });
+            }));
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("회원정보 수정 실패:", error);
-            alert("회원정보 수정에 실패했습니다.");
+            const msg = error.response?.data?.message || '회원정보 수정에 실패했습니다.';
+            alert(msg);
         } finally {
             setLoading(false);
         }
     };
 
-    const handlePasswordSubmit = async () => {
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            alert('비밀번호가 일치하지 않습니다.');
-            return;
-        }
-
-        if (passwordData.newPassword.length < 8) {
-            alert('비밀번호는 8자 이상이어야 합니다.');
-            return;
-        }
-
-        // TODO: 실제 API 호출로 교체 (현재 API 명세에 없음)
-        // await usersApi.updatePassword(passwordData.newPassword);
-
-        // 임시 로직 유지
-        console.log('비밀번호 변경:', passwordData);
-        alert('비밀번호가 변경되었습니다. (API 미연동)');
-        setShowPasswordModal(false);
-        setPasswordData({ newPassword: '', confirmPassword: '' });
-    };
-
-    // 3. 회원 탈퇴 (API 연동)
+    // 회원 탈퇴
     const handleWithdraw = async () => {
         if (confirm('정말 탈퇴하시겠습니까? 모든 데이터가 삭제됩니다.')) {
             try {
                 await usersApi.withdraw();
                 alert('회원 탈퇴가 처리되었습니다.');
-                router.push('/'); // 메인으로 이동
+                localStorage.removeItem('accessToken');
+                router.push('/');
             } catch (error) {
                 console.error("회원 탈퇴 실패:", error);
                 alert("회원 탈퇴 처리에 실패했습니다.");
@@ -123,10 +136,10 @@ export default function EditProfilePage() {
     };
 
     // 비밀번호 일치 여부
-    const passwordsMatch = passwordData.newPassword && passwordData.confirmPassword &&
-        passwordData.newPassword === passwordData.confirmPassword;
-    const passwordsDontMatch = passwordData.confirmPassword &&
-        passwordData.newPassword !== passwordData.confirmPassword;
+    const passwordsMatch = formData.newPassword && formData.confirmPassword &&
+        formData.newPassword === formData.confirmPassword;
+    const passwordsDontMatch = formData.confirmPassword &&
+        formData.newPassword !== formData.confirmPassword;
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
@@ -175,7 +188,7 @@ export default function EditProfilePage() {
                     <Card>
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">기본 정보</h2>
                         <div className="space-y-4">
-                            {/* 이름 - 정보 표시 */}
+                            {/* 이름 - 읽기 전용 */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     이름
@@ -185,7 +198,7 @@ export default function EditProfilePage() {
                                 </div>
                             </div>
 
-                            {/* 이메일 - 정보 표시 */}
+                            {/* 이메일 - 읽기 전용 */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     이메일
@@ -195,7 +208,7 @@ export default function EditProfilePage() {
                                 </div>
                             </div>
 
-                            {/* 닉네임 - 입력 가능 */}
+                            {/* 닉네임 */}
                             <Input
                                 label="닉네임"
                                 name="nickname"
@@ -206,25 +219,67 @@ export default function EditProfilePage() {
                         </div>
                     </Card>
 
-                    {/* 보안 */}
+                    {/* 비밀번호 변경 */}
                     <Card>
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">보안</h2>
-                        <Button
-                            type="button"
-                            variant="outline"
-                            fullWidth
-                            onClick={() => setShowPasswordModal(true)}
-                        >
-                            비밀번호 변경
-                        </Button>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">비밀번호 변경</h2>
+                        <div className="space-y-4">
+                            <Input
+                                label="새 비밀번호"
+                                type="password"
+                                name="newPassword"
+                                value={formData.newPassword}
+                                onChange={handleChange}
+                                placeholder="변경하지 않으려면 빈칸으로 두세요"
+                                autoComplete="new-password"
+                            />
+                            <div>
+                                <Input
+                                    label="새 비밀번호 확인"
+                                    type="password"
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    placeholder="새 비밀번호를 다시 입력해주세요"
+                                    disabled={!formData.newPassword}
+                                    className={
+                                        passwordsDontMatch
+                                            ? 'border-red-500 focus:ring-red-500'
+                                            : passwordsMatch
+                                                ? 'border-green-500 focus:ring-green-500'
+                                                : ''
+                                    }
+                                />
+                                {passwordsMatch && (
+                                    <div className="flex items-center mt-2 text-sm text-green-600">
+                                        <CheckCircle className="w-4 h-4 mr-1" />
+                                        <span>비밀번호가 일치합니다</span>
+                                    </div>
+                                )}
+                                {passwordsDontMatch && (
+                                    <div className="flex items-center mt-2 text-sm text-red-600">
+                                        <XCircle className="w-4 h-4 mr-1" />
+                                        <span>비밀번호가 일치하지 않습니다</span>
+                                    </div>
+                                )}
+                            </div>
+                            <p className="text-sm text-gray-500">
+                                💡 비밀번호는 8자 이상, 영문자, 숫자, 특수문자를 최소 1개씩 포함해야 합니다
+                            </p>
+                        </div>
                     </Card>
 
                     {/* 저장 버튼 */}
                     <div className="space-y-3">
-                        <Button type="submit" fullWidth size="lg" loading={loading}>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            size="lg"
+                            loading={loading}
+                            disabled={passwordsDontMatch}
+                        >
                             저장하기
                         </Button>
-                        <Button type="button" variant="outline" fullWidth onClick={() => window.history.back()}>
+                        <Button type="button" variant="outline" fullWidth onClick={() => router.back()}>
                             취소
                         </Button>
                     </div>
@@ -240,88 +295,6 @@ export default function EditProfilePage() {
                         </button>
                     </div>
                 </form>
-
-                {/* 비밀번호 변경 모달 */}
-                {showPasswordModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-2xl max-w-md w-full p-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-bold text-gray-900">비밀번호 변경</h3>
-                                <button
-                                    onClick={() => {
-                                        setShowPasswordModal(false);
-                                        setPasswordData({ newPassword: '', confirmPassword: '' });
-                                    }}
-                                    className="text-gray-400 hover:text-gray-600"
-                                >
-                                    <X className="w-6 h-6" />
-                                </button>
-                            </div>
-
-                            <div className="space-y-4">
-                                <Input
-                                    label="새 비밀번호"
-                                    type="password"
-                                    name="newPassword"
-                                    value={passwordData.newPassword}
-                                    onChange={handlePasswordChange}
-                                    placeholder="8자 이상 입력해주세요"
-                                    required
-                                />
-                                <div>
-                                    <Input
-                                        label="새 비밀번호 확인"
-                                        type="password"
-                                        name="confirmPassword"
-                                        value={passwordData.confirmPassword}
-                                        onChange={handlePasswordChange}
-                                        placeholder="비밀번호를 다시 입력해주세요"
-                                        required
-                                        className={
-                                            passwordsDontMatch
-                                                ? 'border-red-500 focus:ring-red-500'
-                                                : passwordsMatch
-                                                    ? 'border-green-500 focus:ring-green-500'
-                                                    : ''
-                                        }
-                                    />
-                                    {passwordsMatch && (
-                                        <div className="flex items-center mt-2 text-sm text-green-600">
-                                            <CheckCircle className="w-4 h-4 mr-1" />
-                                            <span>비밀번호가 일치합니다</span>
-                                        </div>
-                                    )}
-                                    {passwordsDontMatch && (
-                                        <div className="flex items-center mt-2 text-sm text-red-600">
-                                            <XCircle className="w-4 h-4 mr-1" />
-                                            <span>비밀번호가 일치하지 않습니다</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="mt-6 space-y-3">
-                                <Button
-                                    fullWidth
-                                    onClick={handlePasswordSubmit}
-                                    disabled={passwordsDontMatch || !passwordData.newPassword || !passwordData.confirmPassword}
-                                >
-                                    변경하기
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    fullWidth
-                                    onClick={() => {
-                                        setShowPasswordModal(false);
-                                        setPasswordData({ newPassword: '', confirmPassword: '' });
-                                    }}
-                                >
-                                    취소
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

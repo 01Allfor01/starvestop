@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 
-// 쿠폰 타입 (백엔드 Response에 정확히 맞춤)
+// 쿠폰 타입
 export interface Coupon {
     id: number;
     name: string;
@@ -12,6 +12,7 @@ export interface Coupon {
     stock: number; // 남은 수량
 }
 
+// 내 쿠폰 타입
 export interface UserCoupon {
     id: number;
     userId: number;
@@ -25,17 +26,18 @@ export interface UserCoupon {
 
 export const couponsApi = {
     // 발급 가능한 쿠폰 목록
-    getCoupons: async () => {
+    getCoupons: async (): Promise<Coupon[]> => {
         const response = await apiClient.get<Coupon[]>('/coupons');
         return response.data;
     },
 
     // 쿠폰 상세
-    getCoupon: async (couponId: number) => {
+    getCoupon: async (couponId: number): Promise<Coupon> => {
         const response = await apiClient.get<Coupon>(`/coupons/${couponId}`);
         return response.data;
     },
 
+    // ✅ 쿠폰 받기 (원래대로 복구)
     receiveCoupon: async (couponId: number) => {
         const response = await apiClient.post(`/coupons/${couponId}/user-coupons`, {
             startedAt: new Date().toISOString()
@@ -44,13 +46,13 @@ export const couponsApi = {
     },
 
     // 내 쿠폰 목록
-    getMyCoupons: async () => {
+    getMyCoupons: async (): Promise<UserCoupon[]> => {
         const response = await apiClient.get<UserCoupon[]>('/user-coupons');
         return response.data;
     },
 
     // 내 쿠폰 상세
-    getMyCoupon: async (userCouponId: number) => {
+    getMyCoupon: async (userCouponId: number): Promise<UserCoupon> => {
         const response = await apiClient.get<UserCoupon>(`/user-coupons/${userCouponId}`);
         return response.data;
     },

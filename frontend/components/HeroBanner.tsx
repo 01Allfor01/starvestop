@@ -35,7 +35,7 @@ const banners = [
     },
     {
         id: 4,
-        title: '디저트가 떙길 땐?',
+        title: '디저트가 땡길 땐?',
         subtitle: '내 주변 디저트 매장 확인하기',
         link: '/stores?category=DESSERT',
         bgColor: 'from-pink-400 to-purple-300',
@@ -44,7 +44,7 @@ const banners = [
     },
     {
         id: 5,
-        title: '한식이 떙길 땐?',
+        title: '한식이 땡길 땐?',
         subtitle: '내 주변 한식당 둘러보기',
         link: '/stores?category=KOREAN_FOOD',
         bgColor: 'from-amber-600 to-orange-300',

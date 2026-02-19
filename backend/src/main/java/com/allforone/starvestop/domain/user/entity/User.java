@@ -68,8 +68,11 @@ public class User extends BaseEntity {
         return new User(email, password, nickname, username, AuthProvider.KAKAO, providerId);
     }
 
-    public void update(String nickname, String password) {
+    public void updateNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void updatePassword(String password) {
         this.password = password;
     }
 
