@@ -69,6 +69,7 @@ jobs:
       - name: Debug listener
         run: |
           aws elbv2 describe-listeners --listener-arn "${{ secrets.ALB_LISTENER_ARN }}"
+          
 
       - name: Decide IDLE + remember PREV TG
         id: decide
