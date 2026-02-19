@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Tag("concurrency")
-class ProductServiceConCurrencyTest {
+class ProductServiceConcurrencyTest {
 
     @Autowired
     private ProductRepository productRepository;
