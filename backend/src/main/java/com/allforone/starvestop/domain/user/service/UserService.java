@@ -99,4 +99,5 @@ public class UserService {
         User user = User.createKakao(userEmail, password, userName, nickname, providerId);
         return userRepository.save(user);
     }
+
 }
