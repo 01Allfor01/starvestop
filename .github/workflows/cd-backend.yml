@@ -1,10 +1,12 @@
-name: Cd
+name: Cd-Backend
+
 on:
   pull_request:
-    types:
-      - closed
-    branches:
-      - dev
+    types: [closed]
+    branches: [dev]
+    paths:
+      - "backend/**"
+      - ".github/workflows/cd-backend.yml"
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -24,12 +26,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
-      - run: chmod +x gradlew
-      - run: ./gradlew clean build
+          cache: gradle
+
+      - name: Build (Gradle)
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean build
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -40,7 +47,7 @@ jobs:
 
       - uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and Push Docker Image
+      - name: Build and Push Docker Image (backend)
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -56,30 +63,29 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Decide IDLE color (blue or green)
+      - name: Decide IDLE + remember PREV TG
         id: decide
         run: |
           set -e
 
-          CURRENT_TG=$(aws elbv2 describe-listeners \
+          PREV_TG=$(aws elbv2 describe-listeners \
             --listener-arn "${{ secrets.ALB_LISTENER_ARN }}" \
             --query "Listeners[0].DefaultActions[0].TargetGroupArn" \
             --output text)
 
-          echo "CURRENT_TG=$CURRENT_TG"
+          echo "PREV_TG=$PREV_TG" >> $GITHUB_OUTPUT
+          echo "PREV_TG=$PREV_TG"
 
-          if [ "$CURRENT_TG" = "${{ secrets.TG_BLUE_ARN }}" ]; then
-            echo "IDLE_COLOR=green" >> $GITHUB_OUTPUT
+          if [ "$PREV_TG" = "${{ secrets.TG_BLUE_ARN }}" ]; then
             echo "IDLE_TG=${{ secrets.TG_GREEN_ARN }}" >> $GITHUB_OUTPUT
             echo "IDLE_NAME=${{ env.GREEN_NAME }}" >> $GITHUB_OUTPUT
             echo "IDLE_PORT=${{ env.GREEN_HOST_PORT }}" >> $GITHUB_OUTPUT
-          elif [ "$CURRENT_TG" = "${{ secrets.TG_GREEN_ARN }}" ]; then
-            echo "IDLE_COLOR=blue" >> $GITHUB_OUTPUT
+          elif [ "$PREV_TG" = "${{ secrets.TG_GREEN_ARN }}" ]; then
             echo "IDLE_TG=${{ secrets.TG_BLUE_ARN }}" >> $GITHUB_OUTPUT
             echo "IDLE_NAME=${{ env.BLUE_NAME }}" >> $GITHUB_OUTPUT
             echo "IDLE_PORT=${{ env.BLUE_HOST_PORT }}" >> $GITHUB_OUTPUT
           else
-            echo "Unknown current target group: $CURRENT_TG"
+            echo "Unknown current target group: $PREV_TG"
             exit 1
           fi
 
@@ -92,7 +98,6 @@ jobs:
           envs: ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG,CONTAINER_PORT
           script: |
             set -e
-
             IDLE_NAME="${{ steps.decide.outputs.IDLE_NAME }}"
             IDLE_PORT="${{ steps.decide.outputs.IDLE_PORT }}"
 
@@ -109,15 +114,15 @@ jobs:
               -p "${IDLE_PORT}:${CONTAINER_PORT}" \
               $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-            for i in {1..30}; do
+            for i in {1..60}; do
               if curl -fsS "http://localhost:${IDLE_PORT}/actuator/health" > /dev/null; then
                 echo "EC2-1 ${IDLE_NAME} health OK"
                 exit 0
               fi
               sleep 2
             done
-
             echo "EC2-1 ${IDLE_NAME} health FAILED"
+            docker logs --tail 200 "$IDLE_NAME" || true
             exit 1
 
       - name: Deploy to IDLE on EC2-2
@@ -129,7 +134,6 @@ jobs:
           envs: ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG,CONTAINER_PORT
           script: |
             set -e
-
             IDLE_NAME="${{ steps.decide.outputs.IDLE_NAME }}"
             IDLE_PORT="${{ steps.decide.outputs.IDLE_PORT }}"
 
@@ -146,16 +150,41 @@ jobs:
               -p "${IDLE_PORT}:${CONTAINER_PORT}" \
               $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-            for i in {1..30}; do
+            for i in {1..60}; do
               if curl -fsS "http://localhost:${IDLE_PORT}/actuator/health" > /dev/null; then
                 echo "EC2-2 ${IDLE_NAME} health OK"
                 exit 0
               fi
               sleep 2
             done
-
             echo "EC2-2 ${IDLE_NAME} health FAILED"
+            docker logs --tail 200 "$IDLE_NAME" || true
             exit 1
+
+      - name: Wait until ALB target group becomes healthy
+        run: |
+          set -e
+          IDLE_TG="${{ steps.decide.outputs.IDLE_TG }}"
+          echo "Waiting ALB target group to be healthy: $IDLE_TG"
+
+          for i in {1..60}; do
+            STATES=$(aws elbv2 describe-target-health \
+              --target-group-arn "$IDLE_TG" \
+              --query "TargetHealthDescriptions[*].TargetHealth.State" \
+              --output text)
+
+            echo "Target states: $STATES"
+
+            if echo "$STATES" | tr '\t' '\n' | grep -vq healthy; then
+              sleep 5
+            else
+              echo "All targets are healthy."
+              exit 0
+            fi
+          done
+
+          echo "Targets did not become healthy in time."
+          exit 1
 
       - name: Switch ALB to IDLE target group
         run: |
@@ -166,11 +195,6 @@ jobs:
       - name: Rollback ALB to previous target group
         if: failure()
         run: |
-          CURRENT_TG=$(aws elbv2 describe-listeners \
-            --listener-arn "${{ secrets.ALB_LISTENER_ARN }}" \
-            --query "Listeners[0].DefaultActions[0].TargetGroupArn" \
-            --output text)
-
           aws elbv2 modify-listener \
             --listener-arn "${{ secrets.ALB_LISTENER_ARN }}" \
-            --default-actions Type=forward,TargetGroupArn="${{ secrets.TG_BLUE_ARN }}"
+            --default-actions Type=forward,TargetGroupArn="${{ steps.decide.outputs.PREV_TG }}"

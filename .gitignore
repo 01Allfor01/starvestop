@@ -37,7 +37,7 @@ out/
 .vscode/
 
 ### .env ###
-.env
+backend/.env
 
 ### fcm secret file ###
 *fire-base-adminsdk*.json
