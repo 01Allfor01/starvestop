@@ -31,40 +31,45 @@ export interface OrderProductResponse {
     productPrice: number;
 }
 
+// ✅ 공통: Axios response.data 타입을 명시하는 헬퍼(선택)
+type ApiResponse<T> = T;
+
 export const ordersApi = {
     // 주문 생성
-    createOrder: async (data: CreateOrderRequest) => {
-        const response = await apiClient.post('/orders', data);
+    createOrder: async (data: CreateOrderRequest): Promise<ApiResponse<OrderResponse>> => {
+        const response = await apiClient.post<ApiResponse<OrderResponse>>('/orders', data);
         return response.data;
     },
 
-    // 주문 목록 조회
-    getOrders: async () => {
-        const response = await apiClient.get('/orders');
+    // ✅ 주문 목록 조회 (핵심: 반환 타입 지정)
+    getOrders: async (): Promise<ApiResponse<OrderResponse[]>> => {
+        const response = await apiClient.get<ApiResponse<OrderResponse[]>>('/orders');
         return response.data;
     },
 
     // 주문 상세 조회
-    getOrder: async (orderId: number) => {
-        const response = await apiClient.get(`/orders/${orderId}`);
+    getOrder: async (orderId: number): Promise<ApiResponse<OrderResponse>> => {
+        const response = await apiClient.get<ApiResponse<OrderResponse>>(`/orders/${orderId}`);
         return response.data;
     },
 
-    // 주문 상품 목록 조회 (OrderProductController)
-    getOrderProducts: async (orderId: number) => {
-        const response = await apiClient.get(`/order-products/${orderId}`);
+    // ✅ 주문 상품 목록 조회
+    getOrderProducts: async (orderId: number): Promise<ApiResponse<OrderProductResponse[]>> => {
+        const response = await apiClient.get<ApiResponse<OrderProductResponse[]>>(
+            `/order-products/${orderId}`
+        );
         return response.data;
     },
 
-    // 주문 취소 (URL 오타 수정됨: /cacel -> /cancel)
-    cancelOrder: async (orderId: number) => {
-        const response = await apiClient.patch('/orders/cancel', { id: orderId });
+    // 주문 취소
+    cancelOrder: async (orderId: number): Promise<ApiResponse<void>> => {
+        const response = await apiClient.patch<ApiResponse<void>>('/orders/cancel', { id: orderId });
         return response.data;
     },
 
     // 주문 삭제
-    deleteOrder: async (orderId: number) => {
-        const response = await apiClient.delete(`/orders/${orderId}`);
-        return response.data; // data 없음 (Void)
+    deleteOrder: async (orderId: number): Promise<ApiResponse<void>> => {
+        const response = await apiClient.delete<ApiResponse<void>>(`/orders/${orderId}`);
+        return response.data;
     },
 };

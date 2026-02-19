@@ -163,7 +163,10 @@ export default function MyPage() {
                                         <User className="w-10 h-10 text-white" />
                                     )}
                                 </div>
-                                <h2 className="text-xl font-bold text-gray-900 mb-1">{user?.nickname || user?.name || '사용자'}</h2>
+                                <h2 className="text-xl font-bold text-gray-900 mb-1">
+                                    {user?.nickname || user?.username || '사용자'}
+                                </h2>
+
                                 <p className="text-sm text-gray-600">{user?.email}</p>
                             </div>
 

@@ -11,7 +11,7 @@ import { cartApi, CartItemDetail } from '@/lib/api/cart';
 import { productsApi } from '@/lib/api/products';
 import { ordersApi } from '@/lib/api/orders';
 import { couponsApi, UserCoupon } from '@/lib/api/coupons';
-import { paymentsApi } from '@/lib/api/payments'; // ✅ 결제 API import
+import { paymentsApi } from '@/lib/api/payments';
 
 export default function OrderPage() {
     const router = useRouter();
@@ -24,8 +24,11 @@ export default function OrderPage() {
 
     // 결제 모달 및 토스 위젯 상태
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-    const [paymentInfo, setPaymentInfo] = useState<any>(null); // 결제 준비 데이터
+    const [paymentInfo, setPaymentInfo] = useState<any>(null);
     const widgetsRef = useRef<any>(null);
+
+    // ✅ 토스 스크립트 로드 여부
+    const [tossReady, setTossReady] = useState(false);
 
     // 1. 초기 데이터 로드 (장바구니 & 쿠폰)
     useEffect(() => {
@@ -36,7 +39,7 @@ export default function OrderPage() {
                 // 1-1. 장바구니 조회
                 const simpleCartItems = await cartApi.getCart();
                 if (!Array.isArray(simpleCartItems) || simpleCartItems.length === 0) {
-                    alert("장바구니가 비어있습니다.");
+                    alert('장바구니가 비어있습니다.');
                     router.push('/cart');
                     return;
                 }
@@ -50,7 +53,9 @@ export default function OrderPage() {
                                 ...item,
                                 price: productInfo.salePrice,
                                 originalPrice: productInfo.price,
-                                image: productInfo.imageUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
+                                image:
+                                    productInfo.imageUrl ||
+                                    'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
                                 stock: productInfo.stock,
                                 storeName: productInfo.storeName,
                                 storeId: productInfo.storeId,
@@ -63,13 +68,12 @@ export default function OrderPage() {
                 );
                 setOrderItems(detailedItems);
 
-                // 1-3. ✅ 실제 쿠폰 목록 조회
+                // 1-3. 쿠폰 목록 조회
                 const myCoupons = await couponsApi.getMyCoupons();
                 setAvailableCoupons(myCoupons);
-
             } catch (error) {
-                console.error("데이터 로딩 실패:", error);
-                alert("주문 정보를 불러오는데 실패했습니다.");
+                console.error('데이터 로딩 실패:', error);
+                alert('주문 정보를 불러오는데 실패했습니다.');
                 router.back();
             } finally {
                 setLoading(false);
@@ -79,22 +83,21 @@ export default function OrderPage() {
         initOrderPage();
     }, [router]);
 
-    // 금액 계산 로직
-    const storeInfo = orderItems.length > 0 ? { id: orderItems[0].storeId, name: orderItems[0].storeName } : null;
-    const productTotal = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const selectedCoupon = availableCoupons.find(c => c.id === selectedCouponId);
+    // 금액 계산
+    const storeInfo =
+        orderItems.length > 0 ? { id: orderItems[0].storeId, name: orderItems[0].storeName } : null;
+    const productTotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const selectedCoupon = availableCoupons.find((c) => c.id === selectedCouponId);
 
-    // 쿠폰 할인 계산
-    const couponDiscount = (selectedCoupon && productTotal >= selectedCoupon.minAmount)
-        ? selectedCoupon.discountAmount
-        : 0;
+    const couponDiscount =
+        selectedCoupon && productTotal >= selectedCoupon.minAmount ? selectedCoupon.discountAmount : 0;
 
     const finalTotal = Math.max(0, productTotal - couponDiscount);
 
-    // ✅ 주문 생성 및 결제 모달 열기 핸들러
+    // ✅ 주문 생성 및 결제 모달 오픈
     const handleOrder = async () => {
         if (!storeInfo) {
-            alert("매장 정보를 찾을 수 없습니다.");
+            alert('매장 정보를 찾을 수 없습니다.');
             return;
         }
 
@@ -104,61 +107,76 @@ export default function OrderPage() {
             // 1. 주문 생성
             const orderResponse = await ordersApi.createOrder({
                 storeId: storeInfo.id,
-                userCouponId: selectedCouponId
+                userCouponId: selectedCouponId,
             });
-            console.log("✅ 주문 성공:", orderResponse);
+            console.log('✅ 주문 성공:', orderResponse);
 
-            // 3. 결제 준비 (백엔드에서 orderKey 등 받아오기)
+            // 2. 결제 준비 (orderKey 등)
             const prepareResponse = await paymentsApi.preparePayment(orderResponse.id);
 
-            // 4. 결제 정보 저장 및 모달 오픈
+            // 3. 결제 정보 저장 + 모달 오픈
             setPaymentInfo({
                 ...prepareResponse,
-                orderName: orderItems.length > 1
-                    ? `${orderItems[0].productName} 외 ${orderItems.length - 1}건`
-                    : orderItems[0].productName
+                orderName:
+                    orderItems.length > 1
+                        ? `${orderItems[0].productName} 외 ${orderItems.length - 1}건`
+                        : orderItems[0].productName,
+                amount: Number(prepareResponse.amount ?? finalTotal),
             });
             setIsPaymentModalOpen(true);
-
         } catch (error: any) {
-            console.error("주문 실패:", error);
-            const msg = error.response?.data?.message || "주문 처리에 실패했습니다.";
+            console.error('주문 실패:', error);
+            const msg = error.response?.data?.message || '주문 처리에 실패했습니다.';
             alert(msg);
         }
     };
 
     // ✅ 토스 위젯 렌더링 (모달이 열릴 때 실행)
     useEffect(() => {
-        if (!isPaymentModalOpen || !paymentInfo || !window.TossPayments) return;
+        if (!isPaymentModalOpen || !paymentInfo) return;
+        if (!tossReady) return;
+        if (!(window as any).TossPayments) return;
 
         const renderTossWidgets = async () => {
             try {
-                const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm"; // 테스트 키
-                const tossPayments = window.TossPayments(clientKey);
+                // ✅ 모달을 닫았다가 다시 열었을 때 중복 렌더 방지
+                widgetsRef.current = null;
+
+                const clientKey = 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm';
+
+                // ✅ 타입 우회 핵심: (window as any)
+                const tossPayments = (window as any).TossPayments(clientKey);
+
+                // ✅ widgets() 타입 충돌 방지
                 const widgets = tossPayments.widgets({
-                    customerKey: paymentInfo.customerKey || "guest"
+                    customerKey: paymentInfo.customerKey || 'guest',
                 });
 
                 await widgets.setAmount({
-                    currency: "KRW",
+                    currency: 'KRW',
                     value: Number(paymentInfo.amount),
                 });
 
                 await Promise.all([
-                    widgets.renderPaymentMethods({ selector: "#payment-method", variantKey: "DEFAULT" }),
-                    widgets.renderAgreement({ selector: "#agreement", variantKey: "AGREEMENT" }),
+                    widgets.renderPaymentMethods({ selector: '#payment-method', variantKey: 'DEFAULT' }),
+                    widgets.renderAgreement({ selector: '#agreement', variantKey: 'AGREEMENT' }),
                 ]);
 
                 widgetsRef.current = widgets;
             } catch (err) {
-                console.error("토스 위젯 렌더링 실패:", err);
+                console.error('토스 위젯 렌더링 실패:', err);
             }
         };
 
-        renderTossWidgets();
-    }, [isPaymentModalOpen, paymentInfo]);
+        // ✅ 모달 DOM이 생성된 이후 렌더되도록 한 틱 지연
+        const t = setTimeout(() => {
+            renderTossWidgets();
+        }, 0);
 
-    // ✅ 실제 결제 요청 (모달 내부 버튼 클릭 시)
+        return () => clearTimeout(t);
+    }, [isPaymentModalOpen, paymentInfo, tossReady]);
+
+    // ✅ 실제 결제 요청
     const requestTossPayment = async () => {
         if (!widgetsRef.current || !paymentInfo) return;
 
@@ -168,21 +186,39 @@ export default function OrderPage() {
             await widgetsRef.current.requestPayment({
                 orderId: paymentInfo.orderKey,
                 orderName: paymentInfo.orderName,
-
                 successUrl: `${FRONTEND_URL}/payment/success`,
                 failUrl: `${FRONTEND_URL}/payment/fail`,
             });
         } catch (err) {
-            console.error("결제 요청 실패:", err);
+            console.error('결제 요청 실패:', err);
         }
     };
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 text-primary-500 animate-spin" /></div>;
+    const closeModal = () => {
+        setIsPaymentModalOpen(false);
+        setPaymentInfo(null);
+        widgetsRef.current = null;
+    };
+
+    if (loading)
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-10 h-10 text-primary-500 animate-spin" />
+            </div>
+        );
 
     return (
         <div className="min-h-screen bg-gray-50 py-8 relative">
-            {/* 토스 SDK 로드 */}
-            <Script src="https://js.tosspayments.com/v2/standard" />
+            {/* ✅ 토스 SDK 로드 (로드 완료 시 tossReady true) */}
+            <Script
+                src="https://js.tosspayments.com/v2/standard"
+                strategy="afterInteractive"
+                onLoad={() => setTossReady(true)}
+                onError={() => {
+                    console.error('토스 스크립트 로드 실패');
+                    setTossReady(false);
+                }}
+            />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-8">주문하기</h1>
@@ -232,12 +268,13 @@ export default function OrderPage() {
                             </div>
                         </Card>
 
-                        {/* ✅ 쿠폰 선택 (실제 데이터 연동) */}
+                        {/* 쿠폰 선택 */}
                         <Card>
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-xl font-bold text-gray-900">쿠폰</h2>
                                 <Badge variant="default">{availableCoupons.length}개 보유</Badge>
                             </div>
+
                             <div className="space-y-3">
                                 <button
                                     onClick={() => setSelectedCouponId(null)}
@@ -249,8 +286,8 @@ export default function OrderPage() {
                                 >
                                     <p className="font-medium text-gray-900">쿠폰 사용 안 함</p>
                                 </button>
+
                                 {availableCoupons.map((coupon) => {
-                                    // 최소 주문 금액 체크
                                     const isUsable = productTotal >= coupon.minAmount;
                                     return (
                                         <button
@@ -260,7 +297,9 @@ export default function OrderPage() {
                                             className={`w-full p-4 border-2 rounded-lg text-left transition ${
                                                 selectedCouponId === coupon.id
                                                     ? 'border-primary-500 bg-primary-50'
-                                                    : isUsable ? 'border-gray-200 hover:border-gray-300' : 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed'
+                                                    : isUsable
+                                                        ? 'border-gray-200 hover:border-gray-300'
+                                                        : 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed'
                                             }`}
                                         >
                                             <div className="flex items-center justify-between">
@@ -271,13 +310,15 @@ export default function OrderPage() {
                                                         <p className="text-sm text-gray-600">
                                                             {coupon.minAmount.toLocaleString()}원 이상 구매 시
                                                         </p>
-                                                        {!isUsable && <p className="text-xs text-red-500">주문 금액이 부족합니다</p>}
+                                                        {!isUsable && (
+                                                            <p className="text-xs text-red-500">주문 금액이 부족합니다</p>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <span className="text-lg font-bold text-primary-600">
-                                                        -{coupon.discountAmount.toLocaleString()}원
-                                                    </span>
+                          <span className="text-lg font-bold text-primary-600">
+                            -{coupon.discountAmount.toLocaleString()}원
+                          </span>
                                                 </div>
                                             </div>
                                         </button>
@@ -285,8 +326,6 @@ export default function OrderPage() {
                                 })}
                             </div>
                         </Card>
-
-                        {/* 결제 수단 영역 제거됨 */}
                     </div>
 
                     {/* 오른쪽: 결제 금액 */}
@@ -311,14 +350,23 @@ export default function OrderPage() {
                                     <div className="flex justify-between items-center">
                                         <span className="text-lg font-semibold text-gray-900">최종 결제 금액</span>
                                         <span className="text-2xl font-bold text-primary-600">
-                                          {finalTotal.toLocaleString()}원
-                                        </span>
+                      {finalTotal.toLocaleString()}원
+                    </span>
                                     </div>
                                 </div>
 
-                                <Button fullWidth size="lg" onClick={handleOrder}>
-                                    {finalTotal.toLocaleString()}원 결제하기
-                                    <ChevronRight className="w-5 h-5 ml-2" />
+                                <Button fullWidth size="lg" onClick={handleOrder} disabled={!tossReady}>
+                                    {tossReady ? (
+                                        <>
+                                            {finalTotal.toLocaleString()}원 결제하기
+                                            <ChevronRight className="w-5 h-5 ml-2" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            결제 모듈 로딩중...
+                                            <Loader2 className="w-5 h-5 ml-2 animate-spin" />
+                                        </>
+                                    )}
                                 </Button>
                             </Card>
                         </div>
@@ -326,29 +374,26 @@ export default function OrderPage() {
                 </div>
             </div>
 
-            {/* ✅ 토스 결제 위젯 모달 (추가 창) */}
+            {/* ✅ 토스 결제 위젯 모달 */}
             {isPaymentModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
                         <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
                             <h2 className="text-lg font-bold">결제 수단 선택</h2>
-                            <button
-                                onClick={() => setIsPaymentModalOpen(false)}
-                                className="p-2 hover:bg-gray-100 rounded-full"
-                            >
+                            <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-full">
                                 <X className="w-5 h-5 text-gray-500" />
                             </button>
                         </div>
 
                         <div className="p-4">
-                            {/* 토스 위젯이 렌더링될 영역 */}
                             <div id="payment-method" className="w-full" />
                             <div id="agreement" className="w-full mt-4" />
                         </div>
 
                         <div className="p-4 border-t bg-gray-50">
-                            <Button fullWidth size="lg" onClick={requestTossPayment}>
+                            <Button fullWidth size="lg" onClick={requestTossPayment} disabled={!widgetsRef.current}>
                                 {Number(paymentInfo?.amount || finalTotal).toLocaleString()}원 결제 요청
+                                {!widgetsRef.current && <Loader2 className="w-5 h-5 ml-2 animate-spin" />}
                             </Button>
                         </div>
                     </div>

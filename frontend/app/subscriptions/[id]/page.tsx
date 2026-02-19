@@ -8,63 +8,38 @@ import { openOrCreateChatRoom } from '@/lib/helpers/chat';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
-import { subscriptionsApi } from '@/lib/api/subscriptions';
+import { subscriptionsApi, Subscription } from '@/lib/api/subscriptions';
 import { storesApi } from '@/lib/api/stores';
-
-// ─── GPS 위치 훅 ─────────────────────────────────────────────────────────────
-function useGeolocation() {
-    const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-
-    useEffect(() => {
-        if (!navigator.geolocation) return;
-
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-            },
-            (err) => {
-                console.warn('📍 위치 권한 거부:', err.message);
-            }
-        );
-    }, []);
-
-    return location;
-}
-
-// ─── 거리 계산 함수 (Haversine formula) ────────────────────────────────────
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-}
 
 // ─── 요일/식사시간 매핑 ───────────────────────────────────────────────────────
 const dayMap: Record<string, string> = {
-    'MONDAY': '월',
-    'TUESDAY': '화',
-    'WEDNESDAY': '수',
-    'THURSDAY': '목',
-    'FRIDAY': '금',
-    'SATURDAY': '토',
-    'SUNDAY': '일'
+    MONDAY: '월',
+    TUESDAY: '화',
+    WEDNESDAY: '수',
+    THURSDAY: '목',
+    FRIDAY: '금',
+    SATURDAY: '토',
+    SUNDAY: '일',
 };
 
 const mealTimeMap: Record<string, string> = {
-    'BREAKFAST': '아침',
-    'LUNCH': '점심',
-    'DINNER': '저녁'
+    BREAKFAST: '아침',
+    LUNCH: '점심',
+    DINNER: '저녁',
 };
 
 const mealTimeRange: Record<string, string> = {
-    'BREAKFAST': '07:00-12:00',
-    'LUNCH': '12:00-17:00',
-    'DINNER': '17:00-22:00'
+    BREAKFAST: '07:00-12:00',
+    LUNCH: '12:00-17:00',
+    DINNER: '17:00-22:00',
+};
+
+type SubscriptionViewModel = Subscription & {
+    days: string[];
+    mealTime: string;
+    timeRange: string;
+    pickupSchedule: string;
+    image: string;
 };
 
 export default function SubscriptionDetailPage() {
@@ -72,9 +47,7 @@ export default function SubscriptionDetailPage() {
     const router = useRouter();
     const subscriptionId = Number(params.id);
 
-    const location = useGeolocation();
-
-    const [subscription, setSubscription] = useState<any>(null);
+    const [subscription, setSubscription] = useState<SubscriptionViewModel | null>(null);
     const [storeInfo, setStoreInfo] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -83,22 +56,11 @@ export default function SubscriptionDetailPage() {
             try {
                 setLoading(true);
 
-                // 구독 정보 가져오기
+                // 구독 정보
                 const subData = await subscriptionsApi.getSubscription(subscriptionId);
 
-                // 매장 정보 가져오기
+                // 매장 정보
                 const storeData = await storesApi.getStore(subData.storeId);
-
-                // ✅ 거리 계산
-                let distance = null;
-                if (location && subData.location && subData.location.coordinates) {
-                    distance = calculateDistance(
-                        location.lat,
-                        location.lng,
-                        subData.location.coordinates[1],  // 위도
-                        subData.location.coordinates[0]   // 경도
-                    );
-                }
 
                 // 요일/시간 변환
                 const days = subData.dayList?.map((d: string) => dayMap[d] || d) || [];
@@ -113,7 +75,6 @@ export default function SubscriptionDetailPage() {
                     timeRange,
                     pickupSchedule: `${days.join('.')} ${mealTime}`,
                     image: storeData.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-                    distance,
                 });
 
                 setStoreInfo(storeData);
@@ -125,7 +86,7 @@ export default function SubscriptionDetailPage() {
         };
 
         fetchData();
-    }, [subscriptionId, location]);
+    }, [subscriptionId]);
 
     const handleContactStore = async () => {
         if (!subscription?.storeId) {
@@ -146,9 +107,7 @@ export default function SubscriptionDetailPage() {
     if (!subscription) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-secondary-50 to-secondary-100 flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                    구독 정보를 찾을 수 없습니다
-                </div>
+                <div className="text-center text-gray-500">구독 정보를 찾을 수 없습니다</div>
             </div>
         );
     }
@@ -176,33 +135,29 @@ export default function SubscriptionDetailPage() {
                         />
                         <div className="flex-1 flex flex-col justify-between">
                             <div>
-                                {/* ✅ Badge와 거리를 가로로 배치 */}
+                                {/* Badge와 거리를 가로로 배치 */}
                                 <div className="flex items-center justify-between mb-3">
-                                    <Badge variant="subscription">
-                                        {subscription.pickupSchedule}
-                                    </Badge>
-                                    {subscription.distance !== null && (
+                                    <Badge variant="subscription">{subscription.pickupSchedule}</Badge>
+
+                                    {/* ✅ 백엔드가 내려준 distance 사용 */}
+                                    {typeof subscription.distance === 'number' && (
                                         <div className="flex items-center text-sm text-gray-600">
                                             <MapPin className="w-4 h-4 mr-1 text-secondary-600" />
                                             <span className="font-medium">
-                                                {subscription.distance < 1
-                                                    ? `${Math.round(subscription.distance * 1000)}m`
-                                                    : `${subscription.distance.toFixed(1)}km`}
-                                            </span>
+                        {subscription.distance < 1
+                            ? `${Math.round(subscription.distance * 1000)}m`
+                            : `${subscription.distance.toFixed(1)}km`}
+                      </span>
                                         </div>
                                     )}
                                 </div>
 
-                                <p className="text-gray-700 mb-4 whitespace-pre-wrap">
-                                    {subscription.description}
-                                </p>
+                                <p className="text-gray-700 mb-4 whitespace-pre-wrap">{subscription.description}</p>
                             </div>
 
-                            {/* 가격을 하단에 배치 */}
+                            {/* 가격 */}
                             <div className="flex items-baseline mt-auto">
-                                <span className="text-4xl font-bold text-secondary-600">
-                                    {subscription.price.toLocaleString()}원
-                                </span>
+                                <span className="text-4xl font-bold text-secondary-600">{subscription.price.toLocaleString()}원</span>
                                 <span className="text-gray-500 ml-2">/월</span>
                             </div>
                         </div>
@@ -228,8 +183,8 @@ export default function SubscriptionDetailPage() {
                             <div className="flex items-start">
                                 <span className="text-sm text-gray-500 w-24 flex-shrink-0">영업 시간</span>
                                 <span className="text-gray-900">
-                                    {storeInfo.openTime.slice(0, 5)} - {storeInfo.closeTime.slice(0, 5)}
-                                </span>
+                  {storeInfo.openTime.slice(0, 5)} - {storeInfo.closeTime.slice(0, 5)}
+                </span>
                             </div>
                         )}
                     </div>
@@ -255,16 +210,13 @@ export default function SubscriptionDetailPage() {
                             </div>
                             <Clock className="w-5 h-5 text-secondary-600" />
                         </div>
-                        <p className="text-xs text-gray-500 px-1 mt-2">
-                            * 가게 사정에 따라 픽업 시간이 변경될 수 있습니다.
-                        </p>
+                        <p className="text-xs text-gray-500 px-1 mt-2">* 가게 사정에 따라 픽업 시간이 변경될 수 있습니다.</p>
                     </div>
                 </Card>
 
-                {/* 구독 관리 */}
+                {/* 구독 관련 문의 */}
                 <Card className="mb-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">구독 관련 문의</h2>
-                    {/* 가게 문의 */}
                     <Button size="lg" fullWidth onClick={handleContactStore}>
                         <MessageCircle className="w-5 h-5 mr-2" />
                         가게에 문의하기
@@ -283,15 +235,15 @@ export default function SubscriptionDetailPage() {
 
                 {/* 구독하기 버튼 */}
                 <Link href={`/billing/register?subscriptionId=${subscription.id}`}>
-                <Button
-                    variant="secondary"
-                    size="lg"
-                    fullWidth
-                    disabled={!subscription.joinable || subscription.stock === 0}
-                    className="mb-4"
-                >
-                    {subscription.joinable && subscription.stock > 0 ? '구독하기' : '구독 마감'}
-                </Button>
+                    <Button
+                        variant="secondary"
+                        size="lg"
+                        fullWidth
+                        disabled={!subscription.joinable || subscription.stock === 0}
+                        className="mb-4"
+                    >
+                        {subscription.joinable && subscription.stock > 0 ? '구독하기' : '구독 마감'}
+                    </Button>
                 </Link>
 
                 {/* 주의사항 */}
