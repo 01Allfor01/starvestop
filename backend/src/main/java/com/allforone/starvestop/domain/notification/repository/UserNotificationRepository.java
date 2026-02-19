@@ -11,21 +11,26 @@ public interface UserNotificationRepository extends JpaRepository<UserNotificati
     @Query("SELECT un FROM UserNotification un WHERE un.userId = :userId AND un.role = 'USER'")
     UserNotification findByUserId(Long userId);
 
-    @Query("SELECT un.token FROM UserNotification un WHERE un.userId IN :usreIdList")
-    List<String> findAllTokenByUserId(List<Long> userIdList);
-
     void deleteByTokenIn(List<String> tokenList);
 
     @Query(value = """
-            SELECT un.user_id AS userId, un.token AS token, s.id AS subscriptionId, s.name AS subscriptionName
-            FROM user_subscriptions us
-            JOIN subscriptions s ON s.id = us.subscription_id
-            JOIN user_notifications un ON un.user_id = us.user_id
-              WHERE us.status = 'ACTIVE'
-              AND (s.day & :day) <> 0
-              AND un.token IS NOT NULL
-            """, nativeQuery = true)
-    List<SendMealTimeNotificationDto> findByTargetList(Integer day);
+        SELECT us.id AS cursorId,
+                un.user_id AS userId,
+                un.token AS token,
+                s.id AS subscriptionId,
+                s.name AS subscriptionName,
+                s.meal_time AS mealTimeBit
+        FROM user_subscriptions us
+        JOIN subscriptions s ON s.id = us.subscription_id
+        JOIN user_notifications un ON un.user_id = us.user_id
+          WHERE us.status = 'ACTIVE'
+          AND (s.day & :day) <> 0
+          AND un.token IS NOT NULL
+          AND us.id > :cursor
+        ORDER BY us.id
+        LIMIT :limit
+        """, nativeQuery = true)
+    List<SendMealTimeNotificationDto> findByTargetList(Integer day, Long cursor, Integer limit);
 
     void deleteByToken(String token);
 

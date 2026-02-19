@@ -7,6 +7,7 @@ import com.allforone.starvestop.domain.payment.entity.UserBilling;
 import com.allforone.starvestop.domain.payment.infra.TossBillingClient;
 import com.allforone.starvestop.domain.payment.repository.BillingRepository;
 import com.allforone.starvestop.domain.subscription.service.UserSubscriptionService;
+import com.allforone.starvestop.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class BillingService {
     private final TossBillingClient tossBillingClient;
     private final BillingKeyCrypto billingKeyCrypto;
     private final UserSubscriptionService userSubscriptionService;
+    private final UserService userService;
 
     @Transactional
     public UserBilling issueAndSave(Long userId, String customerKey, String authKey) {
@@ -61,7 +63,9 @@ public class BillingService {
     }
 
     @Transactional
-    public void confirmAndActivate(Long userId, String customerKey, String authKey, Long subscriptionId) {
+    public void confirmAndActivate(Long userId, String authKey, Long subscriptionId) {
+        String customerKey = userService.getUserKey(userId);
+
         UserBilling billing = issueAndSave(userId, customerKey, authKey);
         userSubscriptionService.activate(userId, subscriptionId, billing);
     }

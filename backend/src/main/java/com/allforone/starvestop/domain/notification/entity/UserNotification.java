@@ -11,7 +11,11 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "user_notifications")
+@Table(name = "user_notifications",
+        indexes = {
+                @Index(name = "idx_un_user", columnList = "userId"),
+                @Index(name = "idx_un_role_user", columnList = "role, userId")
+        })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserNotification {
 

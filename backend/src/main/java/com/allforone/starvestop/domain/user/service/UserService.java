@@ -66,6 +66,10 @@ public class UserService {
                 () -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
+    public String getUserKey(Long userId) {
+        return userRepository.getUserKeyById(userId);
+    }
+
     public User getKakaoUserOrElseSignUp(Long providerId) {
         return userRepository.findByProviderIdAndIsDeletedIsFalse(providerId);
     }
