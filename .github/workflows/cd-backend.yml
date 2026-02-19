@@ -1,9 +1,6 @@
 name: Cd-Backend
 
 on:
-  push:
-    branches:
-      - feat/cicd/test
   pull_request:
     types: [closed]
     branches: [dev]
