@@ -7,6 +7,7 @@ export interface GetUserResponse {
     email: string;
     role: string;
     userKey: string;
+    authProvider: string;
     imageUrl?: string;
 }
 

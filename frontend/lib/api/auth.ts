@@ -42,6 +42,17 @@ export const authApi = {
         return response.data;
     },
 
+    getKakaoLoginUrl: async () => {
+        const response = await apiClient.get<string>('/auth/login/oauth/kakao');
+        return response.data;
+    },
+
+// 카카오 콜백 (code로 토큰 받기)
+    kakaoCallback: async (code: string) => {
+        const response = await apiClient.get<{ accessToken: string }>(`/auth/login/oauth/kakao/callback?code=${code}`);
+        return response.data;
+    },
+
     // 판매자 로그인
     signInOwner: async (data: SignInRequest) => {
         const response = await apiClient.post<SignInResponse>('/auth/signin/owner', data);
