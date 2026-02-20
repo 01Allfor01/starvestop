@@ -1,0 +1,58 @@
+name: Cd-Frontend
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - dev
+    paths:
+      - "frontend/**"
+      - ".github/workflows/cd-frontend.yml"
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+  ECR_REPOSITORY_FRONT: starvestop-frontend
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-and-push:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & Push frontend image
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONT:$IMAGE_TAG -f frontend/Dockerfile .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONT:$IMAGE_TAG
+
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY_FRONT:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_FRONT:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONT:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Deploy to Front EC2 (docker compose)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.FRONT_EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/starvestop-frontend
+            docker compose pull
+            docker compose up -d
+            docker image prune -f

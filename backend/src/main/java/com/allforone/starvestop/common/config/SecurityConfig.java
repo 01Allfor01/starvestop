@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/pushtest.html").permitAll()
                         .requestMatchers("firebase-messaging-sw.js").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/prometheus").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
