@@ -87,3 +87,6 @@ management:
 logging:
   file:
     name: /var/log/app/spring.log
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
