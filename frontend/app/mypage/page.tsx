@@ -205,11 +205,6 @@ export default function MyPage() {
                                 <Badge variant="default">{coupons.filter(c => c.couponName).length}</Badge>
                             </Link>
                         </Card>
-
-                        <Button variant="ghost" fullWidth className="text-red-500 hover:bg-red-50">
-                            <LogOut className="w-4 h-4 mr-2" />
-                            로그아웃
-                        </Button>
                     </div>
 
                     {/* 오른쪽: 콘텐츠 */}
