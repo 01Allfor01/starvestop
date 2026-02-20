@@ -29,7 +29,7 @@ function formatDistance(distanceKm: number): string {
     if (distanceKm < 1) {
         return `${Math.round(distanceKm * 1000)}m`;
     }
-    return `${distanceKm.toFixed(1)}`;
+    return `${distanceKm.toFixed(1)}km`;
 }
 
 export default function ProductDetailPage() {
@@ -359,7 +359,7 @@ export default function ProductDetailPage() {
                                     <div className="flex items-center text-sm text-gray-600">
                                         <MapPin className="w-4 h-4 mr-1 text-primary-500" />
                                         <span className="font-medium text-primary-600">
-                                            {distance !== '-' ? `${distance}km` : (myLocation ? '가게 위치 정보 없음' : '위치 권한 필요')}
+                                             {distance !== '-' ? distance : (myLocation ? '가게 위치 정보 없음' : '위치 권한 필요')}
                                         </span>
                                     </div>
                                 </div>

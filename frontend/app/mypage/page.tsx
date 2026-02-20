@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Package, Gift, User, ChevronRight, LogOut, CreditCard, Loader2, FileText } from 'lucide-react';
+import { Package, Gift, User, ChevronRight, LogOut, CreditCard, Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -25,7 +25,7 @@ interface OrderUI extends OrderResponse {
 }
 
 interface Order {
-    id:  number;
+    id: number;
 }
 
 export default function MyPage() {
@@ -220,32 +220,26 @@ export default function MyPage() {
 
                             <div className="space-y-4">
                                 {recentOrders.length > 0 ? recentOrders.map((order) => (
-                                    <Card key={order.id} hover padding="md">
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div>
-                                                <p className="text-sm text-gray-500 mb-1">
-                                                    {new Date(order.createdAt).toLocaleDateString()}
-                                                </p>
-                                                <h3 className="font-semibold text-gray-900">
-                                                    {order.storeName}
-                                                </h3>
-                                                <p className="text-sm text-gray-600 mt-1">{order.itemsSummary}</p>
+                                    <Link key={order.id} href={`/mypage/orders/${order.id}`}>
+                                        <Card hover padding="md" className="cursor-pointer">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div>
+                                                    <p className="text-sm text-gray-500 mb-1">
+                                                        {new Date(order.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                    <h3 className="font-semibold text-gray-900">
+                                                        {order.storeName}
+                                                    </h3>
+                                                    <p className="text-sm text-gray-600 mt-1">{order.itemsSummary}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                                            <span className="text-lg font-bold text-gray-900">
-                                                {order.amount.toLocaleString()}원
-                                            </span>
-                                            <div className="space-x-2">
-                                                <Link href={`/receipts/${order.id}`}>
-                                                    <Button variant="outline" size="sm">
-                                                        <FileText className="w-4 h-4 mr-1"/>
-                                                        영수증
-                                                    </Button>
-                                                </Link>
+                                            <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                                                <span className="text-lg font-bold text-gray-900">
+                                                    {order.amount.toLocaleString()}원
+                                                </span>
                                             </div>
-                                        </div>
-                                    </Card>
+                                        </Card>
+                                    </Link>
                                 )) : (
                                     <div className="text-center py-8 bg-white rounded-lg border border-gray-200">
                                         <p className="text-gray-500">최근 주문 내역이 없습니다.</p>
@@ -297,7 +291,7 @@ export default function MyPage() {
                                             </div>
 
                                             <div className="flex space-x-2">
-                                                <Link href={`/subscriptions/${sub.subscriptionId}`} className="flex-1">
+                                                <Link href={`/mypage/subscriptions/${sub.id}`} className="flex-1">
                                                     <Button variant="secondary" size="sm" fullWidth>
                                                         상세 정보
                                                     </Button>
