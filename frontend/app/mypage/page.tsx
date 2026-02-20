@@ -131,7 +131,7 @@ export default function MyPage() {
         }).join(', ');
 
         const times = detail.mealTimeList.map(t => {
-            const map: Record<string, string> = { BREAKFAST: '조식', LUNCH: '중식', DINNER: '석식' };
+            const map: Record<string, string> = { BREAKFAST: '아침', LUNCH: '점심', DINNER: '저녁' };
             return map[t] || t;
         }).join(', ');
 

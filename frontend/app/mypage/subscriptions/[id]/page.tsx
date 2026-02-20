@@ -111,14 +111,17 @@ export default function MySubscriptionDetailPage() {
                 }
 
                 // 요일/시간 변환
+                // 요일/시간 변환
                 const days = subData.dayList?.map((d: string) => dayMap[d] || d) || [];
-                const mealTimeKey = subData.mealTimeList?.[0] || 'LUNCH';
-                const mealTime = mealTimeMap[mealTimeKey] || '점심';
+
+// ✅
+                const mealTimes = subData.mealTimeList?.map((t: string) => mealTimeMap[t] || t) || ['점심'];
+                const mealTime = mealTimes.join('/'); // "아침/점심/저녁"
 
                 setSubscription({
                     ...subData,
                     days,
-                    mealTime,
+                    mealTime, // ✅ 여러 개 모두 표시
                     pickupSchedule: `${days.join('.')} ${mealTime}`,
                     image: storeData.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
                     distance,

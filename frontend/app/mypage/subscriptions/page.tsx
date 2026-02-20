@@ -26,9 +26,9 @@ const dayMap: Record<string, string> = {
 };
 
 const mealTimeMap: Record<string, string> = {
-    'BREAKFAST': '아침',
-    'LUNCH': '점심',
-    'DINNER': '저녁'
+    'BREAKFAST': '아침',  // ✅ 조식 → 아침
+    'LUNCH': '점심',      // ✅ 중식 → 점심
+    'DINNER': '저녁'      // ✅ 석식 → 저녁
 };
 
 // 요일/식사시간 포맷팅
