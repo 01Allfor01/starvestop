@@ -13,46 +13,52 @@ on:
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-  ECR_REPOSITORY_FRONT: starvestop-frontend
+  ECR_REPOSITORY: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
-  build-and-push:
+  deploy:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build & Push frontend image
+      - name: Login to ECR
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONT:$IMAGE_TAG -f frontend/Dockerfile .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONT:$IMAGE_TAG
+          aws ecr get-login-password --region $AWS_REGION | \
+          docker login --username AWS --password-stdin $ECR_REGISTRY
 
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY_FRONT:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_FRONT:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONT:latest
+      - name: Build Docker Image
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./frontend
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-push
-    steps:
-      - name: Deploy to Front EC2 (docker compose)
+      - name: Push Docker Image
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.FRONT_EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          host: ${{ secrets.FRONTEND_EC2_HOST }}
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            set -e
-            cd ~/starvestop-frontend
-            docker compose pull
-            docker compose up -d
-            docker image prune -f
+            docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+            docker stop frontend || true
+            docker rm frontend || true
+
+            docker run -d \
+              --name frontend \
+              -p 3000:3000 \
+              -e NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }} \
+              $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
