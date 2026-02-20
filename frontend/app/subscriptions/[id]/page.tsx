@@ -100,17 +100,15 @@ export default function SubscriptionDetailPage() {
                     );
                 }
 
-                // 요일/시간 변환
+                // ✅ 요일/시간 변환 - 여러 개 처리
                 const days = subData.dayList?.map((d: string) => dayMap[d] || d) || [];
-                const mealTimeKey = subData.mealTimeList?.[0] || 'LUNCH';
-                const mealTime = mealTimeMap[mealTimeKey] || '점심';
-                const timeRange = mealTimeRange[mealTimeKey] || '12:00-17:00';
+                const mealTimes = subData.mealTimeList?.map((t: string) => mealTimeMap[t] || t) || ['점심'];
+                const mealTime = mealTimes.join('/'); // "아침/점심/저녁"
 
                 setSubscription({
                     ...subData,
                     days,
-                    mealTime,
-                    timeRange,
+                    mealTime, // ✅ "아침/점심/저녁"
                     pickupSchedule: `${days.join('.')} ${mealTime}`,
                     image: storeData.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
                     distance,

@@ -29,7 +29,7 @@ function formatDistance(distanceKm: number): string {
     if (distanceKm < 1) {
         return `${Math.round(distanceKm * 1000)}m`;
     }
-    return `${distanceKm.toFixed(1)}`;
+    return `${distanceKm.toFixed(1)}km`;
 }
 
 export default function ProductDetailPage() {
@@ -100,6 +100,11 @@ export default function ProductDetailPage() {
                 };
 
                 const rawTime = data.endTime;
+                const isSale = data.status === 'SALE';
+
+                // ✅ status에 따라 표시 가격 결정
+                const displayPrice = isSale ? data.salePrice : data.price;
+                const discount = isSale ? (data.price - data.salePrice) : 0;
 
                 const mappedProduct = {
                     id: data.id,
@@ -109,13 +114,14 @@ export default function ProductDetailPage() {
                     location: (data as any).location,
                     originalPrice: data.price,
                     salePrice: data.salePrice,
-                    discount: data.price - data.salePrice,
+                    displayPrice: displayPrice,  // ✅ 실제 표시할 가격
+                    discount: discount,           // ✅ SALE일 때만 할인액
                     stock: data.stock,
                     description: data.description,
                     endTime: parseEndTime(rawTime),
                     image: data.imageUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
-                    category: data.status === 'SALE' ? '마감세일' : '일반상품',
-                    status: data.status, // ✅ status 추가
+                    category: isSale ? '마감세일' : '일반상품',
+                    status: data.status,
                 };
 
                 setProduct(mappedProduct);
@@ -265,7 +271,7 @@ export default function ProductDetailPage() {
         }
     };
 
-    // ✅ 가게 문의하기 함수 추가
+    // ✅ 가게 문의하기 함수
     const handleContactStore = async () => {
         if (!product?.storeId) {
             alert('매장 정보를 불러오는 중입니다');
@@ -324,7 +330,7 @@ export default function ProductDetailPage() {
                             {/* ✅ SALE 상품만 할인 뱃지 표시 */}
                             {isSaleProduct && product.discount > 0 && (
                                 <Badge variant="sale" className="absolute top-4 left-4 text-base px-3 py-1">
-                                    {Math.round(product.discount).toLocaleString()}원 할인
+                                    {product.discount.toLocaleString()}원 할인
                                 </Badge>
                             )}
 
@@ -353,7 +359,7 @@ export default function ProductDetailPage() {
                                     <div className="flex items-center text-sm text-gray-600">
                                         <MapPin className="w-4 h-4 mr-1 text-primary-500" />
                                         <span className="font-medium text-primary-600">
-                                            {distance !== '-' ? `${distance}km` : (myLocation ? '가게 위치 정보 없음' : '위치 권한 필요')}
+                                             {distance !== '-' ? distance : (myLocation ? '가게 위치 정보 없음' : '위치 권한 필요')}
                                         </span>
                                     </div>
                                 </div>
@@ -369,19 +375,20 @@ export default function ProductDetailPage() {
 
                         {/* 가격 정보 */}
                         <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-2xl p-6">
-                            {/* ✅ SALE 상품만 할인 정보 표시 */}
+                            {/* ✅ SALE 상품이고 할인이 있을 때만 할인 정보 표시 */}
                             {isSaleProduct && product.discount > 0 && (
                                 <div className="flex items-baseline space-x-3 mb-2">
                                     <span className="text-2xl text-gray-400 line-through">
-                                        {Math.round(product.originalPrice).toLocaleString()}원
+                                        {product.originalPrice.toLocaleString()}원
                                     </span>
                                     <Badge variant="sale" className="text-lg px-3 py-1 bg-red-500 text-white border-none">
-                                        {Math.round(product.discount).toLocaleString()}원 할인
+                                        {product.discount.toLocaleString()}원 할인
                                     </Badge>
                                 </div>
                             )}
+                            {/* ✅ displayPrice 사용 */}
                             <div className="text-4xl font-bold text-primary-600">
-                                {product.salePrice.toLocaleString()}원
+                                {product.displayPrice.toLocaleString()}원
                             </div>
                             <p className="text-sm text-gray-600 mt-2 flex items-center">
                                 재고: <span className="font-bold text-primary-600 ml-1 text-lg">{product.stock}개</span>
@@ -413,7 +420,8 @@ export default function ProductDetailPage() {
                                 <div className="flex-1 text-right">
                                     <p className="text-sm text-gray-600">총 금액</p>
                                     <p className="text-2xl font-bold text-gray-900">
-                                        {(product.salePrice * quantity).toLocaleString()}원
+                                        {/* ✅ displayPrice 사용 */}
+                                        {(product.displayPrice * quantity).toLocaleString()}원
                                     </p>
                                 </div>
                             </div>

@@ -75,7 +75,9 @@ public class OAuthKakaoService {
 
         if (foundUser == null) {
             JsonNode accountJson = json.get("kakao_account");
-            String email = UUID.randomUUID() + "@kakao.com";
+            String email = accountJson.has("email") && accountJson.get("email") != null
+                    ? accountJson.get("email").asText()
+                    : UUID.randomUUID() + "@kakao.com";
 
             String nickname = accountJson.get("profile").get("nickname").asText();
             String password = passwordEncoder.encode(UUID.randomUUID().toString());

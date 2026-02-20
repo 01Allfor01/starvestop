@@ -23,6 +23,18 @@ export default function LoginPage() {
         }
     }, []);
 
+    const handleKakaoLogin = async () => {
+        try {
+            // 백엔드 API로 카카오 URL 가져오기
+            const response = await authApi.getKakaoLoginUrl();
+            // 카카오 로그인 페이지로 전체 페이지 이동
+            window.location.href = response;
+        } catch (error) {
+            console.error('카카오 로그인 실패:', error);
+            alert('카카오 로그인에 실패했습니다.');
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -127,7 +139,10 @@ export default function LoginPage() {
                         </div>
                     </div>
 
-                    <button className="w-full flex items-center justify-center space-x-2 bg-[#FEE500] text-[#000000] py-3 rounded-lg font-medium hover:bg-[#FDD835] transition-colors">
+                    <button
+                        onClick={handleKakaoLogin}  // ✅ 추가
+                        className="w-full flex items-center justify-center space-x-2 bg-[#FEE500] text-[#000000] py-3 rounded-lg font-medium hover:bg-[#FDD835] transition-colors"
+                    >
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 3c5.799 0 10.5 3.664 10.5 8.185 0 4.52-4.701 8.184-10.5 8.184a13.5 13.5 0 01-1.727-.11l-4.408 2.883c-.501.265-.678.236-.472-.413l.892-3.678c-2.88-1.46-4.785-3.99-4.785-6.866C1.5 6.665 6.201 3 12 3z" />
                         </svg>

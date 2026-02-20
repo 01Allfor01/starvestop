@@ -309,16 +309,21 @@ function SubscriptionProducts() {
 
                 const filtered = data.filter((item: any) => item.distance <= 5);
 
-                const mappedSubscriptions = filtered.map((item: any) => ({
-                    id: item.id,
-                    name: item.name,
-                    storeName: item.storeName || '가게명 미상',
-                    price: item.price,
-                    image: item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-                    days: item.dayList?.map((d: string) => dayMap[d] || d) || ['월', '수', '금'],
-                    time: mealTimeMap[item.mealTimeList?.[0]] || '점심',
-                    distance: item.distance,
-                }));
+                const mappedSubscriptions = filtered.map((item: any) => {
+                    // ✅ mealTimeList 전체 매핑
+                    const mealTimes = item.mealTimeList?.map((t: string) => mealTimeMap[t] || t) || ['점심'];
+
+                    return {
+                        id: item.id,
+                        name: item.name,
+                        storeName: item.storeName || '가게명 미상',
+                        price: item.price,
+                        image: item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+                        days: item.dayList?.map((d: string) => dayMap[d] || d) || ['월', '수', '금'],
+                        time: mealTimes.join('/'), // ✅ "아침/점심/저녁"
+                        distance: item.distance,
+                    };
+                });
 
                 const shuffled = [...mappedSubscriptions].sort(() => Math.random() - 0.5);
                 const random4 = shuffled.slice(0, 4);

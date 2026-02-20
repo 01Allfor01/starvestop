@@ -73,28 +73,43 @@ export default function StoreDetailPage() {
                 // 상품 목록
                 const productsData = await productsApi.getStoreProducts(storeId);
 
-                // SALE 상품과 일반 상품 분리
+                // ✅ SALE 상품과 일반 상품 분리
                 const sale = productsData
                     .filter((p: any) => p.status === 'SALE')
-                    .map((p: any) => ({
-                        id: p.id,
-                        name: p.name,
-                        originalPrice: p.price,
-                        salePrice: p.salePrice,
-                        discount: p.price - p.salePrice,
-                        stock: p.stock,
-                        image: p.imageUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
-                        endTime: p.endTime,
-                    }));
+                    .map((p: any) => {
+                        const isSale = p.status === 'SALE';
+                        const displayPrice = isSale ? p.salePrice : p.price;
+                        const discount = isSale ? (p.price - p.salePrice) : 0;
+
+                        return {
+                            id: p.id,
+                            name: p.name,
+                            originalPrice: p.price,
+                            salePrice: p.salePrice,
+                            displayPrice: displayPrice,
+                            discount: discount,
+                            stock: p.stock,
+                            image: p.imageUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
+                            endTime: p.endTime,
+                            status: p.status,
+                        };
+                    });
 
                 const normal = productsData
                     .filter((p: any) => p.status !== 'SALE')
-                    .map((p: any) => ({
-                        id: p.id,
-                        name: p.name,
-                        price: p.price,
-                        image: p.imageUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
-                    }));
+                    .map((p: any) => {
+                        const isSale = p.status === 'SALE';
+                        const displayPrice = isSale ? p.salePrice : p.price;
+
+                        return {
+                            id: p.id,
+                            name: p.name,
+                            price: p.price,
+                            displayPrice: displayPrice,
+                            image: p.imageUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a',
+                            status: p.status,
+                        };
+                    });
 
                 setSaleProducts(sale);
                 setNormalProducts(normal);
@@ -189,8 +204,8 @@ export default function StoreDetailPage() {
                                 <Clock className="w-5 h-5 text-gray-400 mr-2" />
                                 <span className="font-bold text-gray-900 mr-2">운영 시간</span>
                                 <span className="font-medium text-gray-900">
-            {store.openTime?.slice(0, 5)} ~ {store.closeTime?.slice(0, 5)}
-        </span>
+                                    {store.openTime?.slice(0, 5)} ~ {store.closeTime?.slice(0, 5)}
+                                </span>
                             </div>
                         </Card>
 
@@ -277,7 +292,8 @@ export default function StoreDetailPage() {
                                                             {product.originalPrice.toLocaleString()}원
                                                         </span>
                                                         <span className="text-xl font-bold text-primary-600">
-                                                            {product.salePrice.toLocaleString()}원
+                                                            {/* ✅ displayPrice 사용 */}
+                                                            {product.displayPrice.toLocaleString()}원
                                                         </span>
                                                     </div>
                                                 </div>
@@ -304,7 +320,8 @@ export default function StoreDetailPage() {
                                                 <div className="p-4">
                                                     <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
                                                     <span className="text-lg font-bold text-gray-900">
-                                                        {product.price.toLocaleString()}원
+                                                        {/* ✅ displayPrice 사용 */}
+                                                        {product.displayPrice.toLocaleString()}원
                                                     </span>
                                                 </div>
                                             </Link>

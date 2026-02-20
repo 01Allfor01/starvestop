@@ -1,6 +1,7 @@
 package com.allforone.starvestop.domain.user.dto.response;
 
 import com.allforone.starvestop.domain.user.entity.User;
+import com.allforone.starvestop.domain.user.enums.AuthProvider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -12,6 +13,7 @@ public class GetUserResponse {
     private final String nickname;
     private final String username;
     private final String userKey;
+    private final AuthProvider authProvider;
     private final String imageUrl;
 
     public static GetUserResponse from(User user, String imageUrl) {
@@ -21,6 +23,7 @@ public class GetUserResponse {
                 user.getNickname(),
                 user.getUsername(),
                 user.getUserKey(),
+                user.getProvider(),
                 imageUrl
         );
     }

@@ -101,7 +101,6 @@ export default function SubscriptionsPage() {
         const fetchSubscriptions = async () => {
             try {
                 setLoading(true);
-                // ✅ 백엔드 API에 위도/경도 전달
                 const data = await subscriptionsApi.getSubscriptions(location.lat, location.lng, 100);
 
                 console.log('📦 정기구독 전체 데이터:', data);
@@ -117,11 +116,23 @@ export default function SubscriptionsPage() {
                             console.warn(`⚠️ 매장 ${item.storeId} 이미지 로드 실패`);
                         }
 
-                        // ✅ 거리 계산 로직 제거, 백엔드에서 받은 distance 사용
                         const days = item.dayList?.map((d: string) => dayMap[d] || d) || [];
-                        const mealTimeKey = item.mealTimeList?.[0] || 'LUNCH';
-                        const mealTime = mealTimeMap[mealTimeKey] || '점심';
-                        const timeRange = mealTimeRange[mealTimeKey] || '12:00-17:00';
+
+                        // ✅ mealTimeList 전체 매핑
+                        const mealTimes = item.mealTimeList?.map((t: string) => mealTimeMap[t] || t) || ['점심'];
+                        const mealTime = mealTimes.join('/'); // "아침/점심/저녁"
+
+                        const timeRanges = item.mealTimeList?.map((t: string) => mealTimeRange[t]) || ['12:00-17:00'];
+                        let timeRange = '';
+
+                        if (timeRanges.length === 1) {
+                            timeRange = timeRanges[0];
+                        } else {
+                            // r이 string 타입임을 명시해줍니다.
+                            const starts = timeRanges.map((r: string) => r.split('-')[0]);
+                            const ends = timeRanges.map((r: string) => r.split('-')[1]);
+                            timeRange = `${starts[0]}-${ends[ends.length - 1]}`;
+                        }
 
                         return {
                             id: item.id,
@@ -131,11 +142,11 @@ export default function SubscriptionsPage() {
                             price: item.price,
                             image: storeImageUrl,
                             days,
-                            mealTime,
-                            timeRange,
+                            mealTime, // ✅ "아침/점심"
+                            timeRange, // ✅ "07:00-17:00"
                             pickupSchedule: `${days.join('.')} ${mealTime}`,
                             isJoinable: item.joinable,
-                            distance: item.distance, // ✅ 백엔드에서 계산된 거리 사용
+                            distance: item.distance,
                         };
                     })
                 );

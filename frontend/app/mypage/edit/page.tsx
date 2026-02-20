@@ -12,7 +12,6 @@ import { usersApi } from '@/lib/api/users';
 export default function EditProfilePage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-
     // 사용자 데이터 state
     const [formData, setFormData] = useState({
         name: '',
@@ -22,6 +21,7 @@ export default function EditProfilePage() {
         newPassword: '',
         confirmPassword: '',
     });
+    const [authProvider, setAuthProvider] = useState('');
 
     // 초기 데이터 로드
     useEffect(() => {
@@ -35,12 +35,15 @@ export default function EditProfilePage() {
                     email: data.email || '',
                     imageUrl: data.imageUrl || '',
                 }));
+                setAuthProvider(data.authProvider || ''); // ✅ 별도 저장
             } catch (error) {
                 console.error("사용자 정보 로드 실패:", error);
             }
         };
         fetchUserData();
     }, []);
+
+    const isKakaoUser = authProvider === 'KAKAO';
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
@@ -222,6 +225,13 @@ export default function EditProfilePage() {
                     {/* 비밀번호 변경 */}
                     <Card>
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">비밀번호 변경</h2>
+                        {isKakaoUser ? (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <p className="text-sm text-blue-700">
+                                    🔒 카카오 로그인은 비밀번호 변경이 불가합니다.
+                                </p>
+                            </div>
+                        ) : (
                         <div className="space-y-4">
                             <Input
                                 label="새 비밀번호"
@@ -266,6 +276,7 @@ export default function EditProfilePage() {
                                 💡 비밀번호는 8자 이상, 영문자, 숫자, 특수문자를 최소 1개씩 포함해야 합니다
                             </p>
                         </div>
+                            )}
                     </Card>
 
                     {/* 저장 버튼 */}
