@@ -101,12 +101,12 @@ export default function MySubscriptionDetailPage() {
 
                 // 거리 계산
                 let distance = null;
-                if (location && subData.location && subData.location.coordinates) {
+                if (location && (subData as any).location?.coordinates) {
                     distance = calculateDistance(
                         location.lat,
                         location.lng,
-                        subData.location.coordinates[1],
-                        subData.location.coordinates[0]
+                        (subData as any).location.coordinates[1],
+                        (subData as any).location.coordinates[0]
                     );
                 }
 

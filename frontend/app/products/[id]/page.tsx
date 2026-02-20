@@ -99,14 +99,14 @@ export default function ProductDetailPage() {
                     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
                 };
 
-                const rawTime = data.endTime || data.closeTime || data.closingTime || (data as any).store?.closeTime;
+                const rawTime = data.endTime;
 
                 const mappedProduct = {
                     id: data.id,
                     name: data.name,
                     storeName: data.storeName,
                     storeId: data.storeId,
-                    location: data.location,
+                    location: (data as any).location,
                     originalPrice: data.price,
                     salePrice: data.salePrice,
                     discount: data.price - data.salePrice,

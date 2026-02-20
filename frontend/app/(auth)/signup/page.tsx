@@ -195,7 +195,7 @@ export default function SignupPage() {
                             size="lg"
                             loading={loading}
                             className="mt-6"
-                            disabled={passwordsDontMatch}
+                            disabled={!!passwordsDontMatch}
                         >
                             회원가입
                         </Button>
