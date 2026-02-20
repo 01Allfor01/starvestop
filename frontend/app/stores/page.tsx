@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+export const dynamic = 'force-dynamic';
+
+import { useState, useEffect, Suspense } from 'react'; // Suspense 추가
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Search, MapPin, Loader2, X } from 'lucide-react';
@@ -41,7 +43,8 @@ function formatDistance(distanceKm: number): string {
     return `${distanceKm.toFixed(1)}km`;
 }
 
-export default function StoresPage() {
+// 1. 기존 로직을 별도의 컨텐츠 컴포넌트로 분리
+function StoresContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -244,5 +247,18 @@ export default function StoresPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+// 2. 기본 export 페이지에서 Suspense로 감싸기
+export default function StoresPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-primary-500 animate-spin" />
+            </div>
+        }>
+            <StoresContent />
+        </Suspense>
     );
 }

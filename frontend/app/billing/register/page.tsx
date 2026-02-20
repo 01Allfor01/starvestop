@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+export const dynamic = 'force-dynamic';
+
+import { useEffect, useState, Suspense } from 'react'; // Suspense 추가
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, CreditCard, Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
@@ -9,7 +11,8 @@ import Card from '@/components/ui/Card';
 import { usersApi } from '@/lib/api/users';
 import { subscriptionsApi } from '@/lib/api/subscriptions';
 
-export default function BillingRegisterPage() {
+// 1. 기존 로직을 별도의 컨텐츠 컴포넌트로 분리
+function BillingRegisterContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const subscriptionId = searchParams.get('subscriptionId');
@@ -73,7 +76,6 @@ export default function BillingRegisterPage() {
             setProcessing(true);
 
             // ✅ 1단계: 백엔드에 UserSubscription 생성 요청 먼저 실행
-            // 백엔드 로직상 DB에 구독 정보를 먼저 생성해야 한다면 여기서 호출합니다.
             console.log('🔄 구독 정보 생성 중...');
             await subscriptionsApi.subscribe(Number(subscriptionId));
 
@@ -86,7 +88,7 @@ export default function BillingRegisterPage() {
             // customerKey는 백엔드 User 엔티티의 userKey 사용
             const customerKey = `${userInfo.userKey}`;
 
-            const tossPayments = window.TossPayments(clientKey);
+            const tossPayments = (window as any).TossPayments(clientKey);
             const payment = tossPayments.payment({ customerKey });
 
             // 3단계: 카드 등록창 호출 (빌링 키 발급 요청)
@@ -101,7 +103,6 @@ export default function BillingRegisterPage() {
         } catch (error: any) {
             console.error('❌ 프로세스 실패:', error);
 
-            // 구독 생성 API에서 에러가 났는지, 토스에서 났는지에 따라 메시지 분기 가능
             if (error.response) {
                 alert(`구독 생성 실패: ${error.response.data.message || '오류가 발생했습니다.'}`);
             } else {
@@ -199,5 +200,18 @@ export default function BillingRegisterPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// 2. 기본 export 페이지에서 Suspense로 감싸기
+export default function BillingRegisterPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-primary-500 animate-spin" />
+            </div>
+        }>
+            <BillingRegisterContent />
+        </Suspense>
     );
 }

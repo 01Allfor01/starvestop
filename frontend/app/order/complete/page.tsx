@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+export const dynamic = 'force-dynamic';
+
+import { useState, useEffect, Suspense } from 'react'; // Suspense 추가
+import { openOrCreateChatRoom } from '@/lib/helpers/chat';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle, Store, MapPin, Clock, Home, FileText, MessageCircle, Loader2 } from 'lucide-react';
@@ -10,7 +13,8 @@ import Badge from '@/components/ui/Badge';
 import { ordersApi, OrderResponse, OrderProductResponse } from '@/lib/api/orders';
 import { storesApi } from '@/lib/api/stores';
 
-export default function OrderCompletePage() {
+// 1. 기존 로직을 별도의 컨텐츠 컴포넌트로 분리
+function OrderCompleteContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -50,17 +54,6 @@ export default function OrderCompletePage() {
                         setStoreData(store);
                     } catch (e) { console.warn("가게 정보 로드 실패"); }
                 }
-                console.log('📦 주문 데이터:', order);
-                console.log('🛒 주문 상품:', items);
-                console.log('💰 amount:', order.amount);
-                console.log('🎫 discountedPrice:', order.discountedPrice);
-
-                // 상품 총액 계산
-                const itemsTotal = items.reduce((sum, item) => {
-                    console.log(`상품: ${item.productName}, price: ${item.productPrice}, qty: ${item.quantity}`);
-                    return sum + (item.productPrice * item.quantity);
-                }, 0);
-                console.log('📊 상품 총액 계산:', itemsTotal);
             } catch (error) {
                 console.error("주문 정보 조회 실패:", error);
                 alert("주문 정보를 불러오지 못했습니다.");
@@ -91,6 +84,14 @@ export default function OrderCompletePage() {
             </div>
         );
     }
+
+    const handleContactStore = async () => {
+        if (!orderData?.storeId) {
+            alert('매장 정보를 불러올 수 없습니다');
+            return;
+        }
+        await openOrCreateChatRoom(orderData.storeId, router);
+    };
 
     if (!orderData) return null;
 
@@ -175,35 +176,32 @@ export default function OrderCompletePage() {
                     </div>
 
                     <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
-                        {/* ✅ 상품 금액 = 주문 상품들의 합계 */}
                         <div className="flex justify-between items-center text-gray-600">
                             <span>상품 금액</span>
                             <span>
-                {Math.round(
-                    orderItems.reduce((sum, item) => sum + (item.productPrice * item.quantity), 0)
-                ).toLocaleString()}원
-            </span>
+                                {Math.round(
+                                    orderItems.reduce((sum, item) => sum + (item.productPrice * item.quantity), 0)
+                                ).toLocaleString()}원
+                            </span>
                         </div>
 
-                        {/* ✅ 쿠폰 할인 (있을 때만 표시) */}
                         {orderData.discountedPrice && orderData.discountedPrice > 0 && (
                             <div className="flex justify-between items-center">
                                 <span className="text-gray-600">쿠폰 할인</span>
                                 <span className="text-lg font-semibold text-red-600">
-                    -{Math.round(orderData.discountedPrice).toLocaleString()}원
-                </span>
+                                    -{Math.round(orderData.discountedPrice).toLocaleString()}원
+                                </span>
                             </div>
                         )}
 
-                        {/* ✅ 총 결제 금액 = 상품 금액 - 쿠폰 할인 */}
                         <div className="flex justify-between items-center pt-3 border-t border-gray-200">
                             <span className="text-lg font-semibold text-gray-900">총 결제 금액</span>
                             <span className="text-2xl font-bold text-primary-600">
-            {Math.round(
-                orderItems.reduce((sum, item) => sum + (item.productPrice * item.quantity), 0)
-                - (orderData.discountedPrice || 0)
-            ).toLocaleString()}원
-        </span>
+                                {Math.round(
+                                    orderItems.reduce((sum, item) => sum + (item.productPrice * item.quantity), 0)
+                                    - (orderData.discountedPrice || 0)
+                                ).toLocaleString()}원
+                            </span>
                         </div>
                     </div>
                 </Card>
@@ -216,12 +214,15 @@ export default function OrderCompletePage() {
                             주문 상세보기
                         </Button>
                     </Link>
-                    <Link href={`/chat/${orderData.storeId}`}>
-                        <Button variant="outline" fullWidth size="lg">
-                            <MessageCircle className="w-5 h-5 mr-2" />
-                            가게에 문의하기
-                        </Button>
-                    </Link>
+                    <Button
+                        variant="outline"
+                        fullWidth
+                        size="lg"
+                        onClick={handleContactStore}
+                    >
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        가게에 문의하기
+                    </Button>
                 </div>
 
                 <div className="mt-8">
@@ -234,5 +235,19 @@ export default function OrderCompletePage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// 2. 기본 export 페이지에서 Suspense로 감싸기
+export default function OrderCompletePage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex flex-col items-center justify-center">
+                <Loader2 className="w-10 h-10 text-primary-500 animate-spin mb-4" />
+                <p className="text-gray-600">주문 내역을 불러오는 중입니다...</p>
+            </div>
+        }>
+            <OrderCompleteContent />
+        </Suspense>
     );
 }

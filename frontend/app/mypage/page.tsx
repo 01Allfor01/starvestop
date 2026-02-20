@@ -24,6 +24,10 @@ interface OrderUI extends OrderResponse {
     itemsSummary: string;
 }
 
+interface Order {
+    id:  number;
+}
+
 export default function MyPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
@@ -68,7 +72,7 @@ export default function MyPage() {
                 const recentOrdersList = ordersData.slice(0, 3);
 
                 const ordersWithItems = await Promise.all(
-                    recentOrdersList.map(async (order) => {
+                    recentOrdersList.map(async (order: Order) => {
                         try {
                             const products = await ordersApi.getOrderProducts(order.id);
                             let summary = '상품 정보 없음';
@@ -163,7 +167,7 @@ export default function MyPage() {
                                         <User className="w-10 h-10 text-white" />
                                     )}
                                 </div>
-                                <h2 className="text-xl font-bold text-gray-900 mb-1">{user?.nickname || user?.name || '사용자'}</h2>
+                                <h2 className="text-xl font-bold text-gray-900 mb-1">{user?.nickname || user?.username || '사용자'}</h2>
                                 <p className="text-sm text-gray-600">{user?.email}</p>
                             </div>
 
