@@ -3,6 +3,7 @@ package com.allforone.starvestop.domain.payment.service;
 import com.allforone.starvestop.common.exception.CustomException;
 import com.allforone.starvestop.common.exception.ErrorCode;
 import com.allforone.starvestop.common.utils.BillingKeyCrypto;
+import com.allforone.starvestop.domain.payment.dto.response.GetBillingKeyResponse;
 import com.allforone.starvestop.domain.payment.entity.UserBilling;
 import com.allforone.starvestop.domain.payment.infra.TossBillingClient;
 import com.allforone.starvestop.domain.payment.repository.BillingRepository;
@@ -76,5 +77,14 @@ public class BillingService {
 
         UserBilling billing = issueAndSave(userId, customerKey, authKey);
         userSubscriptionService.activate(userId, subscriptionId, billing);
+    }
+
+    @Transactional(readOnly = true)
+    public GetBillingKeyResponse getBillingKey(Long userId) {
+        UserBilling foundBilling = billingRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorCode.BILLING_NOT_FOUND));
+
+        String billingKey = foundBilling.getEncryptedBillingKey();
+
+        return GetBillingKeyResponse.of(billingKey);
     }
 }
