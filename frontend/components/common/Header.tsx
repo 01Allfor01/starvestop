@@ -199,7 +199,7 @@ export default function Header() {
                             </Link>
                         </li>
                         <li>
-                            <Link href="/coupons/available" className="text-gray-700 hover:text-primary-500 inline-flex items-center">
+                            <Link href="/coupons" className="text-gray-700 hover:text-primary-500 inline-flex items-center">
                                 <Ticket className="w-4 h-4 mr-1.5 text-amber-500" />
                                 쿠폰
                             </Link>

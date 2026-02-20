@@ -1,11 +1,15 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useRouter, useSearchParams } from 'next/navigation';
 import { XCircle } from 'lucide-react';
+import { Suspense } from 'react'; // Suspense 추가
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 
-export default function BillingFailPage() {
+// 1. 기존 로직을 별도의 컨텐츠 컴포넌트로 분리
+function BillingFailContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -44,5 +48,14 @@ export default function BillingFailPage() {
                 </Card>
             </div>
         </div>
+    );
+}
+
+// 2. 기본 export 페이지에서 Suspense로 감싸기
+export default function BillingFailPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">로딩 중...</div>}>
+            <BillingFailContent />
+        </Suspense>
     );
 }

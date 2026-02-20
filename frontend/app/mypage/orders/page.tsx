@@ -13,6 +13,10 @@ interface OrderWithItems extends OrderResponse {
     itemsSummary: string;
 }
 
+interface Order {
+    id: number;
+}
+
 // 주문 상태 매핑
 const getStatusText = (status: string): string => {
     const statusMap: Record<string, string> = {
@@ -25,11 +29,11 @@ const getStatusText = (status: string): string => {
 };
 
 // 주문 상태별 뱃지 variant
-const getStatusVariant = (status: string): 'default' | 'success' | 'warning' | 'danger' => {
-    const variantMap: Record<string, 'default' | 'success' | 'warning' | 'danger'> = {
+const getStatusVariant = (status: string): 'default' | 'success' | 'warning' => {
+    const variantMap: Record<string, 'default' | 'success' | 'warning' > = {
         PENDING: 'warning',
         PAID: 'success',
-        FAILED: 'danger',
+        FAILED: 'warning',
         CANCELED: 'default',
     };
     return variantMap[status] || 'default';
@@ -47,8 +51,7 @@ export default function OrdersPage() {
 
                 // 각 주문의 상품 목록을 조회하여 요약 생성
                 const ordersWithItems = await Promise.all(
-                    ordersData.map(async (order) => {
-                        try {
+                    ordersData.map(async (order: Order) => {                        try {
                             const products = await ordersApi.getOrderProducts(order.id);
                             let summary = '상품 정보 없음';
                             if (products.length > 0) {

@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+export const dynamic = 'force-dynamic';
+
+import { useEffect, useState, useRef, Suspense } from 'react'; // Suspense 추가
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import { billingApi } from '@/lib/api/billing';
 
-export default function BillingSuccessPage() {
+// 1. 기존 로직을 별도의 컨텐츠 컴포넌트로 분리
+function BillingSuccessContent() {
     const calledRef = useRef(false);
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -138,5 +141,18 @@ export default function BillingSuccessPage() {
                 </Card>
             </div>
         </div>
+    );
+}
+
+// 2. 기본 export 페이지에서 Suspense로 감싸기
+export default function BillingSuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-primary-500 animate-spin" />
+            </div>
+        }>
+            <BillingSuccessContent />
+        </Suspense>
     );
 }
