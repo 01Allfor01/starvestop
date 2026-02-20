@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+export const dynamic = 'force-dynamic';
+
+import { useEffect, useState, Suspense } from 'react'; // Suspense 추가
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { paymentsApi } from '@/lib/api/payments'; // 결제 승인 API
 import { cartApi } from '@/lib/api/cart';         // 장바구니 초기화 API
 import Card from '@/components/ui/Card';
 
-export default function PaymentSuccessPage() {
+// 1. 기존 로직을 별도의 컨텐츠 컴포넌트로 분리
+function PaymentSuccessContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -25,7 +28,6 @@ export default function PaymentSuccessPage() {
 
             try {
                 // 1. 백엔드 승인 요청 (결과로 실제 DB ID인 PK를 받아옵니다)
-                // response 구조가 CommonResponse<Long> 이므로 response.data에 ID가 들어있을 겁니다.
                 const response = await paymentsApi.confirmPayment({
                     paymentKey,
                     orderId: orderIdUUID,
@@ -79,5 +81,21 @@ export default function PaymentSuccessPage() {
                 )}
             </Card>
         </div>
+    );
+}
+
+// 2. 기본 export 페이지에서 Suspense로 감싸기
+export default function PaymentSuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <Card className="max-w-md w-full text-center py-16 px-8 shadow-lg">
+                    <Loader2 className="w-20 h-20 text-primary-500 mx-auto mb-6 animate-spin" />
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">로딩 중</h2>
+                </Card>
+            </div>
+        }>
+            <PaymentSuccessContent />
+        </Suspense>
     );
 }

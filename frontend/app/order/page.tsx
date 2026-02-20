@@ -134,7 +134,7 @@ export default function OrderPage() {
         const renderTossWidgets = async () => {
             try {
                 const clientKey = "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm"; // 테스트 키
-                const tossPayments = window.TossPayments(clientKey);
+                const tossPayments = (window as any).TossPayments(clientKey);
                 const widgets = tossPayments.widgets({
                     customerKey: paymentInfo.customerKey || "guest"
                 });

@@ -286,7 +286,7 @@ export default function EditProfilePage() {
                             fullWidth
                             size="lg"
                             loading={loading}
-                            disabled={passwordsDontMatch}
+                            disabled={!!passwordsDontMatch}
                         >
                             저장하기
                         </Button>

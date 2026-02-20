@@ -23,7 +23,7 @@ export const paymentsApi = {
         return response.data as CreatePaymentResponse;
     },
 
-    confirmPayment: async (params: { paymentKey: string; orderId: string; amount: string; paymentType: string }) => {
+    confirmPayment: async (params: { paymentKey: string; orderId: string; amount: number; paymentType: string }) => {
         // 백엔드의 GET /payments/success 엔드포인트 호출
         const response = await apiClient.get('/payments/success', {
             params: {
