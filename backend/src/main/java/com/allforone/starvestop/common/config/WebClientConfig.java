@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 public class WebClientConfig {
 
-    @Value("${payment.secret-key}") // 일반결제 MID 시크릿키
+    @Value("${payment.widget-secret-key}") // 일반결제 MID 시크릿키
     private String secretKey;
 
     @Value("${payment.billing-secret-key}") // 자동결제 MID 시크릿키
