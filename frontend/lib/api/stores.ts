@@ -1,5 +1,40 @@
 import { apiClient } from './client';
 
+export type StoreCategory =
+    | 'KOREAN_FOOD'
+    | 'JAPANESE_FOOD'
+    | 'CHINESE_FOOD'
+    | 'WESTERN_FOOD'
+    | 'ASIAN_FOOD'
+    | 'FAST_FOOD'
+    | 'CAFE'
+    | 'DESSERT';
+
+/**
+ * 백엔드 StoreStatus Enum 매핑
+ */
+export type StoreStatus = 'OPENED' | 'CLOSED';
+
+/**
+ * GetStoreDetailResponse DTO 매핑 인터페이스
+ */
+export interface GetStoreDetailResponse {
+    id: number;
+    name: string;
+    address: string;
+    description: string;
+    category: StoreCategory;
+    latitude: number;
+    longitude: number;
+    status: StoreStatus;
+    openTime: string;  // LocalTime은 보통 "HH:mm:ss" 형태의 문자열로 넘어옵니다.
+    closeTime: string;
+    businessRegistrationNumber: string;
+    imageUrl: string;
+    createdAt: string; // LocalDateTime은 ISO-8601 문자열로 넘어옵니다.
+    updatedAt: string;
+}
+
 // 매장 타입 (백엔드 Response에 맞춤)
 export interface Store {
     id: number;
@@ -22,7 +57,6 @@ export interface StoreDetail {
     address: string;
     category: string;
     description: string;
-    phone: string;
     openTime: string;
     closeTime: string;
     imageUrl: string;
@@ -61,7 +95,7 @@ export const storesApi = {
     },
 
     getStore: async (storeId: number) => {
-        const response = await apiClient.get<StoreDetail>(`/stores/${storeId}`);
+        const response = await apiClient.get<GetStoreDetailResponse>(`/stores/${storeId}`);
         return response.data;
     },
 };

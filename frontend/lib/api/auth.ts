@@ -16,9 +16,7 @@ export interface SignUpRequest {
 export interface SignUpOwnerRequest {
     email: string;
     password: string;
-    name: string;
-    nickname: string;
-    businessNumber: string;
+    username: string;
 }
 
 export interface SignInResponse {
