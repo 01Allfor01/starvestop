@@ -1,6 +1,12 @@
 name: Cd-Backend
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/cd-backend.yml"
   pull_request:
     types:
       - closed
@@ -24,7 +30,6 @@ env:
 
 jobs:
   build-and-push:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -77,43 +82,46 @@ jobs:
           ALB_LISTENER_ARN="${{ secrets.ALB_LISTENER_ARN }}"
           TG_BLUE="${{ secrets.TG_BLUE_ARN }}"
           TG_GREEN="${{ secrets.TG_GREEN_ARN }}"
-
+          
           CURRENT=$(aws elbv2 describe-listeners \
-            --listener-arn "$ALB_LISTENER_ARN" \
-            --query "Listeners[0].DefaultActions[0].ForwardConfig.TargetGroups[?Weight==\`100\`].TargetGroupArn | [0]" \
-            --output text)
-
+          --listener-arn "$ALB_LISTENER_ARN" \
+          --query "Listeners[0].DefaultActions[0].ForwardConfig.TargetGroups[?Weight==\`100\`].TargetGroupArn | [0]" \
+          --output text)
+          
           echo "CURRENT_TG=$CURRENT" >> $GITHUB_OUTPUT
           echo "CURRENT_TG=$CURRENT"
-
+          
           if [ "$CURRENT" = "$TG_BLUE" ]; then
-            # 현재 BLUE가 live(100) → GREEN이 idle
+            # live=BLUE idle=GREEN
             echo "IDLE_TG=$TG_GREEN" >> $GITHUB_OUTPUT
             echo "IDLE_NAME=${{ env.GREEN_NAME }}" >> $GITHUB_OUTPUT
             echo "IDLE_PORT=${{ env.GREEN_HOST_PORT }}" >> $GITHUB_OUTPUT
             echo "IDLE_COLOR=GREEN" >> $GITHUB_OUTPUT
-
+            echo "PREV_NAME=${{ env.BLUE_NAME }}" >> $GITHUB_OUTPUT
+          
           elif [ "$CURRENT" = "$TG_GREEN" ]; then
-            # 현재 GREEN이 live(100) → BLUE가 idle
+          # live=GREEN idle=BLUE
             echo "IDLE_TG=$TG_BLUE" >> $GITHUB_OUTPUT
             echo "IDLE_NAME=${{ env.BLUE_NAME }}" >> $GITHUB_OUTPUT
             echo "IDLE_PORT=${{ env.BLUE_HOST_PORT }}" >> $GITHUB_OUTPUT
             echo "IDLE_COLOR=BLUE" >> $GITHUB_OUTPUT
-
+            echo "PREV_NAME=${{ env.GREEN_NAME }}" >> $GITHUB_OUTPUT
+          
           else
-            # 첫 배포/예외: live를 GREEN으로 가정, idle은 BLUE
-            echo "Unknown CURRENT_TG($CURRENT). Assume GREEN is live, BLUE is idle."
-            echo "CURRENT_TG=$TG_GREEN" >> $GITHUB_OUTPUT
+            echo "Unknown CURRENT_TG($CURRENT). Assume GREEN live, BLUE idle."
             echo "IDLE_TG=$TG_BLUE" >> $GITHUB_OUTPUT
             echo "IDLE_NAME=${{ env.BLUE_NAME }}" >> $GITHUB_OUTPUT
             echo "IDLE_PORT=${{ env.BLUE_HOST_PORT }}" >> $GITHUB_OUTPUT
             echo "IDLE_COLOR=BLUE" >> $GITHUB_OUTPUT
+            echo "PREV_NAME=${{ env.GREEN_NAME }}" >> $GITHUB_OUTPUT
           fi
-
+          
           echo "IDLE_TG=${{ steps.decide.outputs.IDLE_TG }}"
           echo "IDLE_NAME=${{ steps.decide.outputs.IDLE_NAME }}"
           echo "IDLE_PORT=${{ steps.decide.outputs.IDLE_PORT }}"
           echo "IDLE_COLOR=${{ steps.decide.outputs.IDLE_COLOR }}"
+          echo "PREV_NAME=${{ steps.decide.outputs.PREV_NAME }}"
+
 
       - name: Deploy to IDLE on EC2-1
         uses: appleboy/ssh-action@v1.0.3
@@ -133,6 +141,16 @@ jobs:
             
             aws ecr get-login-password --region "$AWS_REGION" \
               | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+            
+            echo "== Disk before =="
+            df -h
+            docker system df || true
+            AVAIL_MB=$(df -m / | awk 'NR==2{print $4}')
+            if [ -n "$AVAIL_MB" ] && [ "$AVAIL_MB" -lt 1024 ]; then
+              echo "Low disk (<1GB). Pruning docker..."
+              docker system prune -af || true
+              docker builder prune -af || true
+            fi
             
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
@@ -177,6 +195,16 @@ jobs:
             
             aws ecr get-login-password --region "$AWS_REGION" \
               | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+            
+            echo "== Disk before =="
+            df -h
+            docker system df || true
+            AVAIL_MB=$(df -m / | awk 'NR==2{print $4}')
+            if [ -n "$AVAIL_MB" ] && [ "$AVAIL_MB" -lt 1024 ]; then
+              echo "Low disk (<1GB). Pruning docker..."
+              docker system prune -af || true
+              docker builder prune -af || true
+            fi
             
             docker pull $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
@@ -248,6 +276,76 @@ jobs:
               --listener-arn "$ALB_LISTENER_ARN" \
               --default-actions "Type=forward,ForwardConfig={TargetGroups=[{TargetGroupArn=$TG_BLUE,Weight=0},{TargetGroupArn=$TG_GREEN,Weight=100}]}"
           fi
+          
+          aws elbv2 describe-listeners --listener-arn "$ALB_LISTENER_ARN" \
+          --query "Listeners[0].DefaultActions[0].ForwardConfig.TargetGroups" --output table
+
+      - name: Post-switch stabilization (wait N sec and re-check NEW TG stays healthy)
+        run: |
+          set -e
+          NEW_TG="${{ steps.decide.outputs.IDLE_TG }}"
+          echo "Switched traffic. Waiting 30s for stabilization..."
+          sleep 30
+
+          echo "Re-checking NEW target group health stays healthy: $NEW_TG"
+          OK_COUNT=0
+
+          for i in {1..12}; do
+            STATES=$(aws elbv2 describe-target-health \
+              --target-group-arn "$NEW_TG" \
+              --query "TargetHealthDescriptions[*].TargetHealth.State" \
+              --output text)
+
+            echo "[$i] Target states: $STATES"
+
+            if echo "$STATES" | tr '\t' '\n' | grep -qv healthy; then
+              OK_COUNT=0
+            else
+              OK_COUNT=$((OK_COUNT+1))
+            fi
+
+            if [ "$OK_COUNT" -ge 3 ]; then
+              echo "NEW TG is healthy and stable (3 consecutive checks)."
+              exit 0
+            fi
+
+            sleep 10
+          done
+
+          echo "NEW TG did not stay healthy consistently."
+          exit 1
+
+      - name: Stop previous live container on EC2-1
+        if: success()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST_1 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            PREV_NAME="${{ steps.decide.outputs.PREV_NAME }}"
+            if [ -z "$PREV_NAME" ]; then
+              echo "PREV_NAME is empty. Skip stopping."
+              exit 0
+            fi
+            echo "Stopping previous container: $PREV_NAME"
+            docker stop "$PREV_NAME" || true
+
+      - name: Stop previous live container on EC2-2
+        if: success()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST_2 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            PREV_NAME="${{ steps.decide.outputs.PREV_NAME }}"
+            if [ -z "$PREV_NAME" ]; then
+              echo "PREV_NAME is empty. Skip stopping."
+              exit 0
+            fi
+            echo "Stopping previous container: $PREV_NAME"
+            docker stop "$PREV_NAME" || true
 
       - name: Rollback traffic by weight (restore previous 100/0)
         if: failure()
@@ -269,4 +367,3 @@ jobs:
               --listener-arn "$ALB_LISTENER_ARN" \
               --default-actions "Type=forward,ForwardConfig={TargetGroups=[{TargetGroupArn=$TG_BLUE,Weight=0},{TargetGroupArn=$TG_GREEN,Weight=100}]}"
           fi
-
