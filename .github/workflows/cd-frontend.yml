@@ -1,0 +1,109 @@
+name: Cd-Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+      - ".github/workflows/cd-frontend.yml"
+  pull_request:
+    types:
+      - closed
+    branches:
+      - dev
+    paths:
+      - "frontend/**"
+      - ".github/workflows/cd-frontend.yml"
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+  ECR_REPOSITORY: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        run: |
+          aws ecr get-login-password --region "$AWS_REGION" | \
+          docker login --username AWS --password-stdin "$ECR_REGISTRY"
+
+      - name: Build Docker Image
+        run: |
+          set -e
+
+          echo "${{ secrets.FRONTEND_ENV }}" > frontend.env
+          set -a
+          . ./frontend.env
+          set +a
+
+          echo "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL"
+          echo "NEXT_PUBLIC_TOSS_CLIENT_KEY is set"
+          
+          docker build \
+          --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
+          --build-arg NEXT_PUBLIC_TOSS_CLIENT_KEY="$NEXT_PUBLIC_TOSS_CLIENT_KEY" \
+          -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
+          ./frontend
+
+      - name: Push Docker Image
+        run: |
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.FRONT_EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            set -e
+
+            echo "ECR_REGISTRY=$ECR_REGISTRY"
+            echo "ECR_REPOSITORY=$ECR_REPOSITORY"
+            echo "IMAGE_TAG=$IMAGE_TAG"
+            
+            echo "== Disk before =="
+            df -h
+            docker system df || true
+            
+            AVAIL_MB=$(df -m / | awk 'NR==2{print $4}')
+            if [ -n "$AVAIL_MB" ] && [ "$AVAIL_MB" -lt 1024 ]; then
+              echo "Low disk (<1GB). Pruning docker..."
+              docker system prune -af || true
+              docker builder prune -af || true
+            fi
+            
+            echo "${{ secrets.FRONTEND_ENV }}" > .env
+            
+            aws ecr get-login-password --region "$AWS_REGION" | \
+              docker login --username AWS --password-stdin "$ECR_REGISTRY"
+
+            docker pull "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+            docker stop frontend || true
+            docker rm frontend || true
+
+            docker run -d \
+              --name frontend \
+              --restart unless-stopped \
+              -p 3000:3000 \
+              --env-file /home/ubuntu/.env \
+              "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+          envs: AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG

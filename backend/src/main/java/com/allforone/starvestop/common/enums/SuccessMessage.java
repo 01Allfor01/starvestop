@@ -75,6 +75,7 @@ public enum SuccessMessage {
     MY_PAYMENT_LIST_GET_SUCCESS("내 결제 내역 조회 성공"),
     PAYMENT_DETAIL_GET_SUCCESS("결제 상세 조회 성공"),
     BILLING_CONFIRM_SUCCESS("자동 결제 승인 성공"),
+    BILLING_GET_SUCCESS("자동 결제 수단 조회 성공"),
 
     //쿠폰
     COUPON_CREATE_SUCCESS("쿠폰 등록 성공"),

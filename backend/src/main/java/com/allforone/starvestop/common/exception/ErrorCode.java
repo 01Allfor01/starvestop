@@ -38,8 +38,7 @@ public enum ErrorCode {
     // 구독
     SUBSCRIPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구독입니다"),
     SUBSCRIPTION_OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "구독 재고가 부족합니다"),
-    SUBSCRIPTION_INVALID_STATUS_TRANSITION
-            (HttpStatus.CONFLICT, "현재 구독 상태에서는 이 작업을 수행할 수 없습니다"),
+    SUBSCRIPTION_INVALID_STATUS_TRANSITION(HttpStatus.CONFLICT, "현재 구독 상태에서는 이 작업을 수행할 수 없습니다"),
     SUBSCRIPTION_BILLING_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 결제 수단이 존재합니다"),
     SUBSCRIPTION_BILLING_REQUIRED(HttpStatus.CONFLICT, "자동 결제를 위해 결제 수단 등록이 필요합니다"),
 
@@ -90,12 +89,15 @@ public enum ErrorCode {
     IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 업로드에 실패했습니다"),
     IMAGE_EXTENSION_BAD_REQUEST(HttpStatus.BAD_REQUEST, "지원하지 않는 확장자입니다"),
 
-    //api로그
+    // api로그
     API_LOG_NOT_FOUND(HttpStatus.NOT_FOUND, "API 로그가 존재하지 않습니다"),
 
     //채팅
     CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 방이 존재하지 않습니다"),
     CHAT_MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅 메세지가 존재하지 않습니다"),
+
+    // 자동 결제
+    BILLING_NOT_FOUND(HttpStatus.NOT_FOUND,"자동 결제 수단을 찾을 수 없습니다"),
 
     //FCM
     SECRET_FILE_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "알림에 필요한 비밀 키를 찾을 수 없습니다"),
