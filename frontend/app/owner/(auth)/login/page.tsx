@@ -1,26 +1,48 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, Store } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { authApi } from '@/lib/api/auth';
 
 export default function OwnerLoginPage() {
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        setError('');
 
-        // TODO: 실제 API 호출로 교체
-        setTimeout(() => {
-            console.log('사장님 로그인:', { email, password });
+        if (!email || !password) {
+            setError('이메일과 비밀번호를 입력해주세요');
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            const response = await authApi.signInOwner({
+                email,
+                password,
+            });
+
+            // 토큰 저장
+            localStorage.setItem('accessToken', response.accessToken);
+
+            // 대시보드로 이동
+            router.push('/owner/dashboard');
+        } catch (error: any) {
+            console.error('로그인 실패:', error);
+            setError(error.response?.data?.message || '이메일 또는 비밀번호가 올바르지 않습니다');
+        } finally {
             setLoading(false);
-            window.location.href = '/owner/dashboard';
-        }, 1000);
+        }
     };
 
     return (
@@ -42,6 +64,12 @@ export default function OwnerLoginPage() {
                 {/* 로그인 폼 */}
                 <div className="bg-white rounded-2xl shadow-2xl p-8">
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">로그인</h2>
+
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-600">{error}</p>
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {/* 이메일 */}
@@ -81,20 +109,6 @@ export default function OwnerLoginPage() {
                             </button>
                         </div>
 
-                        {/* 자동 로그인 & 비밀번호 찾기 */}
-                        <div className="flex items-center justify-between text-sm">
-                            <label className="flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
-                                />
-                                <span className="ml-2 text-gray-600">자동 로그인</span>
-                            </label>
-                            <Link href="/owner/forgot-password" className="text-primary-500 hover:text-primary-600">
-                                비밀번호 찾기
-                            </Link>
-                        </div>
-
                         {/* 로그인 버튼 */}
                         <Button
                             type="submit"
@@ -114,7 +128,7 @@ export default function OwnerLoginPage() {
                         </p>
                         <Link href="/owner/signup">
                             <Button variant="outline" fullWidth>
-                                입점 문의하기
+                                입점 신청하기
                             </Button>
                         </Link>
                     </div>

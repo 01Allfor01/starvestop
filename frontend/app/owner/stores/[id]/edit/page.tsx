@@ -1,19 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Store, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
+import { storesApi } from '@/lib/api/stores';
 import { ownerApi } from '@/lib/api/owner';
 import { StoreCategory, StoreStatus } from '@/types/owner';
 import { STORE_CATEGORY_LABELS, STORE_STATUS_LABELS } from '@/lib/helpers/bitmask';
 
-export default function NewStorePage() {
+export default function EditStorePage() {
+    const params = useParams();
     const router = useRouter();
-    const [loading, setLoading] = useState(false);
+    const storeId = Number(params.id);
+
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -25,10 +30,38 @@ export default function NewStorePage() {
         openTime: '',
         closeTime: '',
         status: 'OPENED' as StoreStatus,
-        businessRegistrationNumber: '',
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        fetchStore();
+    }, [storeId]);
+
+    const fetchStore = async () => {
+        try {
+            setLoading(true);
+            const data = await storesApi.getStore(storeId);
+
+            setFormData({
+                name: data.name,
+                address: data.address,
+                description: data.description,
+                category: data.category as any,
+                latitude: data.latitude as any,
+                longitude: data.longitude as any,
+                openTime: data.openTime.slice(0, 5),
+                closeTime: data.closeTime.slice(0, 5),
+                status: data.status as any,
+            });
+        } catch (error: any) {
+            console.error('매장 정보 로딩 실패:', error);
+            alert('매장 정보를 불러올 수 없습니다');
+            router.push('/owner/dashboard');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         setFormData(prev => ({ ...prev, [field]: e.target.value }));
@@ -60,9 +93,6 @@ export default function NewStorePage() {
         if (!formData.openTime) newErrors.openTime = '오픈 시간을 입력해주세요';
         if (!formData.closeTime) newErrors.closeTime = '마감 시간을 입력해주세요';
 
-        if (!formData.businessRegistrationNumber.trim()) newErrors.businessRegistrationNumber = '사업자 등록번호를 입력해주세요';
-        if (formData.businessRegistrationNumber.length > 255) newErrors.businessRegistrationNumber = '사업자 등록번호는 255자 이하로 입력해주세요';
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -73,9 +103,9 @@ export default function NewStorePage() {
         if (!validateForm()) return;
 
         try {
-            setLoading(true);
+            setSubmitting(true);
 
-            await ownerApi.createStore({
+            await ownerApi.updateStore(storeId, {
                 name: formData.name,
                 address: formData.address,
                 description: formData.description,
@@ -85,32 +115,36 @@ export default function NewStorePage() {
                 openTime: formData.openTime + ':00',
                 closeTime: formData.closeTime + ':00',
                 status: formData.status,
-                businessRegistrationNumber: formData.businessRegistrationNumber,
             });
 
-            alert('매장이 등록되었습니다!');
-            router.push('/owner/dashboard');
+            alert('매장 정보가 수정되었습니다!');
+            router.push(`/owner/stores/${storeId}`);
         } catch (error: any) {
-            console.error('매장 등록 실패:', error);
-            alert(error.response?.data?.message || '매장 등록에 실패했습니다');
+            console.error('매장 수정 실패:', error);
+            alert(error.response?.data?.message || '매장 수정에 실패했습니다');
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-primary-500 animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* 헤더 */}
                 <div className="mb-8">
-                    <Link href="/owner/dashboard" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4">
+                    <Link href={`/owner/stores/${storeId}`} className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4">
                         <ArrowLeft className="w-5 h-5 mr-2" />
-                        대시보드로
+                        매장 상세로
                     </Link>
-                    <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                        <Store className="w-8 h-8 text-primary-600 mr-3" />
-                        매장 등록
-                    </h1>
+                    <h1 className="text-3xl font-bold text-gray-900">매장 정보 수정</h1>
                 </div>
 
                 {/* 폼 */}
@@ -126,7 +160,6 @@ export default function NewStorePage() {
                                         label="매장 이름"
                                         value={formData.name}
                                         onChange={handleChange('name')}
-                                        placeholder="예: 판교 해장국 하우스"
                                         error={errors.name}
                                     />
 
@@ -139,7 +172,6 @@ export default function NewStorePage() {
                                             onChange={handleChange('category')}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                                         >
-                                            <option value="">선택해주세요</option>
                                             {Object.entries(STORE_CATEGORY_LABELS).map(([value, label]) => (
                                                 <option key={value} value={value}>{label}</option>
                                             ))}
@@ -154,20 +186,11 @@ export default function NewStorePage() {
                                         <textarea
                                             value={formData.description}
                                             onChange={handleChange('description')}
-                                            placeholder="예: 든든한 국밥과 수육"
                                             rows={3}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                                         />
                                         {errors.description && <p className="mt-1.5 text-sm text-red-600">{errors.description}</p>}
                                     </div>
-
-                                    <Input
-                                        label="사업자 등록번호"
-                                        value={formData.businessRegistrationNumber}
-                                        onChange={handleChange('businessRegistrationNumber')}
-                                        placeholder="예: 123-45-67890"
-                                        error={errors.businessRegistrationNumber}
-                                    />
                                 </div>
                             </div>
 
@@ -180,7 +203,6 @@ export default function NewStorePage() {
                                         label="주소"
                                         value={formData.address}
                                         onChange={handleChange('address')}
-                                        placeholder="예: 경기도 성남시 분당구 판교로 98"
                                         error={errors.address}
                                     />
 
@@ -191,7 +213,6 @@ export default function NewStorePage() {
                                             step="any"
                                             value={formData.latitude}
                                             onChange={handleChange('latitude')}
-                                            placeholder="37.392115"
                                             error={errors.latitude}
                                         />
                                         <Input
@@ -200,7 +221,6 @@ export default function NewStorePage() {
                                             step="any"
                                             value={formData.longitude}
                                             onChange={handleChange('longitude')}
-                                            placeholder="127.108542"
                                             error={errors.longitude}
                                         />
                                     </div>
@@ -260,9 +280,9 @@ export default function NewStorePage() {
                             <Button
                                 type="submit"
                                 fullWidth
-                                loading={loading}
+                                loading={submitting}
                             >
-                                등록하기
+                                수정하기
                             </Button>
                         </div>
                     </Card>
