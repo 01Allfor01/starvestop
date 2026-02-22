@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
-import Header from "@/components/common/Header";
+import ConditionalHeader from "@/components/common/ConditionalHeader";
 import Footer from "@/components/common/Footer";
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default function RootLayout({
         </head>
         <body className="antialiased">
         <Providers>
-            <Header />
+            <ConditionalHeader />
             <main className="min-h-screen">
                 {children}
             </main>

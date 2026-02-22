@@ -307,28 +307,25 @@ function SubscriptionProducts() {
                 setLoading(true);
                 const data = await subscriptionsApi.getSubscriptions(location.lat, location.lng, 100);
 
-                const filtered = data.filter((item: any) => item.distance <= 5);
+                console.log("📍 API로부터 받은 원본 데이터:", data);
 
-                const mappedSubscriptions = filtered.map((item: any) => {
-                    // ✅ mealTimeList 전체 매핑
-                    const mealTimes = item.mealTimeList?.map((t: string) => mealTimeMap[t] || t) || ['점심'];
+                if (!Array.isArray(data)) {
+                    console.error("❌ 데이터가 배열 형식이 아닙니다. 응답 구조를 확인하세요.");
+                    return;
+                }
 
-                    return {
-                        id: item.id,
-                        name: item.name,
-                        storeName: item.storeName || '가게명 미상',
-                        price: item.price,
-                        image: item.imageUrl || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-                        days: item.dayList?.map((d: string) => dayMap[d] || d) || ['월', '수', '금'],
-                        time: mealTimes.join('/'), // ✅ "아침/점심/저녁"
-                        distance: item.distance,
-                    };
+                // 필터링 전 개수 확인
+                console.log("전체 상품 개수:", data.length);
+
+                const filtered = data.filter((item: any) => {
+                    const isNear = item.distance <= 5;
+                    if (!isNear) console.log(`거리 초과로 제외됨: ${item.name} (${item.distance}km)`);
+                    return isNear;
                 });
 
-                const shuffled = [...mappedSubscriptions].sort(() => Math.random() - 0.5);
-                const random4 = shuffled.slice(0, 4);
+                console.log("5km 이내 필터링 후 개수:", filtered.length);
 
-                setSubscriptions(random4);
+                // ... 나머지 로직
             } catch (error) {
                 console.error('❌ 정기구독 로딩 실패:', error);
             } finally {

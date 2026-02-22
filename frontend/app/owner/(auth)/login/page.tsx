@@ -109,17 +109,6 @@ export default function OwnerLoginPage() {
                             </button>
                         </div>
 
-                        {/* 자동 로그인 */}
-                        <div className="flex items-center justify-between text-sm">
-                            <label className="flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
-                                />
-                                <span className="ml-2 text-gray-600">자동 로그인</span>
-                            </label>
-                        </div>
-
                         {/* 로그인 버튼 */}
                         <Button
                             type="submit"

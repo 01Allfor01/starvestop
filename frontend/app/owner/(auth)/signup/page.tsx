@@ -212,21 +212,6 @@ export default function OwnerSignupPage() {
                             )}
                         </div>
 
-                        {/* 약관 동의 */}
-                        <div className="pt-2">
-                            <label className="flex items-start cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    required
-                                    className="w-4 h-4 mt-0.5 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
-                                />
-                                <span className="ml-2 text-sm text-gray-600">
-                                    <span className="text-primary-500 font-medium">이용약관</span> 및{' '}
-                                    <span className="text-primary-500 font-medium">개인정보 처리방침</span>에 동의합니다
-                                </span>
-                            </label>
-                        </div>
-
                         {/* 가입 버튼 */}
                         <Button
                             type="submit"

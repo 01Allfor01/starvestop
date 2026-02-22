@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Store, Plus, MapPin, Clock, Loader2, MessageCircle, LogOut } from 'lucide-react';
+import { Store, Plus, MapPin, Clock, Loader2, MessageCircle } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -39,13 +39,6 @@ export default function OwnerDashboardPage() {
         }
     };
 
-    const handleLogout = () => {
-        if (confirm('로그아웃 하시겠습니까?')) {
-            localStorage.removeItem('accessToken');
-            router.push('/owner/login');
-        }
-    };
-
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -55,25 +48,8 @@ export default function OwnerDashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* 헤더 */}
-            <div className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <Store className="w-8 h-8 text-primary-600 mr-3" />
-                            <h1 className="text-3xl font-bold text-gray-900">사장님 페이지</h1>
-                        </div>
-                        <Button variant="outline" onClick={handleLogout}>
-                            <LogOut className="w-4 h-4 mr-2" />
-                            로그아웃
-                        </Button>
-                    </div>
-                </div>
-            </div>
-
-            {/* 메인 콘텐츠 */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* 매장 목록 헤더 */}
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-900">내 매장</h2>
@@ -103,21 +79,18 @@ export default function OwnerDashboardPage() {
                             {stores.map((store) => (
                                 <Link key={store.id} href={`/owner/stores/${store.id}`}>
                                     <Card hover className="h-full">
-                                        {/* 매장 이미지 */}
                                         <div className="relative -m-6 mb-4">
                                             <img
                                                 src={store.ImageUrl || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4'}
                                                 alt={store.name}
                                                 className="w-full h-48 object-cover rounded-t-xl"
                                             />
-                                            {/* 영업 상태 뱃지 */}
                                             <Badge
                                                 variant={store.status === 'OPENED' ? 'default' : 'sale'}
                                                 className="absolute top-3 left-3"
                                             >
                                                 {STORE_STATUS_LABELS[store.status]}
                                             </Badge>
-                                            {/* 읽지 않은 메시지 */}
                                             {store.unreadCount > 0 && (
                                                 <div className="absolute top-3 right-3 flex items-center bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
                                                     <MessageCircle className="w-3 h-3 mr-1" />
@@ -126,12 +99,11 @@ export default function OwnerDashboardPage() {
                                             )}
                                         </div>
 
-                                        {/* 매장 정보 */}
                                         <div>
                                             <div className="flex items-center justify-between mb-2">
                                                 <h3 className="text-lg font-bold text-gray-900">{store.name}</h3>
-                                                <Badge variant={"outline" as any} className="text-xs">
-                                                    {STORE_CATEGORY_LABELS[store.category as keyof typeof STORE_CATEGORY_LABELS]}
+                                                <Badge variant={"default" as any} className="text-xs">
+                                                    {STORE_CATEGORY_LABELS[store.category]}
                                                 </Badge>
                                             </div>
 
@@ -152,7 +124,6 @@ export default function OwnerDashboardPage() {
                             ))}
                         </div>
 
-                        {/* 페이지네이션 */}
                         {totalPages > 1 && (
                             <div className="flex items-center justify-center mt-8 space-x-2">
                                 <Button
