@@ -54,8 +54,11 @@ public class SubscriptionController {
     @Operation(summary = "전체 구독 목록 조회" + ApiRoleLabels.AUTH)
     @GetMapping("/subscriptions")
     public ResponseEntity<CommonResponse<SliceResponse<GetSubscriptionDistanceResponse>>> getSubscriptionList(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser authUser,
             @ModelAttribute @Valid SearchSubscriptionCond request
     ) {
+        request = isTest(authUser, request);
+
         Slice<GetSubscriptionDistanceResponse> responseSlice = subscriptionService.getSubscriptionSlice(request);
 
         SliceResponse<GetSubscriptionDistanceResponse> response = SliceResponse.from(responseSlice);
@@ -104,5 +107,15 @@ public class SubscriptionController {
         subscriptionService.deleteSubscription(authUser, subscriptionId);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.successNoData(SUBSCRIPTION_DELETE_SUCCESS));
+    }
+
+    //실험용 좌표 넣기
+    private static SearchSubscriptionCond isTest(AuthUser authUser, SearchSubscriptionCond request) {
+        if (authUser.getUserId() > 2) {
+            request = new SearchSubscriptionCond(request.getKeyword(), request.getCategory(),
+                    37.503300, 127.044600, request.getSize(),
+                    request.getLastDistance(), request.getLastId(), request.getLastStoreId());
+        }
+        return request;
     }
 }
