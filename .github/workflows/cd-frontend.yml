@@ -71,8 +71,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
 
-          envs: AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG
-
           script: |
             set -e
 
@@ -80,7 +78,21 @@ jobs:
             echo "ECR_REPOSITORY=$ECR_REPOSITORY"
             echo "IMAGE_TAG=$IMAGE_TAG"
             
+            echo "== Disk before =="
+            df -h
+            docker system df || true
+            
+            AVAIL_MB=$(df -m / | awk 'NR==2{print $4}')
+            if [ -n "$AVAIL_MB" ] && [ "$AVAIL_MB" -lt 1024 ]; then
+              echo "Low disk (<1GB). Pruning docker..."
+              docker system prune -af || true
+              docker builder prune -af || true
+            fi
+            
             echo "${{ secrets.FRONTEND_ENV }}" > .env
+            
+            aws ecr get-login-password --region "$AWS_REGION" | \
+              docker login --username AWS --password-stdin "$ECR_REGISTRY"
 
             docker pull "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
@@ -93,3 +105,5 @@ jobs:
               -p 3000:3000 \
               --env-file /home/ubuntu/.env \
               "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+          envs: AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG
