@@ -44,7 +44,7 @@ jobs:
         working-directory: ./backend
         run: |
           chmod +x ./gradlew
-          ./gradlew clean build
+          ./gradlew clean build --no-build-cache --refresh-dependencies
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
