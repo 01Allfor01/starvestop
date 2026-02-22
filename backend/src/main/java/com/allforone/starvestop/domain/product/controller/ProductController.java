@@ -68,8 +68,11 @@ public class ProductController {
     @Operation(summary = "마감 세일 상품 목록 조회" + ApiRoleLabels.AUTH)
     @GetMapping("/products/sale")
     public ResponseEntity<CommonResponse<SliceResponse<GetProductSaleResponse>>> getProductSaleSlice(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser authUser,
             @ParameterObject @ModelAttribute @Valid SearchProductCond request
     ) {
+        request = isTest(authUser, request);
+
         Slice<GetProductSaleResponse> getProductSaleResponseSlice = productService.getProductSaleSlice(request);
 
         SliceResponse<GetProductSaleResponse> response = SliceResponse.from(getProductSaleResponseSlice);
@@ -116,5 +119,15 @@ public class ProductController {
         CommonResponse<Void> response = CommonResponse.successNoData(PRODUCT_DELETE_SUCCESS);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    //실험용 좌표 넣기
+    private static SearchProductCond isTest(AuthUser authUser, SearchProductCond request) {
+        if (authUser.getUserId() > 2) {
+            request = new SearchProductCond(request.getKeyword(), request.getCategory(),
+                    37.503300, 127.044600, request.getSize(),
+                    request.getLastDistance(), request.getLastId(), request.getLastStoreId());
+        }
+        return request;
     }
 }

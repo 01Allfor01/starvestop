@@ -80,8 +80,11 @@ public class StoreController {
     @Operation(summary = "매장 목록 조회 (거리/키워드/카테고리)" + ApiRoleLabels.AUTH)
     @GetMapping
     public ResponseEntity<CommonResponse<SliceResponse<StoreResponse>>> getStorePage(
+            @Parameter(hidden = true) @AuthenticationPrincipal AuthUser authUser,
             @ParameterObject @ModelAttribute @Valid SearchStoreCond request
     ) {
+        request = isTest(authUser, request);
+
         Slice<StoreResponse> response = storeService.getStoreSlice(request);
 
         SliceResponse<StoreResponse> result = SliceResponse.from(response);
@@ -108,5 +111,15 @@ public class StoreController {
         GetStoreDetailResponse response = storeService.getStoreDetail(storeId);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(STORE_DETAIL_GET_SUCCESS, response));
+    }
+
+    //실험용 좌표 넣기
+    private static SearchStoreCond isTest(AuthUser authUser, SearchStoreCond request) {
+        if (authUser.getUserId() > 2) {
+            request = new SearchStoreCond(request.getKeyword(), request.getCategory(),
+                    37.503300, 127.044600, request.getSize(),
+                    request.getLastDistance(), request.getLastId());
+        }
+        return request;
     }
 }
