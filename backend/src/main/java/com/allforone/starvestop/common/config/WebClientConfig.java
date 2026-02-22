@@ -3,6 +3,8 @@ package com.allforone.starvestop.common.config;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,7 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Configuration
 public class WebClientConfig {
 
@@ -59,7 +62,10 @@ public class WebClientConfig {
     }
 
     @Bean
+    @Qualifier("paymentWebClient")
     public WebClient paymentWebClient(WebClient.Builder builder) {
+        log.info("WebClientConfig ::::::: secretKey :::: {}", secretKey);
+        log.info("WebClientConfig ::::::: secretBillingKey ::::: {}", secretBillingKey);
         return buildTossWebClient(builder, secretKey);
     }
 
