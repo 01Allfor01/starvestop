@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, Suspense } from 'react'; // Suspense 추가
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { authApi } from '@/lib/api/auth';
 
-export default function KakaoCallbackPage() {
+// 1. 기존 로직을 별도의 컨텐츠 컴포넌트로 분리
+function KakaoCallbackContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const hasProcessed = useRef(false); // ✅ 중복 실행 방지
@@ -57,5 +58,18 @@ export default function KakaoCallbackPage() {
                 <p className="text-gray-600">카카오 로그인 처리 중...</p>
             </div>
         </div>
+    );
+}
+
+// 2. 기본 export 페이지에서 Suspense로 감싸기
+export default function KakaoCallbackPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center">
+                <Loader2 className="w-12 h-12 text-primary-500 animate-spin mx-auto mb-4" />
+            </div>
+        }>
+            <KakaoCallbackContent />
+        </Suspense>
     );
 }
