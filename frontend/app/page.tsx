@@ -310,22 +310,50 @@ function SubscriptionProducts() {
                 console.log("📍 API로부터 받은 원본 데이터:", data);
 
                 if (!Array.isArray(data)) {
-                    console.error("❌ 데이터가 배열 형식이 아닙니다. 응답 구조를 확인하세요.");
+                    console.error("❌ 데이터가 배열 형식이 아닙니다.");
+                    setLoading(false);
                     return;
                 }
 
-                // 필터링 전 개수 확인
-                console.log("전체 상품 개수:", data.length);
+                // ✅ 5km 이내 필터링
+                const filtered = data.filter((item: any) => item.distance <= 5);
+                console.log(`5km 이내 구독: ${filtered.length}개`);
 
-                const filtered = data.filter((item: any) => {
-                    const isNear = item.distance <= 5;
-                    if (!isNear) console.log(`거리 초과로 제외됨: ${item.name} (${item.distance}km)`);
-                    return isNear;
-                });
+                // ✅ 매장 이미지 가져오기 및 매핑
+                const subscriptionsWithImages = await Promise.all(
+                    filtered.map(async (item: any) => {
+                        let storeImageUrl = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c';
 
-                console.log("5km 이내 필터링 후 개수:", filtered.length);
+                        try {
+                            const storeDetail = await storesApi.getStore(item.storeId);
+                            storeImageUrl = storeDetail.imageUrl || storeImageUrl;
+                        } catch (error) {
+                            console.warn(`⚠️ 매장 ${item.storeId} 이미지 로드 실패`);
+                        }
 
-                // ... 나머지 로직
+                        const days = item.dayList?.map((d: string) => dayMap[d] || d) || [];
+                        const mealTimes = item.mealTimeList?.map((t: string) => mealTimeMap[t] || t) || ['점심'];
+                        const time = mealTimes.join('/');
+
+                        return {
+                            id: item.id,
+                            name: item.name,
+                            storeName: item.storeName || '가게명 미상',
+                            description: item.description || `${time} 식사를 정기적으로 받아보세요`,
+                            price: item.price,
+                            image: storeImageUrl,
+                            days,
+                            time,
+                            distance: item.distance,
+                        };
+                    })
+                );
+
+                // ✅ 랜덤 4개 선택
+                const shuffled = [...subscriptionsWithImages].sort(() => Math.random() - 0.5);
+                const random4 = shuffled.slice(0, 4);
+
+                setSubscriptions(random4);
             } catch (error) {
                 console.error('❌ 정기구독 로딩 실패:', error);
             } finally {
