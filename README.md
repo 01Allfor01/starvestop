@@ -113,10 +113,9 @@
 
 
 ### Monitoring
-<img alt="Static Badge" src="https://img.shields.io/badge/Spring_Actuator-6DB33F?style=flat&logo=Spring&logoColor=white"/>
 <img alt="Static Badge" src="https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=Prometheus&logoColor=white"/>
 <img alt="Static Badge" src="https://img.shields.io/badge/Grafana-F46800?style=flat&logo=Grafana&logoColor=white"/>
-<img alt="Static Badge" src="https://img.shields.io/badge/AWS_CloudWatch-232F3E?style=flat&logo=AmazonWebServices&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Loki-F46800?style=flat&logo=Grafana&logoColor=white"/>
 
 ### OpenAPI
 <img alt="Static Badge" src="https://img.shields.io/badge/Toss_Payments-3182F6?style=flat&logoColor=white"/>
@@ -130,11 +129,6 @@
 ### CI/CD
 <img alt="Static Badge" src="https://img.shields.io/badge/githubactions-2088FF?style=flat&logo=GitHub%20Actions&logoColor=white">
 <img alt="Static Badge" src="https://img.shields.io/badge/docker-2496ED?style=flat&logo=Docker&logoColor=white">
-
-### Log Visualization and Analysis
-<img alt="Static Badge" src="https://img.shields.io/badge/ElasticSearch-005571?style=flat&logo=Elasticsearch&logoColor=white"/>
-<img alt="Static Badge" src="https://img.shields.io/badge/Logstash-005571?style=flat&logo=Logstash&logoColor=white"/>
-<img alt="Static Badge" src="https://img.shields.io/badge/Kibana-005571?style=flat&logo=Kibana&logoColor=white"/>
 
 ### Infra
 <img alt="Static Badge" src="https://img.shields.io/badge/AWS_RDS-527FFF?style=flat&logo=AmazonRDS&logoColor=white"/>
