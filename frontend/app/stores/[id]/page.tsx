@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';  // ✅ useRouter 추가
 import Link from 'next/link';
 import { ArrowLeft, MapPin, Clock, MessageCircle, Loader2, Calendar } from 'lucide-react';
 import Button from '@/components/ui/Button';
@@ -10,6 +10,7 @@ import Badge from '@/components/ui/Badge';
 import { storesApi } from '@/lib/api/stores';
 import { productsApi } from '@/lib/api/products';
 import { subscriptionsApi } from '@/lib/api/subscriptions';
+import { openOrCreateChatRoom } from '@/lib/helpers/chat';  // ✅ 추가
 
 // ─── 카테고리 매핑 ────────────────────────────────────────────────────────────
 const categoryMap: Record<string, string> = {
@@ -48,6 +49,7 @@ const mealTimeRange: Record<string, string> = {
 
 export default function StoreDetailPage() {
     const params = useParams();
+    const router = useRouter();  // ✅ 추가
     const storeId = Number(params.id);
 
     const [activeTab, setActiveTab] = useState<'products' | 'subscriptions'>('products');
@@ -149,6 +151,11 @@ export default function StoreDetailPage() {
         fetchData();
     }, [storeId]);
 
+    // ✅ 채팅방 열기 핸들러
+    const handleContactStore = async () => {
+        await openOrCreateChatRoom(storeId, router);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -228,9 +235,9 @@ export default function StoreDetailPage() {
                             </div>
                         </Card>
 
-                        {/* 버튼 */}
+                        {/* ✅ 버튼에 onClick 핸들러 추가 */}
                         <div>
-                            <Button size="lg" fullWidth>
+                            <Button size="lg" fullWidth onClick={handleContactStore}>
                                 <MessageCircle className="w-5 h-5 mr-2" />
                                 가게 문의
                             </Button>
@@ -292,7 +299,6 @@ export default function StoreDetailPage() {
                                                             {product.originalPrice.toLocaleString()}원
                                                         </span>
                                                         <span className="text-xl font-bold text-primary-600">
-                                                            {/* ✅ displayPrice 사용 */}
                                                             {product.displayPrice.toLocaleString()}원
                                                         </span>
                                                     </div>
@@ -320,7 +326,6 @@ export default function StoreDetailPage() {
                                                 <div className="p-4">
                                                     <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
                                                     <span className="text-lg font-bold text-gray-900">
-                                                        {/* ✅ displayPrice 사용 */}
                                                         {product.displayPrice.toLocaleString()}원
                                                     </span>
                                                 </div>
