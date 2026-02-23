@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>결제 실패</title>
+</head>
+<body>
+<h2>결제 실패</h2>
+<p>에러코드: <b id="code"></b></p>
+<p>실패 사유: <b id="message"></b></p>
+<hr />
+<p>원본 URL:</p>
+<pre id="raw"></pre>
+<p>쿼리 파라미터 전체:</p>
+<pre id="all"></pre>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+
+    const code = params.get("code");
+    const message = params.get("message");
+
+    document.getElementById("code").textContent = code ?? "(없음)";
+    document.getElementById("message").textContent = message ?? "(없음)";
+
+    document.getElementById("raw").textContent = window.location.href;
+
+    // 파라미터 전체 덤프
+    const obj = {};
+    for (const [k, v] of params.entries()) obj[k] = v;
+    document.getElementById("all").textContent = JSON.stringify(obj, null, 2);
+</script>
+</body>
+</html>

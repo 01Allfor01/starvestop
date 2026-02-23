@@ -1,0 +1,78 @@
+package com.allforone.starvestop.domain.payment.entity;
+
+import com.allforone.starvestop.common.entity.BaseEntity;
+import com.allforone.starvestop.common.exception.CustomException;
+import com.allforone.starvestop.common.exception.ErrorCode;
+import com.allforone.starvestop.domain.order.entity.Order;
+import com.allforone.starvestop.domain.payment.enums.ReceiptStatus;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Getter
+@Entity
+@Table(name = "receipts")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Receipt extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private Long userId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "order_id")
+    private Order order;
+
+    @Column(nullable = false)
+    private String orderKey;
+
+    @Column(nullable = false, unique = true)
+    private String paymentKey;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ReceiptStatus status;
+
+    @Column(nullable = false)
+    private BigDecimal amount;
+
+    private Receipt(Long userId, Order order, String orderKey, String paymentKey, BigDecimal amount) {
+        this.userId = userId;
+        this.order = order;
+        this.orderKey = orderKey;
+        this.paymentKey = paymentKey;
+        this.status = ReceiptStatus.VALID_PAYMENT;
+        this.amount = amount;
+    }
+
+    public static Receipt create(Long userId, Order order, String orderKey, String paymentKey, BigDecimal amount) {
+        return new Receipt(
+                userId,
+                order,
+                orderKey,
+                paymentKey,
+                amount);
+    }
+
+    public void requestRefund() {
+        if (this.status.equals(ReceiptStatus.VALID_PAYMENT)) {
+            this.status = ReceiptStatus.REFUND_IN_PROGRESS;
+            return;
+        }
+        throw new CustomException(ErrorCode.INVALID_RECEIPT_STATE);
+    }
+
+    public void refunded() {
+        if (this.status.equals(ReceiptStatus.REFUND_IN_PROGRESS)) {
+            this.status = ReceiptStatus.REFUNDED;
+            return;
+        }
+        throw new CustomException(ErrorCode.INVALID_RECEIPT_STATE);
+    }
+}

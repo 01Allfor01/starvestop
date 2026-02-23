@@ -1,0 +1,351 @@
+name: Cd-Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+      - ".github/workflows/cd-frontend.yml"
+  pull_request:
+    types:
+      - closed
+    branches:
+      - dev
+    paths:
+      - "frontend/**"
+      - ".github/workflows/cd-frontend.yml"
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+  ECR_REPOSITORY: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
+  IMAGE_TAG: ${{ github.sha }}
+
+  BLUE_NAME: starve-stop-frontend-blue
+  GREEN_NAME: starve-stop-frontend-green
+  BLUE_HOST_PORT: "3000"
+  GREEN_HOST_PORT: "3001"
+  CONTAINER_PORT: "3000"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image (frontend)
+        run: |
+          set -e
+
+          echo "${{ secrets.FRONTEND_ENV }}" > frontend.env
+          set -a
+          . ./frontend.env
+          set +a
+
+          echo "NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL"
+          echo "NEXT_PUBLIC_TOSS_CLIENT_KEY is set"
+
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
+            --build-arg NEXT_PUBLIC_TOSS_CLIENT_KEY="$NEXT_PUBLIC_TOSS_CLIENT_KEY" \
+            -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
+            ./frontend
+
+      - name: Push Docker Image (frontend)
+        run: |
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+  deploy:
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Configure AWS credentials (for ALB)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Debug listener
+        run: |
+          aws elbv2 describe-listeners --listener-arn "${{ secrets.FRONT_ALB_LISTENER_ARN }}"
+
+      - name: Decide CURRENT(Weight=100) and set IDLE (TG/Name/Port)
+        id: decide
+        run: |
+          set -e
+          ALB_LISTENER_ARN="${{ secrets.FRONT_ALB_LISTENER_ARN }}"
+          TG_BLUE="${{ secrets.FRONT_TG_BLUE_ARN }}"
+          TG_GREEN="${{ secrets.FRONT_TG_GREEN_ARN }}"
+
+          CURRENT=$(aws elbv2 describe-listeners \
+            --listener-arn "$ALB_LISTENER_ARN" \
+            --query "Listeners[0].DefaultActions[0].ForwardConfig.TargetGroups[?Weight==\`100\`].TargetGroupArn | [0]" \
+            --output text)
+
+          echo "CURRENT_TG=$CURRENT" >> $GITHUB_OUTPUT
+          echo "CURRENT_TG=$CURRENT"
+
+          if [ "$CURRENT" = "$TG_BLUE" ]; then
+            echo "IDLE_TG=$TG_GREEN" >> $GITHUB_OUTPUT
+            echo "IDLE_NAME=${{ env.GREEN_NAME }}" >> $GITHUB_OUTPUT
+            echo "IDLE_PORT=${{ env.GREEN_HOST_PORT }}" >> $GITHUB_OUTPUT
+            echo "IDLE_COLOR=GREEN" >> $GITHUB_OUTPUT
+            echo "PREV_NAME=${{ env.BLUE_NAME }}" >> $GITHUB_OUTPUT
+          elif [ "$CURRENT" = "$TG_GREEN" ]; then
+            echo "IDLE_TG=$TG_BLUE" >> $GITHUB_OUTPUT
+            echo "IDLE_NAME=${{ env.BLUE_NAME }}" >> $GITHUB_OUTPUT
+            echo "IDLE_PORT=${{ env.BLUE_HOST_PORT }}" >> $GITHUB_OUTPUT
+            echo "IDLE_COLOR=BLUE" >> $GITHUB_OUTPUT
+            echo "PREV_NAME=${{ env.GREEN_NAME }}" >> $GITHUB_OUTPUT
+          else
+            echo "Unknown CURRENT_TG($CURRENT). Assume GREEN live, BLUE idle."
+            echo "IDLE_TG=$TG_BLUE" >> $GITHUB_OUTPUT
+            echo "IDLE_NAME=${{ env.BLUE_NAME }}" >> $GITHUB_OUTPUT
+            echo "IDLE_PORT=${{ env.BLUE_HOST_PORT }}" >> $GITHUB_OUTPUT
+            echo "IDLE_COLOR=BLUE" >> $GITHUB_OUTPUT
+            echo "PREV_NAME=${{ env.GREEN_NAME }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to IDLE on FRONT EC2-1
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.FRONT_EC2_HOST_1 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG,CONTAINER_PORT
+          script: |
+            set -e
+            IDLE_NAME="${{ steps.decide.outputs.IDLE_NAME }}"
+            IDLE_PORT="${{ steps.decide.outputs.IDLE_PORT }}"
+
+            echo "== Disk before =="
+            df -h
+            docker system df || true
+            AVAIL_MB=$(df -m / | awk 'NR==2{print $4}')
+            if [ -n "$AVAIL_MB" ] && [ "$AVAIL_MB" -lt 1024 ]; then
+              echo "Low disk (<1GB). Pruning docker..."
+              docker system prune -af || true
+              docker builder prune -af || true
+            fi
+
+            # 런타임 env (NEXT_PUBLIC_* 는 빌드 때 주로 필요하지만, 런타임에도 쓰면 유지)
+            echo "${{ secrets.FRONTEND_ENV }}" > .env
+
+            aws ecr get-login-password --region "$AWS_REGION" \
+              | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+
+            docker pull "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+            docker stop "$IDLE_NAME" || true
+            docker rm "$IDLE_NAME" || true
+
+            docker run -d \
+              --name "$IDLE_NAME" \
+              --restart unless-stopped \
+              --env-file .env \
+              -p "${IDLE_PORT}:${CONTAINER_PORT}" \
+              "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+            for i in {1..60}; do
+              if curl -fsS "http://localhost:${IDLE_PORT}" > /dev/null; then
+                echo "FRONT-EC2-1 ${IDLE_NAME} health OK"
+                exit 0
+              fi
+              sleep 2
+            done
+            echo "FRONT-EC2-1 ${IDLE_NAME} health FAILED"
+            docker logs --tail 200 "$IDLE_NAME" || true
+            exit 1
+
+      - name: Deploy to IDLE on FRONT EC2-2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.FRONT_EC2_HOST_2 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: AWS_REGION,ECR_REGISTRY,ECR_REPOSITORY,IMAGE_TAG,CONTAINER_PORT
+          script: |
+            set -e
+            IDLE_NAME="${{ steps.decide.outputs.IDLE_NAME }}"
+            IDLE_PORT="${{ steps.decide.outputs.IDLE_PORT }}"
+
+            echo "== Disk before =="
+            df -h
+            docker system df || true
+            AVAIL_MB=$(df -m / | awk 'NR==2{print $4}')
+            if [ -n "$AVAIL_MB" ] && [ "$AVAIL_MB" -lt 1024 ]; then
+              echo "Low disk (<1GB). Pruning docker..."
+              docker system prune -af || true
+              docker builder prune -af || true
+            fi
+
+            echo "${{ secrets.FRONTEND_ENV }}" > .env
+
+            aws ecr get-login-password --region "$AWS_REGION" \
+              | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+
+            docker pull "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+            docker stop "$IDLE_NAME" || true
+            docker rm "$IDLE_NAME" || true
+
+            docker run -d \
+              --name "$IDLE_NAME" \
+              --restart unless-stopped \
+              --env-file .env \
+              -p "${IDLE_PORT}:${CONTAINER_PORT}" \
+              "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+            for i in {1..60}; do
+              if curl -fsS "http://localhost:${IDLE_PORT}" > /dev/null; then
+                echo "FRONT-EC2-2 ${IDLE_NAME} health OK"
+                exit 0
+              fi
+              sleep 2
+            done
+            echo "FRONT-EC2-2 ${IDLE_NAME} health FAILED"
+            docker logs --tail 200 "$IDLE_NAME" || true
+            exit 1
+
+      - name: Wait until ALB IDLE target group becomes healthy
+        run: |
+          set -e
+          IDLE_TG="${{ steps.decide.outputs.IDLE_TG }}"
+          echo "Waiting ALB target group to be healthy: $IDLE_TG"
+
+          for i in {1..60}; do
+            STATES=$(aws elbv2 describe-target-health \
+              --target-group-arn "$IDLE_TG" \
+              --query "TargetHealthDescriptions[*].TargetHealth.State" \
+              --output text)
+
+            echo "Target states: $STATES"
+
+            if echo "$STATES" | tr '\t' '\n' | grep -vq healthy; then
+              sleep 5
+            else
+              echo "All targets are healthy."
+              exit 0
+            fi
+          done
+
+          echo "Targets did not become healthy in time."
+          exit 1
+
+      - name: Switch traffic by weight (100/0)
+        run: |
+          set -e
+          ALB_LISTENER_ARN="${{ secrets.FRONT_ALB_LISTENER_ARN }}"
+          TG_BLUE="${{ secrets.FRONT_TG_BLUE_ARN }}"
+          TG_GREEN="${{ secrets.FRONT_TG_GREEN_ARN }}"
+          IDLE_TG="${{ steps.decide.outputs.IDLE_TG }}"
+
+          if [ "$IDLE_TG" = "$TG_BLUE" ]; then
+            echo "Switch to BLUE 100 / GREEN 0"
+            aws elbv2 modify-listener \
+              --listener-arn "$ALB_LISTENER_ARN" \
+              --default-actions "Type=forward,ForwardConfig={TargetGroups=[{TargetGroupArn=$TG_BLUE,Weight=100},{TargetGroupArn=$TG_GREEN,Weight=0}]}"
+          else
+            echo "Switch to GREEN 100 / BLUE 0"
+            aws elbv2 modify-listener \
+              --listener-arn "$ALB_LISTENER_ARN" \
+              --default-actions "Type=forward,ForwardConfig={TargetGroups=[{TargetGroupArn=$TG_BLUE,Weight=0},{TargetGroupArn=$TG_GREEN,Weight=100}]}"
+          fi
+
+      - name: Post-switch stabilization
+        run: |
+          set -e
+          NEW_TG="${{ steps.decide.outputs.IDLE_TG }}"
+          echo "Switched traffic. Waiting 30s for stabilization..."
+          sleep 30
+
+          OK_COUNT=0
+          for i in {1..12}; do
+            STATES=$(aws elbv2 describe-target-health \
+              --target-group-arn "$NEW_TG" \
+              --query "TargetHealthDescriptions[*].TargetHealth.State" \
+              --output text)
+
+            echo "[$i] Target states: $STATES"
+
+            if echo "$STATES" | tr '\t' '\n' | grep -qv healthy; then
+              OK_COUNT=0
+            else
+              OK_COUNT=$((OK_COUNT+1))
+            fi
+
+            if [ "$OK_COUNT" -ge 3 ]; then
+              echo "NEW TG is healthy and stable (3 consecutive checks)."
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "NEW TG did not stay healthy consistently."
+          exit 1
+
+      - name: Stop previous live container on FRONT EC2-1
+        if: success()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.FRONT_EC2_HOST_1 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            PREV_NAME="${{ steps.decide.outputs.PREV_NAME }}"
+            if [ -z "$PREV_NAME" ]; then
+              echo "PREV_NAME is empty. Skip stopping."
+              exit 0
+            fi
+            echo "Stopping previous container: $PREV_NAME"
+            docker stop "$PREV_NAME" || true
+
+      - name: Stop previous live container on FRONT EC2-2
+        if: success()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.FRONT_EC2_HOST_2 }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            PREV_NAME="${{ steps.decide.outputs.PREV_NAME }}"
+            if [ -z "$PREV_NAME" ]; then
+              echo "PREV_NAME is empty. Skip stopping."
+              exit 0
+            fi
+            echo "Stopping previous container: $PREV_NAME"
+            docker stop "$PREV_NAME" || true
+
+      - name: Rollback traffic by weight (restore previous 100/0)
+        if: failure()
+        run: |
+          set -e
+          ALB_LISTENER_ARN="${{ secrets.FRONT_ALB_LISTENER_ARN }}"
+          TG_BLUE="${{ secrets.FRONT_TG_BLUE_ARN }}"
+          TG_GREEN="${{ secrets.FRONT_TG_GREEN_ARN }}"
+          PREV_TG="${{ steps.decide.outputs.CURRENT_TG }}"
+
+          if [ "$PREV_TG" = "$TG_BLUE" ]; then
+            echo "Rollback to BLUE 100 / GREEN 0"
+            aws elbv2 modify-listener \
+              --listener-arn "$ALB_LISTENER_ARN" \
+              --default-actions "Type=forward,ForwardConfig={TargetGroups=[{TargetGroupArn=$TG_BLUE,Weight=100},{TargetGroupArn=$TG_GREEN,Weight=0}]}"
+          else
+            echo "Rollback to GREEN 100 / BLUE 0"
+            aws elbv2 modify-listener \
+              --listener-arn "$ALB_LISTENER_ARN" \
+              --default-actions "Type=forward,ForwardConfig={TargetGroups=[{TargetGroupArn=$TG_BLUE,Weight=0},{TargetGroupArn=$TG_GREEN,Weight=100}]}"
+          fi

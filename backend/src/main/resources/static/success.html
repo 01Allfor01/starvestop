@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+</head>
+<body>
+<h2>결제 성공</h2>
+<p>결제가 정상적으로 완료되었습니다.</p>
+
+<p id="orderId"></p>
+<p id="amount"></p>
+
+<script>
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get("orderId");
+    const amount = urlParams.get("amount");
+
+    const orderIdElement = document.getElementById("orderId");
+    const amountElement = document.getElementById("amount");
+
+    if (orderId) orderIdElement.textContent = "주문번호: " + orderId;
+    if (amount) amountElement.textContent = "결제 금액: " + amount;
+</script>
+</body>
+</html>

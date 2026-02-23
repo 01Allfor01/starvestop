@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: starvestop
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${TEST_DB_URL}
+    username: ${TEST_DB_USERNAME}
+    password: ${TEST_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: ${TEST_DDL_AUTO}
+    properties:
+      hibernate:
+        format_sql: false
+    show-sql: true
+  payment:
+    base-url: https://api.tosspayments.com/v1/payments
+    secret-key: ${PAYMENT_SECRET_KEY}
+  data:
+    redis:
+      host: localhost
+      port: 6379

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>웹 푸시 테스트</h1>
+<button id="btn-enable">알림 활성화</button>
+<pre id="log"></pre>
+
+<script type="module">
+    import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import {getMessaging, getToken, onMessage} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-messaging.js";
+
+    const log = (m) => (document.getElementById("log").textContent += m + "\n");
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDI3-fgGDZZyc9LsH_VIKnZF28MuyR7IU8",
+        authDomain: "allforone-df977.firebaseapp.com",
+        projectId: "allforone-df977",
+        storageBucket: "allforone-df977.firebasestorage.app",
+        messagingSenderId: "451259708327",
+        appId: "1:451259708327:web:3d9c418abb34d5dc903c82",
+        measurementId: "G-GM2V27JSC3"
+    };
+    const vapidKey = "BB7x0dL15UWcbpzPUdidqyeU9b4ioHRd7BPQrzhaSF3-N7z6G9TkxuXUXHNCGp3Ez6uLvDHEjfw9gYvnmsuCN9I";
+
+    const app = initializeApp(firebaseConfig);
+    const messaging = getMessaging(app);
+
+    // SW 등록
+    const reg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+
+    async function enableAndRegister() {
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") {
+                log("permission denied");
+                return;
+            }
+            const token = localStorage.getItem("token");
+            const fcmToken = await getToken(messaging, {vapidKey, serviceWorkerRegistration: reg});
+            log("token: " + fcmToken);
+            const platform = "WEB"
+            const res = await fetch("/notifications/save/token", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": token
+                },
+                body: JSON.stringify({fcmToken, platform})
+            });
+
+            if (!res.ok) {
+                log("register failed: " + res.status + " " + await res.text());
+                return;
+            }
+            log("➡️ register response: " + await res.text());
+        } catch (e) {
+            log("error: " + (e?.message ?? e));
+            console.error(e);
+        }
+    }
+
+    // 포그라운드 수신 로그 (확인용)
+    onMessage(messaging, (payload) => {
+        log("onMessage: " + JSON.stringify(payload));
+
+        const title = payload?.notification?.title ?? "알림";
+        const body = payload?.notification?.body ?? "";
+
+        // 권한 granted일 때만
+        if (Notification.permission === "granted") {
+            new Notification(title, {body});
+        }
+    });
+
+    document.getElementById("btn-enable").onclick = enableAndRegister;
+</script>
+</body>
+</html>
