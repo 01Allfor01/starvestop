@@ -160,7 +160,7 @@ jobs:
               "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
             for i in {1..60}; do
-              if curl -fsS "http://localhost:${IDLE_PORT}/api/health" > /dev/null; then
+              if curl -fsS "http://localhost:${IDLE_PORT}" > /dev/null; then
                 echo "FRONT-EC2-1 ${IDLE_NAME} health OK"
                 exit 0
               fi
@@ -210,7 +210,7 @@ jobs:
               "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
             for i in {1..60}; do
-              if curl -fsS "http://localhost:${IDLE_PORT}/api/health" > /dev/null; then
+              if curl -fsS "http://localhost:${IDLE_PORT}" > /dev/null; then
                 echo "FRONT-EC2-2 ${IDLE_NAME} health OK"
                 exit 0
               fi
