@@ -13,11 +13,11 @@
 ## 📄목차
 
 - 🍱 [프로젝트 소개](#-프로젝트-소개)
-- 🗃️ [주요 기능](#-주요-기능)
-- 🖥️ [설계 문서](#-설계-문서)
+- 🗃️ [주요 기능](#%EF%B8%8F-주요-기능)
+- 📄 [설계 문서](#-설계-문서)
+- 🖥️ [기술 스택](#%EF%B8%8F-기술-스택)
 - ✨ [기술적 의사 결정](#-기술적-의사-결정)
 - 🧨 [트러블 슈팅 및 성능개선](#-트러블-슈팅-및-성능-개선)
-- 🖥️ [기술 스택](#-기술-스택)
 
 ---
 ## 🍱 프로젝트 소개
@@ -79,7 +79,7 @@
 ---
 ## 🖥️ 기술 스택
 <details>
-   <summary>제목</summary>
+   <summary>기술스택</summary>
    <div markdown="1">
 
 ### Language
@@ -91,15 +91,17 @@
 ### BackEnd
 <img alt="Static Badge" src="https://img.shields.io/badge/Spring-6DB33F?style=flat&logo=Spring&logoColor=white"/>
 <img alt="Static Badge" src="https://img.shields.io/badge/SpringBoot-6DB33F?style=flat&logo=SpringBoot&logoColor=white"/>
-
-> Spring Data JPA, QueryDSL, Spring WebClient, Spring Batch
+<img alt="Static Badge" src="https://img.shields.io/badge/Spring_Data_JPA-6DB33F?style=flat&logo=Spring&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/QueryDSL-0078D4?style=flat&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Spring_WebClient-6DB33F?style=flat&logo=Spring&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Spring_Batch-6DB33F?style=flat&logo=Spring&logoColor=white"/>
 
 ### Security
 <img alt="Static Badge" src="https://img.shields.io/badge/Spring Security-6DB33F?style=flat&logo=SpringSecurity&logoColor=white"/>
 <img alt="Static Badge" src="https://img.shields.io/badge/JWT-6DB33F?style=flat&logo=jsonwebtokens&logoColor=white"/>
 
 ### Batch
-> Spring Batch
+<img alt="Static Badge" src="https://img.shields.io/badge/Spring_Batch-6DB33F?style=flat&logo=Spring&logoColor=white"/>
 
 
 ### DataBase 
@@ -107,50 +109,53 @@
 <img alt="Static Badge" src="https://img.shields.io/badge/Redis-FF4438?style=flat&logo=Redis&logoColor=white">
 
 ### AI
-> OpenAIEmbeddings
+<img alt="Static Badge" src="https://img.shields.io/badge/OpenAI_Embeddings-412991?style=flat&logo=OpenAI&logoColor=white"/>
 
 
 ### Monitoring
-> Spring Actuator, Prometheus, Grafana, AWS CloudWatch
+<img alt="Static Badge" src="https://img.shields.io/badge/Spring_Actuator-6DB33F?style=flat&logo=Spring&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=Prometheus&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Grafana-F46800?style=flat&logo=Grafana&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/AWS_CloudWatch-232F3E?style=flat&logo=AmazonWebServices&logoColor=white"/>
 
 ### OpenAPI
-> toss Payments
-> kakao OAuth 2.0
+<img alt="Static Badge" src="https://img.shields.io/badge/Toss_Payments-3182F6?style=flat&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Kakao_OAuth_2.0-FFCD00?style=flat&logo=Kakao&logoColor=black"/>
 
 ###  Performance Monitoring
-> K6
-> Grafana
-> nGrinder
+<img alt="Static Badge" src="https://img.shields.io/badge/K6-7D64FF?style=flat&logo=k6&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Grafana-F46800?style=flat&logo=Grafana&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/nGrinder-000000?style=flat&logoColor=white"/>
 
 ### CI/CD
 <img alt="Static Badge" src="https://img.shields.io/badge/githubactions-2088FF?style=flat&logo=GitHub%20Actions&logoColor=white">
 <img alt="Static Badge" src="https://img.shields.io/badge/docker-2496ED?style=flat&logo=Docker&logoColor=white">
 
 ### Log Visualization and Analysis
-> ElasticSearch
-> Logstash
-> Kibana
+<img alt="Static Badge" src="https://img.shields.io/badge/ElasticSearch-005571?style=flat&logo=Elasticsearch&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Logstash-005571?style=flat&logo=Logstash&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Kibana-005571?style=flat&logo=Kibana&logoColor=white"/>
 
 ### Infra
-> AWS RDS
-> AWS ECR
-> AWS EC2
-> AWS ALB
-> AWS Internet Gateway
-> AWS IAM
-> AWS S3
+<img alt="Static Badge" src="https://img.shields.io/badge/AWS_RDS-527FFF?style=flat&logo=AmazonRDS&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/AWS_ECR-F90000?style=flat&logo=AmazonWebServices&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/AWS_EC2-FF9900?style=flat&logo=AmazonEC2&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/AWS_ALB-232F3E?style=flat&logo=AmazonWebServices&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/AWS_Internet_Gateway-232F3E?style=flat&logo=AmazonWebServices&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/AWS_IAM-232F3E?style=flat&logo=AmazonWebServices&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/AWS_S3-569A31?style=flat&logo=AmazonS3&logoColor=white"/>
 
 ### Collaboration
-> GitHub
-> Slack
-> Notion
-> ERD Colud
-> Figma
-> Jira
+<img alt="Static Badge" src="https://img.shields.io/badge/GitHub-181717?style=flat&logo=GitHub&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Slack-4A154B?style=flat&logo=Slack&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Notion-000000?style=flat&logo=Notion&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/ERD_Cloud-000000?style=flat&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Figma-F24E1E?style=flat&logo=Figma&logoColor=white"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Jira-0052CC?style=flat&logo=Jira&logoColor=white"/>
 
 ### Test
-> Swagger
-> Postman
+<img alt="Static Badge" src="https://img.shields.io/badge/Swagger-85EA2D?style=flat&logo=Swagger&logoColor=black"/>
+<img alt="Static Badge" src="https://img.shields.io/badge/Postman-FF6C37?style=flat&logo=Postman&logoColor=white"/>
 
 
    </div>
