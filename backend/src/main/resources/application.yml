@@ -58,7 +58,7 @@ cloud:
     bucket-name: ${AWS_BUCKET_NAME}
 payment:
   base-url: https://api.tosspayments.com
-  secret-key: ${PAYMENT_WIDGET_SECRET_KEY}
+  widget-secret-key: ${PAYMENT_WIDGET_SECRET_KEY}
   billing-secret-key: ${PAYMENT_SECRET_KEY}
 
 fcm:
